@@ -16,7 +16,7 @@ set( SPIRIT_BUILD_FOR_PYTHON  ON   CACHE BOOL "Build the shared library for Pyth
 set( SPIRIT_BUILD_FOR_CXX     ON   CACHE BOOL "Build the static library for C++ applications" )
 ### Feature switches for Spirit
 set( SPIRIT_ENABLE_PINNING    OFF  CACHE BOOL "Enable pinning individual or rows of spins." )
-set( SPIRIT_ENABLE_DEFECTS    OFF  CACHE BOOL "Enable defects and disorder in the lattice." )
+set( SPIRIT_ENABLE_DEFECTS    ON  CACHE BOOL "Enable defects and disorder in the lattice." )
 ### Options for Spirit
 set( SPIRIT_BUILD_TEST        ON   CACHE BOOL "Build unit tests for the Spirit library." )
 set( SPIRIT_TEST_COVERAGE     OFF  CACHE BOOL "Build in debug mode with special flags for coverage checks." )
