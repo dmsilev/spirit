@@ -6,6 +6,9 @@ output_llg/*
 output_gneb/*
 output_mmf/*
 Testing/*
+*vcxproj*
+*autogen*
+*.sln
 
 ### Subdirectories ###
 */build/*

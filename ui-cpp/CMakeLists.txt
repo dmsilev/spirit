@@ -101,7 +101,7 @@ if( SPIRIT_UI_CXX_USE_QT )
     else()
         ### IFF and developers' default paths
         if( WIN32 )
-            set( CMAKE_PREFIX_PATH "C:/QT/5.7/msvc2015/" ${CMAKE_PREFIX_PATH} )
+            set( CMAKE_PREFIX_PATH "C:/QT/5.15.2/msvc2019_64/lib/cmake/Qt5" ${CMAKE_PREFIX_PATH} )
         elseif( APPLE)
             set( CMAKE_PREFIX_PATH "/usr/local/qt5/" ${CMAKE_PREFIX_PATH} )
         elseif( UNIX)
