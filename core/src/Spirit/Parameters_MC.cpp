@@ -215,6 +215,26 @@ catch( ... )
     spirit_handle_exception_api( idx_image, idx_chain );
 }
 
+void Parameters_MC_Set_Metropolis_Flip(
+    State * state,  float spin_flip,  int idx_image,
+    int idx_chain ) noexcept
+try
+{
+    std::shared_ptr<Data::Spin_System> image;
+    std::shared_ptr<Data::Spin_System_Chain> chain;
+
+    // Fetch correct indices and pointers
+    from_indices( state, idx_image, idx_chain, image, chain );
+
+    image->Lock();
+    image->mc_parameters->metropolis_spin_flip = spin_flip;
+    image->Unlock();   
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+}
+
 void Parameters_MC_Set_Random_Sample( State * state, bool random_sample, int idx_image, int idx_chain ) noexcept
 try
 {
@@ -383,6 +403,23 @@ try
     *cone_angle              = static_cast<float>( image->mc_parameters->metropolis_cone_angle );
     *adaptive_cone           = static_cast<float>( image->mc_parameters->metropolis_cone_adaptive );
     *target_acceptance_ratio = static_cast<float>( image->mc_parameters->acceptance_ratio_target );
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+}
+
+void Parameters_MC_Get_Metropolis_Spin(
+    State * state, float * spin_flip,int idx_image, int idx_chain ) noexcept
+try
+{
+    std::shared_ptr<Data::Spin_System> image;
+    std::shared_ptr<Data::Spin_System_Chain> chain;
+
+    // Fetch correct indices and pointers
+    from_indices( state, idx_image, idx_chain, image, chain );
+
+    *spin_flip  = static_cast<float>( image->mc_parameters->metropolis_spin_flip );
 }
 catch( ... )
 {

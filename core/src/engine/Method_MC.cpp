@@ -129,6 +129,13 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
 
                 sintheta = std::sqrt( 1 - costheta * costheta );
 
+                // If requested, flip the spin
+                if (this->parameters_mc->metropolis_spin_flip > 0)
+                {
+                    costheta *= -1;
+                    sintheta *= -1;
+                }
+
                 // Random distribution of phi between 0 and 360 degrees
                 phi = 2 * Constants::Pi * distribution( this->parameters_mc->prng );
 
