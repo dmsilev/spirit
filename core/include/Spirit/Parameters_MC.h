@@ -92,7 +92,7 @@ PREFIX void Parameters_MC_Set_Metropolis_Cone(
 
 /* Set whether or not to include an Ising spin flip as part of the trial move*/
 
-PREFIX void Parameters_MC_Set_Metropolis_Flip(
+PREFIX void Parameters_MC_Set_Metropolis_SpinFlip(
     State * state, float spin_flip, int idx_image = -1,
     int idx_chain = -1 ) SUFFIX;
 
@@ -150,8 +150,8 @@ PREFIX void Parameters_MC_Get_Metropolis_Cone(
     int idx_image = -1, int idx_chain = -1 ) SUFFIX;
 
 /*Return whether or not Ising spin flip is enabled*/
-PREFIX void Parameters_MC_Get_Metropolis_Spin(
-    State * state, float * spin_flip, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
+PREFIX float Parameters_MC_Get_Metropolis_SpinFlip(
+    State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
 
 // Returns whether spins should be sampled randomly or in sequence.
 PREFIX bool Parameters_MC_Get_Random_Sample( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;

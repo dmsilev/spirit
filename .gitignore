@@ -11,6 +11,7 @@ Testing/*
 *autogen*
 *.sln
 
+
 ### Subdirectories ###
 */build/*
 */output/*
@@ -546,3 +547,9 @@ Makefile*
 
 # QtCtreator CMake
 CMakeLists.txt.user*
+core/test_solvers
+core/test_physics
+core/test_io
+core/test_ema
+core/test_api
+core/test_anisotropy
