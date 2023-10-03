@@ -554,3 +554,5 @@ core/test_io
 core/test_ema
 core/test_api
 core/test_anisotropy
+*.cfg
+input/input.cfg
