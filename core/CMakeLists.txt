@@ -17,7 +17,7 @@ option( SPIRIT_BUILD_FOR_PYTHON "Build the shared library for Python."          
 option( SPIRIT_BUILD_FOR_CXX    "Build the static library for C++ applications"          ON  )
 ### Feature switches for Spirit
 option( SPIRIT_ENABLE_PINNING   "Enable pinning individual or rows of spins."            OFF )
-option( SPIRIT_ENABLE_DEFECTS   "Enable defects and disorder in the lattice."            OFF )
+option( SPIRIT_ENABLE_DEFECTS   "Enable defects and disorder in the lattice."            ON )
 ### Options for Spirit
 option( SPIRIT_BUILD_TEST       "Build unit tests for the Spirit library."               ON  )
 option( SPIRIT_TEST_COVERAGE    "Build in debug with special flags for coverage checks." OFF )

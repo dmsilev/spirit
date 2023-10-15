@@ -4,8 +4,10 @@
 #include <engine/Method_MC.hpp>
 #include <engine/Vectormath.hpp>
 #include <io/IO.hpp>
+#include <io/OVF_File.hpp>
 #include <utility/Constants.hpp>
 #include <utility/Logging.hpp>
+#include <utility/Version.hpp>
 
 #include <Eigen/Dense>
 
@@ -129,11 +131,10 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
 
                 sintheta = std::sqrt( 1 - costheta * costheta );
 
-                // If requested, flip the spin
-                if (this->parameters_mc->metropolis_spin_flip > 0)
+                // Either we flip the spin about the Ising axis or allow a small cone angle of unflipped wobbling.
+                if (this->parameters_mc->metropolis_spin_flip > 0 && distribution( this->parameters_mc->prng )>0.5)
                 {
                     costheta *= -1;
-                    sintheta *= -1;
                 }
 
                 // Random distribution of phi between 0 and 360 degrees
@@ -334,7 +335,191 @@ void Method_MC::Message_End()
     Log.SendBlock( Log_Level::All, this->SenderName, block, this->idx_image, this->idx_chain );
 }
 
-void Method_MC::Save_Current( std::string starttime, int iteration, bool initial, bool final ) {}
+void Method_MC::Save_Current( std::string starttime, int iteration, bool initial, bool final ) 
+{
+    // History save
+    this->history_iteration.push_back( this->iteration );
+    this->history_max_torque.push_back( this->max_torque );
+    this->history_energy.push_back( this->systems[0]->E );
+
+ 
+    // File save
+    if( this->parameters->output_any )
+    {
+        // Convert indices to formatted strings
+        auto s_img         = fmt::format( "{:0>2}", this->idx_image );
+        auto base          = static_cast<std::int32_t>( log10( this->parameters->n_iterations ) );
+        std::string s_iter = fmt::format( "{:0>" + fmt::format( "{}", base ) + "}", iteration );
+
+        std::string preSpinsFile;
+        std::string preEnergyFile;
+        std::string fileTag;
+
+        if( this->systems[0]->mc_parameters->output_file_tag == "<time>" )
+            fileTag = starttime + "_";
+        else if( this->systems[0]->mc_parameters->output_file_tag != "" )
+            fileTag = this->systems[0]->mc_parameters->output_file_tag + "_";
+        else
+            fileTag = "";
+
+        preSpinsFile  = this->parameters->output_folder + "/" + fileTag + "Image-" + s_img + "_Spins";
+        preEnergyFile = this->parameters->output_folder + "/" + fileTag + "Image-" + s_img + "_Energy";
+
+        // Function to write or append image and energy files
+        auto writeOutputConfiguration
+            = [this, preSpinsFile, preEnergyFile, iteration]( const std::string & suffix, bool append )
+        {
+            try
+            {
+                // File name and comment
+                std::string spinsFile      = preSpinsFile + suffix + ".ovf";
+                std::string output_comment = fmt::format(
+                    "{} simulation ({} solver)\n# Desc:      Iteration: {}\n# Desc:      Maximum torque: {}",
+                    this->Name(), this->SolverFullName(), iteration, this->max_torque );
+
+                // File format
+                IO::VF_FileFormat format = this->systems[0]->mc_parameters->output_vf_filetype;
+
+                // Spin Configuration
+                auto & spins        = *this->systems[0]->spins;
+                auto segment        = IO::OVF_Segment( *this->systems[0] );
+                std::string title   = fmt::format( "SPIRIT Version {}", Utility::version_full );
+                segment.title       = strdup( title.c_str() );
+                segment.comment     = strdup( output_comment.c_str() );
+                segment.valuedim    = 3;
+                segment.valuelabels = strdup( "spin_x spin_y spin_z" );
+                segment.valueunits  = strdup( "none none none" );
+                if( append )
+                    IO::OVF_File( spinsFile ).append_segment( segment, spins[0].data(), int( format ) );
+                else
+                    IO::OVF_File( spinsFile ).write_segment( segment, spins[0].data(), int( format ) );
+            }
+            catch( ... )
+            {
+                spirit_handle_exception_core( "MC output failed" );
+            }
+        };
+
+        auto writeOutputEnergy
+            = [this, preSpinsFile, preEnergyFile, iteration]( const std::string & suffix, bool append )
+        {
+            bool normalize   = this->systems[0]->mc_parameters->output_energy_divide_by_nspins;
+            bool readability = this->systems[0]->mc_parameters->output_energy_add_readability_lines;
+
+            // File name
+            std::string energyFile        = preEnergyFile + suffix + ".txt";
+            std::string energyFilePerSpin = preEnergyFile + "-perSpin" + suffix + ".txt";
+
+            // Energy
+            if( append )
+            {
+                // Check if Energy File exists and write Header if it doesn't
+                std::ifstream f( energyFile );
+                if( !f.good() )
+                    IO::Write_Energy_Header(
+                        *this->systems[0], energyFile, { "iteration", "E_tot" }, true, normalize, readability );
+                // Append Energy to File
+                IO::Append_Image_Energy( *this->systems[0], iteration, energyFile, normalize, readability );
+            }
+            else
+            {
+                IO::Write_Energy_Header(
+                    *this->systems[0], energyFile, { "iteration", "E_tot" }, true, normalize, readability );
+                IO::Append_Image_Energy( *this->systems[0], iteration, energyFile, normalize, readability );
+                if( this->systems[0]->mc_parameters->output_energy_spin_resolved )
+                {
+                    // Gather the data
+                    std::vector<std::pair<std::string, scalarfield>> contributions_spins( 0 );
+                    this->systems[0]->UpdateEnergy();
+                    this->systems[0]->hamiltonian->Energy_Contributions_per_Spin(
+                        *this->systems[0]->spins, contributions_spins );
+                    int datasize = ( 1 + contributions_spins.size() ) * this->systems[0]->nos;
+                    scalarfield data( datasize, 0 );
+                    for( int ispin = 0; ispin < this->systems[0]->nos; ++ispin )
+                    {
+                        scalar E_spin = 0;
+                        int j         = 1;
+                        for( auto & contribution : contributions_spins )
+                        {
+                            E_spin += contribution.second[ispin];
+                            data[ispin + j] = contribution.second[ispin];
+                            ++j;
+                        }
+                        data[ispin] = E_spin;
+                    }
+
+                    // Segment
+                    auto segment = IO::OVF_Segment( *this->systems[0] );
+
+                    std::string title   = fmt::format( "SPIRIT Version {}", Utility::version_full );
+                    segment.title       = strdup( title.c_str() );
+                    std::string comment = fmt::format( "Energy per spin. Total={}meV", this->systems[0]->E );
+                    for( const auto & contribution : this->systems[0]->E_array )
+                        comment += fmt::format( ", {}={}meV", contribution.first, contribution.second );
+                    segment.comment  = strdup( comment.c_str() );
+                    segment.valuedim = 1 + this->systems[0]->E_array.size();
+
+                    std::string valuelabels = "Total";
+                    std::string valueunits  = "meV";
+                    for( const auto & pair : this->systems[0]->E_array )
+                    {
+                        valuelabels += fmt::format( " {}", pair.first );
+                        valueunits += " meV";
+                    }
+                    segment.valuelabels = strdup( valuelabels.c_str() );
+
+                    // File format
+                    IO::VF_FileFormat format = this->systems[0]->mc_parameters->output_vf_filetype;
+
+                    // open and write
+                    IO::OVF_File( energyFilePerSpin ).write_segment( segment, data.data(), static_cast<int>( format ) );
+
+                    Log( Utility::Log_Level::Info, Utility::Log_Sender::API,
+                         fmt::format(
+                             "Wrote spins to file \"{}\" with format {}", energyFilePerSpin,
+                             static_cast<int>( format ) ),
+                         -1, -1 );
+                }
+            }
+        };
+
+        // Initial image before simulation
+        if( initial && this->parameters->output_initial )
+        {
+            writeOutputConfiguration( "-initial", false );
+            writeOutputEnergy( "-initial", false );
+        }
+        // Final image after simulation
+        else if( final && this->parameters->output_final )
+        {
+            writeOutputConfiguration( "-final", false );
+            writeOutputEnergy( "-final", false );
+        }
+
+        // Single file output
+        if( this->systems[0]->mc_parameters->output_configuration_step )
+        {
+            writeOutputConfiguration( "_" + s_iter, false );
+        }
+        if( this->systems[0]->mc_parameters->output_energy_step )
+        {
+            writeOutputEnergy( "_" + s_iter, false );
+        }
+
+        // Archive file output (appending)
+        if( this->systems[0]->mc_parameters->output_configuration_archive )
+        {
+            writeOutputConfiguration( "-archive", true );
+        }
+        if( this->systems[0]->mc_parameters->output_energy_archive )
+        {
+            writeOutputEnergy( "-archive", true );
+        }
+
+        // Save Log
+        Log.Append_to_File();
+    }    
+}
 
 // Method name as string
 std::string Method_MC::Name()
