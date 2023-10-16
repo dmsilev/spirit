@@ -11,7 +11,7 @@ input/*
 *vcxproj*
 *autogen*
 *.sln
-
+core/test*
 
 ### Subdirectories ###
 */build/*
