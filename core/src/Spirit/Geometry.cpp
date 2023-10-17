@@ -288,8 +288,9 @@ try
         }
     }
 
-    Data::Basis_Cell_Composition new_composition{ old_geometry.cell_composition.disordered, iatom, atom_type, mu_s,
-                                                  concentration };
+    Data::Basis_Cell_Composition new_composition{ old_geometry.cell_composition.disordered,
+                                                old_geometry.cell_composition.rng_seed, 
+                                                iatom, atom_type, mu_s,concentration };
 
     // The new geometry
     auto new_geometry = Data::Geometry(

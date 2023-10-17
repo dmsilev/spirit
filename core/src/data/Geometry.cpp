@@ -503,7 +503,7 @@ void Geometry::applyCellComposition()
     if( this->cell_composition.disordered )
     {
         // TODO: the seed should be a parameter and the instance a member of this class
-        prng         = std::mt19937( 2006 );
+        prng         = std::mt19937( this->cell_composition.rng_seed );
         distribution = std::uniform_real_distribution<scalar>( 0, 1 );
         // In the disordered case, unvisited atoms will be vacancies
         this->atom_types = intfield( nos, -1 );

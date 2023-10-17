@@ -60,6 +60,8 @@ struct Basis_Cell_Composition
 {
     bool disordered;
 
+    int rng_seed;
+
     // Indexing for the following information
     std::vector<int> iatom;
 

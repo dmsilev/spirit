@@ -284,7 +284,9 @@ try
     std::vector<Vector3> cell_atoms = { Vector3{ 0, 0, 0 } };
     std::size_t n_cell_atoms        = cell_atoms.size();
     // Basis cell composition information (atom types, magnetic moments, ...)
-    Data::Basis_Cell_Composition cell_composition{ false, { 0 }, { 0 }, { 1 }, {} };
+    std::random_device random;
+    int rng_seed = random();
+    Data::Basis_Cell_Composition cell_composition{ false, rng_seed, { 0 }, { 0 }, { 1 }, {} };
     // Lattice Constant [Angstrom]
     scalar lattice_constant = 1;
     // Number of translations nT for each basis direction
@@ -407,6 +409,7 @@ try
             }
 
             // Disorder
+            config_file_handle.Read_Single(cell_composition.rng_seed, "lattice_rng_seed" );
             if( config_file_handle.Find( "atom_types" ) )
             {
                 config_file_handle >> n_atom_types;
