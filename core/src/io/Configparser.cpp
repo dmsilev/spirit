@@ -962,6 +962,7 @@ std::unique_ptr<Data::Parameters_Method_MC> Parameters_Method_MC_from_Config( co
             config_file_handle.Read_Single( parameters->n_iterations_amortize, "mc_n_iterations_amortize" );
             config_file_handle.Read_Single( parameters->temperature, "mc_temperature" );
             config_file_handle.Read_Single( parameters->acceptance_ratio_target, "mc_acceptance_ratio" );
+            config_file_handle.Read_Single( parameters->metropolis_spin_flip, "mc_spin_flip" );               
         }
         catch( ... )
         {
@@ -979,6 +980,7 @@ std::unique_ptr<Data::Parameters_Method_MC> Parameters_Method_MC_from_Config( co
     parameter_log.emplace_back( fmt::format( "    {:<17} = {}", "temperature", parameters->temperature ) );
     parameter_log.emplace_back(
         fmt::format( "    {:<17} = {}", "acceptance_ratio", parameters->acceptance_ratio_target ) );
+    parameter_log.emplace_back( fmt::format( "    {:<17} = {}", "mc_spin_flip", parameters->metropolis_spin_flip ) );
     parameter_log.emplace_back( fmt::format( "    {:<17} = {}", "maximum walltime", str_max_walltime ) );
     parameter_log.emplace_back( fmt::format( "    {:<17} = {}", "n_iterations", parameters->n_iterations ) );
     parameter_log.emplace_back( fmt::format( "    {:<17} = {}", "n_iterations_log", parameters->n_iterations_log ) );

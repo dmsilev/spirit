@@ -167,6 +167,7 @@ void Parameters_Method_MC_to_Config(
     config += fmt::format( "{:<35} {}\n", "mc_seed", parameters->rng_seed );
     config += fmt::format( "{:<35} {}\n", "mc_temperature", parameters->temperature );
     config += fmt::format( "{:<35} {}\n", "mc_acceptance_ratio", parameters->acceptance_ratio_target );
+    config += fmt::format( "{:<35} {}\n", "mc_spin_flip" , parameters->metropolis_spin_flip );
     config += "############### End MC Parameters ################";
     append_to_file( config, config_file );
 }

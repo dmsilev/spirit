@@ -7,9 +7,11 @@ output_gneb/*
 output_mmf/*
 thirdparty/*
 Testing/*
+input/*
 *vcxproj*
 *autogen*
 *.sln
+core/test*
 
 ### Subdirectories ###
 */build/*
@@ -546,3 +548,11 @@ Makefile*
 
 # QtCtreator CMake
 CMakeLists.txt.user*
+core/test_solvers
+core/test_physics
+core/test_io
+core/test_ema
+core/test_api
+core/test_anisotropy
+*.cfg
+input/input.cfg

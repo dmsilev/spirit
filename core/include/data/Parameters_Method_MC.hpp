@@ -29,6 +29,9 @@ struct Parameters_Method_MC : public Parameters_Method
     bool metropolis_cone_adaptive = true;
     // The metropolis cone angle
     scalar metropolis_cone_angle = 30;
+    // Whether to start with a spin-flip (180 degree inversion) betfore applying the cone. For Ising-like spins
+    // Set to non-zero to enable (not using boolean b/c the config parser only understands numbers)
+    scalar metropolis_spin_flip = 0.0;
 
     // Target acceptance ratio of mc steps for adaptive cone angle
     scalar acceptance_ratio_target = 0.5;

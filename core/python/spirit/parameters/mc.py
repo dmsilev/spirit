@@ -246,6 +246,35 @@ def set_metropolis_cone(
     )
 
 
+_MC_Set_Metropolis_SpinFlip = _spirit.Parameters_MC_Set_Metropolis_SpinFlip
+_MC_Set_Metropolis_SpinFlip.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_float,
+    ctypes.c_int,
+    ctypes.c_int,
+]
+_MC_Set_Metropolis_SpinFlip.restype = None
+
+
+def set_metropolis_spinflip(
+    p_state,
+    spin_flip=0,
+    idx_image=-1,
+    idx_chain=-1,
+):
+    """Configure the Metropolis spin-flip parameter.
+
+    - `spin_flip`: whether to start a trial move by inverting the spin and then generating a cone around the inversion
+     """
+    _MC_Set_Metropolis_SpinFlip(
+        p_state,
+        ctypes.c_float(spin_flip),
+        idx_image,
+        idx_chain,
+    )
+
+
+
 ## ---------------------------------- Get ----------------------------------
 
 _MC_Get_N_Iterations = _spirit.Parameters_MC_Get_N_Iterations
@@ -323,7 +352,29 @@ def get_metropolis_cone(p_state, idx_image=-1, idx_chain=-1):
     )
     return (
         bool(use_cone),
-        float(cone_angle),
+        float(cone_angle.value),
         bool(use_adaptive_cone),
-        float(target_acceptance_ratio),
+        float(target_acceptance_ratio.value),
+    )
+
+
+_MC_Get_Metropolis_SpinFlip = _spirit.Parameters_MC_Get_Metropolis_SpinFlip
+_MC_Get_Metropolis_SpinFlip.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_int,
+]
+_MC_Get_Metropolis_SpinFlip.restype = ctypes.c_float
+
+def get_metropolis_spinflip(p_state, idx_image=-1, idx_chain=-1):
+    """Returns whether the Metropolis algorithm includes a spin-flip step.
+
+    - If non-zero, an Ising spin flip is included prior to the cone search. 
+    """
+    return float(
+    _MC_Get_Metropolis_SpinFlip(
+        ctypes.c_void_p(p_state),
+        ctypes.c_int(idx_image),
+        ctypes.c_int(idx_chain),
+    )
     )
