@@ -377,4 +377,4 @@ def get_metropolis_spinflip(p_state, idx_image=-1, idx_chain=-1):
         ctypes.c_int(idx_image),
         ctypes.c_int(idx_chain),
     )
-    )
+   )
