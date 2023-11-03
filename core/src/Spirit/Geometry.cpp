@@ -698,6 +698,27 @@ catch( ... )
     spirit_handle_exception_api( idx_image, idx_chain );
 }
 
+float Geometry_Get_Lattice_Constant( State * state, int idx_image, int idx_chain ) noexcept
+try
+{
+    std::shared_ptr<Data::Spin_System> image;
+    std::shared_ptr<Data::Spin_System_Chain> chain;
+
+    // Fetch correct indices and pointers
+    from_indices( state, idx_image, idx_chain, image, chain );
+
+    // TODO: we should also check if idx_image < 0 and log the promotion to idx_active_image
+
+    auto g = image->geometry;
+    return g->lattice_constant;
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+    return 0;
+}
+
+
 int Geometry_Get_Dimensionality( State * state, int idx_image, int idx_chain ) noexcept
 try
 {

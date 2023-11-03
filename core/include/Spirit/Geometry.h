@@ -125,6 +125,12 @@ PREFIX void Geometry_Get_Bravais_Vectors(
     State * state, float a[3], float b[3], float c[3], int idx_image = -1, int idx_chain = -1 ) SUFFIX;
 
 /*
+Retrieve lattice constant (in angstroms)
+*/
+PREFIX float Geometry_Get_Lattice_Constant( State * state, int idx_image = -1, int idx_chain = -1) SUFFIX;
+
+
+/*
 Retrieve dimensionality of the system (0, 1, 2, 3).
 */
 PREFIX int Geometry_Get_Dimensionality( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;

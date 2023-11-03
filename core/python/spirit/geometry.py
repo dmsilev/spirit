@@ -282,6 +282,18 @@ def get_mu_s(p_state, idx_image=-1, idx_chain=-1):
     )
     return [mu for mu in mu_s]
 
+_Get_Lattice_Constant = _spirit.Geometry_Get_Lattice_Constant
+_Get_Lattice_Constant.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
+_Get_Lattice_Constant.restype = ctypes.c_float
+
+
+def get_lattice_constant(p_state, idx_image=-1, idx_chain=-1):
+    """Get the lattice constant (in Angstroms)."""
+    return float(
+        _Get_Lattice_Constant(
+            ctypes.c_void_p(p_state), ctypes.c_int(idx_image), ctypes.c_int(idx_chain)
+        )
+    )    
 
 _Get_Dimensionality = _spirit.Geometry_Get_Dimensionality
 _Get_Dimensionality.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
