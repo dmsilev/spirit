@@ -259,6 +259,29 @@ def get_n_cells(p_state, idx_image=-1, idx_chain=-1):
     )
     return [n for n in n_cells]
 
+_Get_mu_s = _spirit.Geometry_Get_mu_s
+_Get_mu_s.argtypes = [
+    ctypes.c_void_p,
+    ctypes.POINTER(ctypes.c_float),
+    ctypes.c_int,
+    ctypes.c_int,
+]
+_Get_mu_s.restype = None
+
+def get_mu_s(p_state, idx_image=-1, idx_chain=-1):
+    """Get the saturation moment of a spin
+    Returns a float list
+    """
+    nos = system.get_nos(p_state, idx_image, idx_chain) 
+    mu_s = (nos*ctypes.c_float)()
+    _Get_mu_s(
+        ctypes.c_void_p(p_state),
+        mu_s,
+        ctypes.c_int(idx_image),
+        ctypes.c_int(idx_chain),
+    )
+    return [mu for mu in mu_s]
+
 
 _Get_Dimensionality = _spirit.Geometry_Get_Dimensionality
 _Get_Dimensionality.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
