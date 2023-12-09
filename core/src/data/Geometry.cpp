@@ -49,7 +49,7 @@ Geometry::Geometry(
 
     // Generate default atom_types, mu_s and pinning masks
     this->atom_types        = intfield( this->nos, 0 );
-    this->mu_s              = scalarfield( this->nos, 1 );
+    this->mu_s              = scalarfield( this->nos, 0 );
     this->mask_unpinned     = intfield( this->nos, 1 );
     this->mask_pinned_cells = vectorfield( this->nos, { 0, 0, 0 } );
 
