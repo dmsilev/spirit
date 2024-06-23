@@ -75,6 +75,8 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
 
     scalar diff = 0.01;
 
+    this->systems[0]->hamiltonian->Update_Energy_Contributions();  //updates the dipole-dipole internal fields
+
     // Cone angle feedback algorithm
     if( this->parameters_mc->metropolis_step_cone && this->parameters_mc->metropolis_cone_adaptive )
     {

@@ -109,6 +109,9 @@ public:
     scalarfield ddi_magnitudes;
     vectorfield ddi_normals;
 
+    // ddi internal field
+    vectorfield ddi_field;
+
     // ------------ Quadruplet Interactions ------------
     quadrupletfield quadruplets;
     scalarfield quadruplet_magnitudes;

@@ -184,6 +184,8 @@ void Hamiltonian_Heisenberg::Update_Interactions()
     this->ddi_magnitudes = scalarfield( this->ddi_pairs.size() );
     this->ddi_normals    = vectorfield( this->ddi_pairs.size() );
 
+    this->ddi_field = vectorfield( this->geometry->nos );
+
     for( std::size_t i = 0; i < this->ddi_pairs.size(); ++i )
     {
         Engine::Neighbours::DDI_from_Pair(
@@ -474,10 +476,10 @@ void Hamiltonian_Heisenberg::E_DDI_Cutoff( const vectorfield & spins, scalarfiel
 void Hamiltonian_Heisenberg::E_DDI_FFT( const vectorfield & spins, scalarfield & Energy )
 {
     scalar Energy_DDI = 0;
-    vectorfield gradients_temp;
-    gradients_temp.resize( geometry->nos );
-    Vectormath::fill( gradients_temp, { 0, 0, 0 } );
-    this->Gradient_DDI_FFT( spins, gradients_temp );
+
+    this->ddi_field.resize( geometry->nos );
+    Vectormath::fill( this->ddi_field, { 0, 0, 0} );
+    this->Gradient_DDI_FFT( spins, this->ddi_field );
 
     // === DEBUG: begin gradient comparison ===
     // vectorfield gradients_temp_dir;
@@ -505,7 +507,7 @@ void Hamiltonian_Heisenberg::E_DDI_FFT( const vectorfield & spins, scalarfield &
 #pragma omp parallel for
     for( int ispin = 0; ispin < geometry->nos; ispin++ )
     {
-        Energy[ispin] += 0.5 * spins[ispin].dot( gradients_temp[ispin] );
+        Energy[ispin] += 0.5 * spins[ispin].dot( this->ddi_field[ispin] );
         // Energy_DDI    += 0.5 * spins[ispin].dot(gradients_temp[ispin]);
     }
 }
@@ -657,6 +659,12 @@ scalar Hamiltonian_Heisenberg::Energy_Single_Spin( int ispin, const vectorfield 
                 }
 #endif
             }
+        }
+
+        //DDI.
+        if ( this->idx_ddi >=0 )
+        {
+            Energy -= mu_s[ispin] * this->ddi_field[ispin].dot( spins[ispin] );
         }
 
         // TODO: Quadruplets
