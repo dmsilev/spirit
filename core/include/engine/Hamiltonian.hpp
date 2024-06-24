@@ -91,6 +91,9 @@ public:
     // Boundary conditions
     intfield boundary_conditions; // [3] (a, b, c)
 
+    // ddi internal field
+    vectorfield ddi_field;
+
 protected:
     // Energy contributions per spin
     std::vector<std::pair<std::string, scalarfield>> energy_contributions_per_spin;

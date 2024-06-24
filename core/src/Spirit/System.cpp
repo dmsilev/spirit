@@ -67,6 +67,23 @@ catch( ... )
     return nullptr;
 }
 
+scalar * System_Get_DDI_Field( State * state, int idx_image, int idx_chain ) noexcept
+try
+{
+    std::shared_ptr<Data::Spin_System> image;
+    std::shared_ptr<Data::Spin_System_Chain> chain;
+
+    // Fetch correct indices and pointers
+    from_indices( state, idx_image, idx_chain, image, chain );
+    return image->hamiltonian->ddi_field[0].data();
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+    return nullptr;
+}
+
+
 scalar * System_Get_Eigenmode( State * state, int idx_mode, int idx_image, int idx_chain ) noexcept
 try
 {

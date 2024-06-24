@@ -42,6 +42,14 @@ The array is contiguous and of shape (NOS, 3).
 PREFIX scalar * System_Get_Effective_Field( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
 
 /*
+Returns a pointer to the dipole-dipole interaction field.
+
+The array is contiguous and of shape (NOS, 3).
+*/
+PREFIX scalar * System_Get_DDI_Field( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
+
+
+/*
 Returns a pointer to the data of the N'th eigenmode of a spin system.
 
 The array is contiguous and of shape (NOS, 3).
