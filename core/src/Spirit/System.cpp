@@ -75,7 +75,7 @@ try
 
     // Fetch correct indices and pointers
     from_indices( state, idx_image, idx_chain, image, chain );
-    return image->hamiltonian->ddi_field[0].data();
+    return image->effective_field[0].data();
 }
 catch( ... )
 {
