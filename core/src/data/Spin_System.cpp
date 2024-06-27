@@ -37,6 +37,8 @@ try : iteration_allowed( iteration_allowed ), singleshot_allowed( false ), hamil
     this->E_array         = std::vector<std::pair<std::string, scalar>>( 0 );
     this->M               = Vector3{ 0, 0, 0 };
     this->effective_field = vectorfield( this->nos );
+    this->ddi_field       = vectorfield( this->nos );
+
 }
 catch( ... )
 {
@@ -60,6 +62,7 @@ try
     this->E               = other.E;
     this->E_array         = other.E_array;
     this->effective_field = other.effective_field;
+    this->ddi_field       = other.ddi_field;
 
     this->geometry = std::make_shared<Data::Geometry>( *other.geometry );
 
@@ -105,6 +108,7 @@ try
         this->E               = other.E;
         this->E_array         = other.E_array;
         this->effective_field = other.effective_field;
+        this->ddi_field       = other.ddi_field;
 
         this->geometry = std::make_shared<Data::Geometry>( *other.geometry );
 
@@ -159,6 +163,18 @@ catch( ... )
 {
     spirit_rethrow( "Spin_System::UpdateEffectiveField failed" );
 }
+
+void Spin_System::UpdateDDIField()
+try
+{
+    this->hamiltonian->Gradient_DDI( *this->spins, this->ddi_field );
+    Engine::Vectormath::scale( this->ddi_field, -1 );
+}
+catch( ... )
+{
+    spirit_rethrow( "Spin_System::UpdateEffectiveField failed" );
+}
+
 
 void Spin_System::Lock() noexcept
 try

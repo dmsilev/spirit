@@ -55,6 +55,12 @@ public:
      */
     virtual void Gradient( const vectorfield & spins, vectorfield & gradient );
 
+    /* In the base class, this just falls back to calling the more general Gradient function 
+     * In the Heisenberg Hamiltonian, it's a separate function
+     */
+    virtual void Gradient_DDI( const vectorfield & spins, vectorfield & gradient );
+
+
     /*
      * Calculates the gradient and total energy.
      * Child classes can override this to provide a more efficient implementation, than calculating

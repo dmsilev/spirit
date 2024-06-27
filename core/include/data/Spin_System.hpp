@@ -40,6 +40,7 @@ public:
     // Update
     void UpdateEnergy();
     void UpdateEffectiveField();
+    void UpdateDDIField();
 
     // For multithreading
     void Lock() noexcept;
@@ -76,6 +77,7 @@ public:
     Vector3 M;
     // Total effective field of the spins [3][nos]
     vectorfield effective_field;
+    vectorfield ddi_field;
 
 private:
     // FIFO mutex for thread-safety

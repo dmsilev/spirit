@@ -130,7 +130,7 @@ public:
     // Calculate the DMI effective field of a Spin Pair
     void Gradient_DMI( const vectorfield & spins, vectorfield & gradient );
     // Calculates the Dipole-Dipole contribution to the effective field of spin ispin within system s
-    void Gradient_DDI( const vectorfield & spins, vectorfield & gradient );
+    void Gradient_DDI( const vectorfield & spins, vectorfield & gradient ) override;
 
     // Quadruplet
     void Gradient_Quadruplet( const vectorfield & spins, vectorfield & gradient );

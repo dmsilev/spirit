@@ -424,6 +424,7 @@ try
 catch( ... )
 {
     spirit_handle_exception_api( idx_image, idx_chain );
+    return 0.0;
 }
 
 bool Parameters_MC_Get_Random_Sample( State * state, int idx_image, int idx_chain ) noexcept

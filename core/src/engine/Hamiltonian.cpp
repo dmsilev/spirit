@@ -97,6 +97,12 @@ void Hamiltonian::Gradient( const vectorfield & spins, vectorfield & gradient )
     this->Gradient_FD( spins, gradient );
 }
 
+void Hamiltonian::Gradient_DDI( const vectorfield & spins, vectorfield & gradient )
+//In the base class, this is a stub which just does the same thing as the more general Gradient call
+{
+    this->Gradient_FD( spins, gradient );
+}
+
 void Hamiltonian::Gradient_and_Energy( const vectorfield & spins, vectorfield & gradient, scalar & energy )
 {
     this->Gradient( spins, gradient );
