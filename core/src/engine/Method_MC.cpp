@@ -377,8 +377,8 @@ void Method_MC::Save_Current( std::string starttime, int iteration, bool initial
                 // File name and comment
                 std::string spinsFile      = preSpinsFile + suffix + ".ovf";
                 std::string output_comment = fmt::format(
-                    "{} simulation ({} solver)\n# Desc:      Iteration: {}\n# Desc:      Maximum torque: {}",
-                    this->Name(), this->SolverFullName(), iteration, this->max_torque );
+                    "{} simulation \n# Desc:      Iteration: {}\n# Desc:      Maximum torque: {}",
+                    this->Name(), iteration, this->max_torque );
 
                 // File format
                 IO::VF_FileFormat format = this->systems[0]->mc_parameters->output_vf_filetype;
