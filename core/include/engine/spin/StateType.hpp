@@ -54,7 +54,7 @@ T & get( quantity<T> & q )
 }
 
 template<Field field, typename T>
-const T & get( const T & q )
+const T & get( const quantity<T> & q )
 {
     if constexpr( field == Field::Spin )
         return q.spin;
