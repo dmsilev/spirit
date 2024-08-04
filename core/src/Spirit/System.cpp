@@ -75,12 +75,33 @@ try
 
     // Fetch correct indices and pointers
     from_indices( state, idx_image, idx_chain, image, chain );
-    return image->effective_field[0].data();
+    return image->ddi_field[0].data();
 }
 catch( ... )
 {
     spirit_handle_exception_api( idx_image, idx_chain );
     return nullptr;
+}
+
+void System_Set_DDI_Field(State * state, int idx_image, int idx_chain, int n_atoms, float ** ddi_fields  ) noexcept
+try
+{
+    std::shared_ptr<Data::Spin_System> image;
+    std::shared_ptr<Data::Spin_System_Chain> chain;
+
+    // Fetch correct indices and pointers
+    from_indices( state, idx_image, idx_chain, image, chain );
+
+    for( std::size_t i = 0; i < static_cast<std::size_t>( n_atoms ); ++i )
+    {
+        image->ddi_field[i][0] = ddi_fields[i][0];        
+        image->ddi_field[i][1] = ddi_fields[i][1];        
+        image->ddi_field[i][2] = ddi_fields[i][2];        
+    }    
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
 }
 
 

@@ -48,6 +48,11 @@ The array is contiguous and of shape (NOS, 3).
 */
 PREFIX scalar * System_Get_DDI_Field( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
 
+/*
+Set the DDI fields (calculated from an external Ewald summation code)
+Shape of the input array should be (NOS,3)
+*/
+PREFIX void System_Set_DDI_Field( State * state, int idx_image = -1, int idx_chain = -1, int n_atoms = -1, float ** ddi_fields = nullptr ) SUFFIX;
 
 /*
 Returns a pointer to the data of the N'th eigenmode of a spin system.

@@ -101,6 +101,21 @@ def get_DDI_field(p_state, idx_image=-1, idx_chain=-1):
     array_view.shape = (nos, 3)
     return array_view
 
+### Set dipole-dipole Field
+# NOTE: This changes the values of the array_view inside the simulation
+_Set_DDI_Field = _spirit.System_Set_DDI_Field
+_Set_DDI_Field.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_int,
+    ctypes.c_int,
+    ctypes.POINTER(ctypes.c_float)]
+_Set_DDI_Field.restype = None
+
+def set_DDI_Field(p_state, idx_image=-1, idx_chain=-1, n_atoms, ddi_fields):
+    """Loads a dipole-dipole field array (from an external Ewald summation calculation) into Spirit"""
+    buffer = ctypes.c_float * 3 * n_atoms
+    _Set_DDI_Field(ctypes.c_void_p(p_state), ctypes.c_int(idx_image), ctypes.c_int(idx_chain),ctypes.c_int(n_atoms),buffer(*ddi_fields))
 
 
 ### Get Pointer to an eigenmode
