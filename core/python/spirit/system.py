@@ -112,7 +112,7 @@ _Set_DDI_Field.argtypes = [
     ctypes.POINTER(ctypes.c_float)]
 _Set_DDI_Field.restype = None
 
-def set_DDI_Field(p_state, idx_image=-1, idx_chain=-1, n_atoms, ddi_fields):
+def set_DDI_Field(p_state, idx_image=-1, idx_chain=-1, n_atoms=0, ddi_fields=-1):
     """Loads a dipole-dipole field array (from an external Ewald summation calculation) into Spirit"""
     buffer = ctypes.c_float * 3 * n_atoms
     _Set_DDI_Field(ctypes.c_void_p(p_state), ctypes.c_int(idx_image), ctypes.c_int(idx_chain),ctypes.c_int(n_atoms),buffer(*ddi_fields))
