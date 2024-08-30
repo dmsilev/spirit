@@ -169,18 +169,21 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
             scalar Enew  = this->systems[0]->hamiltonian->Energy_Single_Spin( ispin, spins_new );
             scalar Ediff = Enew - Eold;
 
+            scalar gamma_E = 0.0;
 
-            auto * ham = dynamic_cast<Engine::Hamiltonian_Heisenberg *>( this->systems[0]->hamiltonian.get() );
+            if (this->parameters_mc->tunneling_use_tunneling)
+            {    
+                auto * ham = dynamic_cast<Engine::Hamiltonian_Heisenberg *>( this->systems[0]->hamiltonian.get() );
 
-            scalar xsquare = ham->external_field_normal.x()*ham->external_field_normal.x();
-            scalar ysquare = ham->external_field_normal.y()*ham->external_field_normal.y();
-            scalar gamma_E = (xsquare+ysquare)*ham->external_field_magnitude*1e4*2.7e-5
-            //Phoneomenological energy splitting in LiHoF4, uses the low-field gamma \propto Ht^2 approximation
+                scalar xsquare = ham->external_field_normal.x()*ham->external_field_normal.x();
+                scalar ysquare = ham->external_field_normal.y()*ham->external_field_normal.y();
+                scalar gamma_E = (xsquare+ysquare)*ham->external_field_magnitude*this->parameters_mc->tunneling_gamma;
+            }
 
             // Metropolis criterion: reject the step if energy rose
             if( Ediff > 1e-14 )
             {
-                if( this->parameters_mc->temperature < 1e-12 )
+                if( (this->parameters_mc->temperature < 1e-12) && (Ediff>gamma_E) )
                 {
                     // Restore the spin
                     spins_new[ispin] = spins_old[ispin];
@@ -194,8 +197,8 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
                     // Metropolis random number
                     scalar x_metropolis = distribution( this->parameters_mc->prng );
 
-                    // Only reject if random number is larger than exponential
-                    if( exp_ediff < x_metropolis )
+                    // Only reject if random number is larger than exponential and energy difference is greater than tunneling term
+                    if( (exp_ediff < x_metropolis) && (Ediff>gamma_E) )
                     {
                         // Restore the spin
                         spins_new[ispin] = spins_old[ispin];
