@@ -37,7 +37,7 @@ struct Parameters_Method_MC : public Parameters_Method
     scalar acceptance_ratio_target = 0.5;
 
     //Quantum tunneling parameters. Initially, use the quadratic approximation for tunneling strength/acceptance probability
-    bool tunneling_use_tunneling = true;   //Off by default
+    bool tunneling_use_tunneling = true;   //On by default
     scalar tunneling_gamma = 2.7e-1;    //Energy scale of quadratic term of Gamma in LiHoF, K/T^2
 
 

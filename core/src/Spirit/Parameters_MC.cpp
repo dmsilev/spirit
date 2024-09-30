@@ -251,6 +251,39 @@ catch( ... )
     spirit_handle_exception_api( idx_image, idx_chain );
 }
 
+void Parameters_MC_Set_Tunneling_Gamma( State * state, float tunneling_gamma, int idx_image, int idx_chain ) noexcept
+try
+{
+    std::shared_ptr<Data::Spin_System> image;
+    std::shared_ptr<Data::Spin_System_Chain> chain;
+
+    // Fetch correct indices and pointers
+    from_indices( state, idx_image, idx_chain, image, chain );
+
+    image->mc_parameters->tunneling_gamma = tunneling_gamma;
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+}
+
+void Parameters_MC_Set_Use_Tunneling( State * state, bool use_tunneling, int idx_image, int idx_chain ) noexcept
+try
+{
+    std::shared_ptr<Data::Spin_System> image;
+    std::shared_ptr<Data::Spin_System_Chain> chain;
+
+    // Fetch correct indices and pointers
+    from_indices( state, idx_image, idx_chain, image, chain );
+
+    image->mc_parameters->tunneling_use_tunneling = use_tunneling;
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+}
+
+
 /*------------------------------------------------------------------------------------------------------ */
 /*---------------------------------- Get MC ------------------------------------------------------------ */
 /*------------------------------------------------------------------------------------------------------ */
@@ -437,6 +470,40 @@ try
     from_indices( state, idx_image, idx_chain, image, chain );
 
     return image->mc_parameters->metropolis_random_sample;
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+    return false;
+}
+
+float Parameters_MC_Get_Tunneling_Gamma( State * state, int idx_image, int idx_chain ) noexcept
+try
+{
+    std::shared_ptr<Data::Spin_System> image;
+    std::shared_ptr<Data::Spin_System_Chain> chain;
+
+    // Fetch correct indices and pointers
+    from_indices( state, idx_image, idx_chain, image, chain );
+
+    return image->mc_parameters->tunneling_gamma;
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+    return false;
+}
+
+bool Parameters_MC_Get_Use_Tunneling( State * state, int idx_image, int idx_chain ) noexcept
+try
+{
+    std::shared_ptr<Data::Spin_System> image;
+    std::shared_ptr<Data::Spin_System_Chain> chain;
+
+    // Fetch correct indices and pointers
+    from_indices( state, idx_image, idx_chain, image, chain );
+
+    return image->mc_parameters->tunneling_use_tunneling;
 }
 catch( ... )
 {

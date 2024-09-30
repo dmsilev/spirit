@@ -100,6 +100,15 @@ PREFIX void Parameters_MC_Set_Metropolis_SpinFlip(
 PREFIX void
 Parameters_MC_Set_Random_Sample( State * state, bool random_sample, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
 
+//Quantum tunneling Set routines. Use_tunneling enables/disables QT
+//Tunneling_Gamma sets the energy scale between transverse field and flip probability
+PREFIX void
+Parameters_MC_Set_Use_Tunneling( State * state, bool use_tunneling, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
+
+PREFIX void
+Parameters_MC_Set_Tunneling_Gamma( State * state, float tunneling_gamma, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
+
+
 /*
 Get Output
 --------------------------------------------------------------------
@@ -155,6 +164,12 @@ PREFIX float Parameters_MC_Get_Metropolis_SpinFlip(
 
 // Returns whether spins should be sampled randomly or in sequence.
 PREFIX bool Parameters_MC_Get_Random_Sample( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
+
+// Quantum Tunneling parameters. Use_Tunneling is whether it's enabled or disabled.
+// Gamma is a phenomenological scale factor between transverse field (squared) and tunneling energy threshold
+PREFIX bool Parameters_MC_Get_Use_Tunneling( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
+PREFIX float Parameters_MC_Get_Tunneling_Gamma( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
+
 
 #include "DLL_Undefine_Export.h"
 #endif

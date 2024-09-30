@@ -274,6 +274,59 @@ def set_metropolis_spinflip(
     )
 
 
+_MC_Set_Use_Tunneling = _spirit.Parameters_MC_Set_Use_Tunneling
+_MC_Set_Use_Tunneling.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_bool,
+    ctypes.c_int,
+    ctypes.c_int,
+]
+_MC_Set_Use_Tunneling.restype = None
+
+def set_use_tunneling(
+    p_state,
+    use_tunneling=False,
+    idx_image=-1,
+    idx_chain=-1,
+):
+    """Configure Quantum Tunneling.
+
+    - `use_tunneling`: Enables or disables transverse-field based quantum tunneling transitions
+     """
+    _MC_Set_Use_Tunneling(
+        p_state,
+        ctypes.c_bool(use_tunneling),
+        idx_image,
+        idx_chain,
+    )
+
+
+_MC_Set_Tunneling_Gamma = _spirit.Parameters_MC_Set_Tunneling_Gamma
+_MC_Set_Tunneling_Gamma.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_float,
+    ctypes.c_int,
+    ctypes.c_int,
+]
+_MC_Set_Use_Tunneling.restype = None
+
+def set_tunneling_gamma(
+    p_state,
+    tunneling_gamma=2.7e-1, #K/T^2, defaults to valvue for physical LiHoYF
+    idx_image=-1,
+    idx_chain=-1,
+):
+    """Configure quantum tunneling
+    - Gamma sets a transverse field to energy conversion, E = Gamma * H_t^2 (K/T^2)
+    - Default is the physical value in LiHoYF4
+     """
+    _MC_Set_Metropolis_SpinFlip(
+        p_state,
+        ctypes.c_float(tunneling_gamma),
+        idx_image,
+        idx_chain,
+    )
+
 
 ## ---------------------------------- Get ----------------------------------
 
@@ -373,6 +426,45 @@ def get_metropolis_spinflip(p_state, idx_image=-1, idx_chain=-1):
     """
     return float(
     _MC_Get_Metropolis_SpinFlip(
+        ctypes.c_void_p(p_state),
+        ctypes.c_int(idx_image),
+        ctypes.c_int(idx_chain),
+    )
+   )
+
+
+_MC_Get_Use_Tunneling = _spirit.Parameters_MC_Get_Use_Tunneling
+_MC_Get_Use_Tunneling.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_int,
+]
+_MC_Get_Use_Tunneling.restype = ctypes.c_bool
+
+def get_use_tunneling(p_state, idx_image=-1, idx_chain=-1):
+    """Returns whether or not quantum tunneling is enabled. 
+    """
+    return bool(
+    _MC_Get_Use_Tunneling(
+        ctypes.c_void_p(p_state),
+        ctypes.c_int(idx_image),
+        ctypes.c_int(idx_chain),
+    )
+   )
+
+_MC_Get_Tunneling_Gamma = _spirit.Parameters_MC_Get_Tunneling_Gamma
+_MC_Get_Tunneling_Gamma.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_int,
+]
+_MC_Get_Metropolis_SpinFlip.restype = ctypes.c_float
+
+def get_tunneling_gamma(p_state, idx_image=-1, idx_chain=-1):
+    """Returns gamma, the energy scale factor connecting transverse field to tunneling rates
+    """
+    return float(
+    _MC_Get_Tunneling_Gamma(
         ctypes.c_void_p(p_state),
         ctypes.c_int(idx_image),
         ctypes.c_int(idx_chain),
