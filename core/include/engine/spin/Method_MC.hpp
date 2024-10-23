@@ -28,8 +28,14 @@ private:
     // Solver_Iteration represents one iteration of a certain Solver
     void Iteration() override;
 
+    // Adaptive cone angle
+    void AdaptConeAngle();
+
     // Metropolis iteration with adaptive cone radius
     void Metropolis( const StateType & state_old, StateType & state_new );
+
+    // Metropolis iteration with adaptive cone radius
+    void MetropolisDirectionConstrained( vectorfield & spins );
 
     // Save the current Step's Data: spins and energy
     void Save_Current( std::string starttime, int iteration, bool initial = false, bool final = false ) override;

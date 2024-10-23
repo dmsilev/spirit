@@ -49,6 +49,63 @@ Method_MC::Method_MC( std::shared_ptr<system_t> system, int idx_img, int idx_cha
     this->acceptance_ratio_current = this->parameters_mc->acceptance_ratio_target;
 }
 
+namespace
+{
+
+namespace Metropolis
+{
+
+template<typename Distribution, typename RandomFunc>
+auto step_cone( Distribution && distribution, RandomFunc && prng, const Vector3 & spin, const scalar cone_angle )
+    -> Vector3
+{
+    Matrix3 local_basis;
+    // Calculate local basis for the spin
+    if( spin.z() < 1 - 1e-10 )
+    {
+        local_basis.col( 2 ) = spin;
+        local_basis.col( 0 ) = -Vector3{ 0, 0, 1 }.cross( spin ).normalized();
+        local_basis.col( 1 ) = -spin.cross( local_basis.col( 0 ) );
+    }
+    else
+    {
+        local_basis = Matrix3::Identity();
+    }
+
+    // Rotation angle between 0 and cone_angle degrees
+    const scalar costheta = 1 - ( 1 - std::cos( cone_angle ) ) * distribution( prng );
+
+    const scalar sintheta = std::sqrt( 1 - costheta * costheta );
+
+    // Random distribution of phi between 0 and 360 degrees
+    const scalar phi = 2 * Constants::Pi * distribution( prng );
+
+    // New spin orientation in local basis
+    Vector3 local_spin_new{ sintheta * std::cos( phi ), sintheta * std::sin( phi ), costheta };
+
+    // New spin orientation in regular basis
+    return local_basis * local_spin_new;
+};
+
+template<typename Distribution, typename RandomFunc>
+auto step_sphere( Distribution && distribution, RandomFunc && prng ) -> Vector3
+{
+    // Rotation angle between 0 and 180 degrees
+    const scalar costheta = distribution( prng );
+
+    const scalar sintheta = std::sqrt( 1 - costheta * costheta );
+
+    // Random distribution of phi between 0 and 360 degrees
+    const scalar phi = 2 * Constants::Pi * distribution( prng );
+
+    // New spin orientation in local basis
+    return { sintheta * std::cos( phi ), sintheta * std::sin( phi ), costheta };
+};
+
+} // namespace Metropolis
+
+} // namespace
+
 // This implementation is mostly serial as parallelization is nontrivial
 //      if the range of neighbours for each atom is not pre-defined.
 void Method_MC::Iteration()
@@ -66,14 +123,9 @@ void Method_MC::Iteration()
     Vectormath::set_c_a( 1, state_new.spin, state_old.spin );
 }
 
-// Simple metropolis step
-void Method_MC::Metropolis( const StateType & state_old, StateType & state_new )
+void Method_MC::AdaptConeAngle()
 {
-    auto distribution     = std::uniform_real_distribution<scalar>( 0, 1 );
-    auto distribution_idx = std::uniform_int_distribution<>( 0, this->nos - 1 );
-    scalar kB_T           = Constants::k_B * this->parameters_mc->temperature;
-
-    scalar diff = 0.01;
+    const scalar diff = 0.01;
 
     // Cone angle feedback algorithm
     if( this->parameters_mc->metropolis_step_cone && this->parameters_mc->metropolis_cone_adaptive )
@@ -90,14 +142,19 @@ void Method_MC::Metropolis( const StateType & state_old, StateType & state_new )
 
         this->parameters_mc->metropolis_cone_angle = this->cone_angle * 180.0 / Constants::Pi;
     }
+}
+
+// Simple metropolis step
+void Method_MC::Metropolis( const StateType & state_old, StateType & state_new )
+{
+    auto distribution     = std::uniform_real_distribution<scalar>( 0, 1 );
+    auto distribution_idx = std::uniform_int_distribution<>( 0, this->nos - 1 );
+    scalar kB_T           = Constants::k_B * this->parameters_mc->temperature;
+
+    this->AdaptConeAngle();
     this->n_rejected = 0;
 
     // One Metropolis step for each spin
-    Vector3 e_z{ 0, 0, 1 };
-    scalar costheta, sintheta, phi;
-    Matrix3 local_basis;
-    scalar cos_cone_angle = std::cos( cone_angle );
-
     // Loop over NOS samples (on average every spin should be hit once per Metropolis step)
     for( int idx = 0; idx < this->nos; ++idx )
     {
@@ -114,77 +171,46 @@ void Method_MC::Metropolis( const StateType & state_old, StateType & state_new )
             // Sample a cone
             if( this->parameters_mc->metropolis_step_cone )
             {
-                // Calculate local basis for the spin
-                if( state_old.spin[ispin].z() < 1 - 1e-10 )
-                {
-                    local_basis.col( 2 ) = state_old.spin[ispin];
-                    local_basis.col( 0 ) = ( local_basis.col( 2 ).cross( e_z ) ).normalized();
-                    local_basis.col( 1 ) = local_basis.col( 2 ).cross( local_basis.col( 0 ) );
-                }
-                else
-                {
-                    local_basis = Matrix3::Identity();
-                }
-
-                // Rotation angle between 0 and cone_angle degrees
-                costheta = 1 - ( 1 - cos_cone_angle ) * distribution( this->parameters_mc->prng );
-
-                sintheta = std::sqrt( 1 - costheta * costheta );
-
-                // Random distribution of phi between 0 and 360 degrees
-                phi = 2 * Constants::Pi * distribution( this->parameters_mc->prng );
-
-                // New spin orientation in local basis
-                Vector3 local_spin_new{ sintheta * std::cos( phi ), sintheta * std::sin( phi ), costheta };
-
-                // New spin orientation in regular basis
-                state_new.spin[ispin] = local_basis * local_spin_new;
+                state_new.spin[ispin]
+                    = Metropolis::step_cone( distribution, this->parameters_mc->prng, state_old.spin[ispin], cone_angle );
             }
             // Sample the entire unit sphere
             else
             {
-                // Rotation angle between 0 and 180 degrees
-                costheta = distribution( this->parameters_mc->prng );
-
-                sintheta = std::sqrt( 1 - costheta * costheta );
-
-                // Random distribution of phi between 0 and 360 degrees
-                phi = 2 * Constants::Pi * distribution( this->parameters_mc->prng );
-
-                // New spin orientation in local basis
-                state_new.spin[ispin] = Vector3{ sintheta * std::cos( phi ), sintheta * std::sin( phi ), costheta };
+                state_new.spin[ispin] = Metropolis::step_sphere( distribution, this->parameters_mc->prng );
             }
 
             // Energy difference of configurations with and without displacement
-            scalar Eold  = this->system->hamiltonian->Energy_Single_Spin( ispin, state_old );
-            scalar Enew  = this->system->hamiltonian->Energy_Single_Spin( ispin, state_new );
-            scalar Ediff = Enew - Eold;
+            const scalar Eold  = this->system->hamiltonian->Energy_Single_Spin( ispin, state_old );
+            const scalar Enew  = this->system->hamiltonian->Energy_Single_Spin( ispin, state_new );
+            const scalar Ediff = Enew - Eold;
 
-            // Metropolis criterion: reject the step if energy rose
-            if( Ediff > 1e-14 )
+            // Metropolis criterion: accept the step if the energy fell
+            if( Ediff <= 1e-14 )
+                continue;
+
+            // potentially reject the step if energy rose
+            if( this->parameters_mc->temperature < 1e-12 )
             {
-                if( this->parameters_mc->temperature < 1e-12 )
+                // Restore the spin
+                state_new.spin[ispin] = state_old.spin[ispin];
+                // Counter for the number of rejections
+                ++this->n_rejected;
+            }
+            else
+            {
+                // Exponential factor
+                scalar exp_ediff = std::exp( -Ediff / kB_T );
+                // Metropolis random number
+                scalar x_metropolis = distribution( this->parameters_mc->prng );
+
+                // Only reject if random number is larger than exponential
+                if( exp_ediff < x_metropolis )
                 {
                     // Restore the spin
                     state_new.spin[ispin] = state_old.spin[ispin];
                     // Counter for the number of rejections
                     ++this->n_rejected;
-                }
-                else
-                {
-                    // Exponential factor
-                    scalar exp_ediff = std::exp( -Ediff / kB_T );
-                    // Metropolis random number
-                    scalar x_metropolis = distribution( this->parameters_mc->prng );
-
-                    // Only reject if random number is larger than exponential
-                    if( exp_ediff < x_metropolis )
-                    {
-                        // Restore the spin
-                        state_new.spin[ispin] = state_old.spin[ispin];
-                        // Counter for the number of rejections
-                        ++this->n_rejected;
-                    }
                 }
             }
         }
