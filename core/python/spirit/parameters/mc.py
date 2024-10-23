@@ -246,6 +246,28 @@ def set_metropolis_cone(
     )
 
 
+_MC_Set_Constrained_Magnetization_Direction = (
+    _spirit.Parameters_MC_Set_Constrained_Magnetization_Direction
+)
+_MC_Set_Constrained_Magnetization_Direction.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_bool,
+    ctypes.c_int,
+    ctypes.c_int,
+]
+_MC_Set_Constrained_Magnetization_Direction.restype = None
+
+
+def set_constrained_magnetization_direction(p_state, flag, idx_image=-1, idx_chain=-1):
+    """Toggle the constrain on the magnetization direction when running the metropolis algorithm."""
+    _MC_Set_Constrained_Magnetization_Direction(
+        p_state,
+        ctypes.c_bool(flag),
+        idx_image,
+        idx_chain,
+    )
+
+
 ## ---------------------------------- Get ----------------------------------
 
 _MC_Get_N_Iterations = _spirit.Parameters_MC_Get_N_Iterations
@@ -326,4 +348,26 @@ def get_metropolis_cone(p_state, idx_image=-1, idx_chain=-1):
         float(cone_angle),
         bool(use_adaptive_cone),
         float(target_acceptance_ratio),
+    )
+
+
+_MC_Get_Constrained_Magnetization_Direction = (
+    _spirit.Parameters_MC_Get_Constrained_Magnetization_Direction
+)
+_MC_Get_Constrained_Magnetization_Direction.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_int,
+]
+_MC_Get_Constrained_Magnetization_Direction.restype = ctypes.c_bool
+
+
+def get_constrained_magnetization_direction(p_state, idx_image=-1, idx_chain=-1):
+    """Returns the state of the the constrain on the magnetization direction."""
+    return bool(
+        _MC_Get_Constrained_Magnetization_Direction(
+            p_state,
+            idx_image,
+            idx_chain,
+        )
     )

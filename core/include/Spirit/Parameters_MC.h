@@ -95,6 +95,9 @@ PREFIX void Parameters_MC_Set_Metropolis_Cone(
 PREFIX void
 Parameters_MC_Set_Random_Sample( State * state, bool random_sample, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
 
+// Returns whether the magnetization direction should be fixed
+PREFIX void Parameters_MC_Set_Constrained_Magnetization_Direction(
+    State * state, bool flag, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
 /*
 Get Output
 --------------------------------------------------------------------
@@ -146,6 +149,10 @@ PREFIX void Parameters_MC_Get_Metropolis_Cone(
 
 // Returns whether spins should be sampled randomly or in sequence.
 PREFIX bool Parameters_MC_Get_Random_Sample( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
+
+// Returns whether the magnetization direction should be fixed
+PREFIX bool
+Parameters_MC_Get_Constrained_Magnetization_Direction( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
 
 #include "DLL_Undefine_Export.h"
 #endif

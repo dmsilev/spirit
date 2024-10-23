@@ -454,6 +454,7 @@ if( SPIRIT_USE_CUDA )
         ${CMAKE_CURRENT_LIST_DIR}/test/test_vectormath.cpp
         ${CMAKE_CURRENT_LIST_DIR}/test/test_manifoldmath.cpp
         ${CMAKE_CURRENT_LIST_DIR}/test/test_ema.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/test/test_mc.cpp
         ${CMAKE_CURRENT_LIST_DIR}/test/test_anisotropy.cpp
         ${CMAKE_CURRENT_LIST_DIR}/test/test_aggregation.cpp
         ${CMAKE_CURRENT_LIST_DIR}/test/test_configparser.cpp
@@ -565,6 +566,7 @@ if( SPIRIT_BUILD_FOR_CXX OR SPIRIT_BUILD_FOR_JS )
         add_framework_test( test_anisotropy         test/test_anisotropy.cpp )
         add_framework_test( test_aggregation        test/test_aggregation.cpp )
         add_framework_test( test_solvers            test/test_solvers.cpp )
+        add_framework_test( test_mc                 test/test_mc.cpp )
         if( SPIRIT_ENABLE_PINNING )
             add_framework_test( test_pinning            test/test_pinning.cpp )
         endif()

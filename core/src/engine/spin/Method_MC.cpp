@@ -47,6 +47,16 @@ Method_MC::Method_MC( std::shared_ptr<system_t> system, int idx_img, int idx_cha
     this->cone_angle               = Constants::Pi * this->parameters_mc->metropolis_cone_angle / 180.0;
     this->n_rejected               = 0;
     this->acceptance_ratio_current = this->parameters_mc->acceptance_ratio_target;
+
+    // fix current magnetization direction
+    if( this->parameters_mc->constrain_magnetization )
+    {
+        const auto m_direction = this->system->M.mean.normalized();
+        if( m_direction.squaredNorm() > 1e-4 )
+            constrained_direction = m_direction;
+        else
+            constrained_direction = Vector3{ 0, 0, 1 };
+    }
 }
 
 namespace
@@ -119,7 +129,11 @@ void Method_MC::Iteration()
 
     // TODO: add switch between Metropolis and heat bath
     // One Metropolis step
-    Metropolis( state_old, state_new );
+    if( this->parameters_mc->constrain_magnetization )
+        MetropolisDirectionConstrained( state_new );
+    else
+        Metropolis( state_old, state_new );
+
     Vectormath::set_c_a( 1, state_new.spin, state_old.spin );
 }
 
@@ -171,8 +185,8 @@ void Method_MC::Metropolis( const StateType & state_old, StateType & state_new )
             // Sample a cone
             if( this->parameters_mc->metropolis_step_cone )
             {
-                state_new.spin[ispin]
-                    = Metropolis::step_cone( distribution, this->parameters_mc->prng, state_old.spin[ispin], cone_angle );
+                state_new.spin[ispin] = Metropolis::step_cone(
+                    distribution, this->parameters_mc->prng, state_old.spin[ispin], cone_angle );
             }
             // Sample the entire unit sphere
             else
@@ -214,6 +228,168 @@ void Method_MC::Metropolis( const StateType & state_old, StateType & state_new )
                 }
             }
         }
+    }
+}
+
+/* Directon Constrained Metropolis Monte Carlo Algorithm following:
+ * https://link.aps.org/doi/10.1103/PhysRevB.82.054415
+ * This algorithm extends the one described in the paper by also taking
+ * a variable `mu_s` into account.
+ */
+void Method_MC::MetropolisDirectionConstrained( StateType & state )
+{
+    auto distribution     = std::uniform_real_distribution<scalar>( 0, 1 );
+    auto distribution_idx = std::uniform_int_distribution<>( 0, this->nos - 1 );
+    const scalar beta     = scalar( 1.0 ) / ( Constants::k_B * this->parameters_mc->temperature );
+
+    const auto & geometry        = this->system->hamiltonian->get_geometry();
+    const Vector3 para_projector = constrained_direction;
+    const Matrix3 orth_projector = Matrix3::Identity() - para_projector * para_projector.transpose();
+
+    this->AdaptConeAngle();
+    this->n_rejected = 0;
+
+    if( !this->parameters_mc->metropolis_random_sample )
+        Log( Log_Level::Warning, this->SenderName,
+             "Using the direction constrained metropolis algorithm without random sampling is strongly discouraged.",
+             this->idx_image, this->idx_chain );
+
+    scalar magnetization_pre = para_projector.dot( Vectormath::Magnetization( state.spin, geometry.mu_s ) );
+    if( magnetization_pre < 0 )
+        spirit_throw(
+            Exception_Classifier::Unknown_Exception, Log_Level::Error,
+            "Initial magnetization is not aligned with constraint direction." );
+
+    // One Metropolis step for each spin
+    // Loop over NOS samples (on average every spin should be hit once per Metropolis step)
+    for( int idx = 0; idx < this->nos; ++idx )
+    {
+        // changed spin and counteracting spin
+        int ispin, jspin;
+        if( this->parameters_mc->metropolis_random_sample )
+        {
+            // Better statistics, but additional calculation of random number
+            ispin = distribution_idx( this->parameters_mc->prng );
+            if( !Indexing::check_atom_type( geometry.atom_types[ispin] ) )
+                continue;
+
+            // try to find a second spin to compensate
+            {
+                const int max_retry = std::max( this->nos, 10 );
+                int try_idx         = 0;
+                for( ; try_idx < max_retry; ++try_idx )
+                {
+                    jspin = distribution_idx( this->parameters_mc->prng );
+                    if( jspin != ispin && Indexing::check_atom_type( geometry.atom_types[jspin] ) )
+                        break;
+                }
+                if( try_idx >= max_retry )
+                    spirit_throw(
+                        Exception_Classifier::Unknown_Exception, Log_Level::Error,
+                        "Cannot find a random second compensation spin! (too many retries)" );
+            }
+        }
+        else
+        {
+            // Faster, but much worse statistics
+            ispin = idx;
+            if( !Indexing::check_atom_type( geometry.atom_types[ispin] ) )
+                continue;
+            const int max_retry = this->nos;
+            int try_idx         = 0;
+            jspin               = ( idx + this->nos / 2 ) % this->nos;
+            for( ; try_idx < max_retry; ++try_idx )
+            {
+                if( jspin != ispin && Indexing::check_atom_type( geometry.atom_types[jspin] ) )
+                    break;
+                jspin = ( jspin + 1 ) % this->nos;
+            }
+            if( try_idx >= max_retry )
+                spirit_throw(
+                    Exception_Classifier::Unknown_Exception, Log_Level::Error,
+                    "Cannot find a second compensation spin!" );
+        }
+
+        // At this point both chosen atoms should have a valid atom type
+        // NOTE: Should atoms of different type serve as compensation for each other?
+        assert(
+            Indexing::check_atom_type( geometry.atom_types[ispin] )
+            && Indexing::check_atom_type( geometry.atom_types[jspin] ) );
+
+        const scalar mu_s_ratio = geometry.mu_s[ispin] / geometry.mu_s[jspin];
+        const auto spin_i_pre   = state.spin[ispin];
+        const auto spin_j_pre   = state.spin[jspin];
+        const auto spin_i_post  = [this, &distribution, &spin_i_pre]
+        {
+            // Sample a cone
+            if( this->parameters_mc->metropolis_step_cone )
+            {
+                return Metropolis::step_cone( distribution, this->parameters_mc->prng, spin_i_pre, this->cone_angle );
+            }
+            // Sample the entire unit sphere
+            else
+            {
+                return Metropolis::step_sphere( distribution, this->parameters_mc->prng );
+            }
+        }();
+
+        // calculate compensation spin
+        Vector3 spin_j_post     = orth_projector * ( spin_j_pre + mu_s_ratio * ( spin_i_pre - spin_i_post ) );
+        const scalar sz_squared = 1 - spin_j_post.squaredNorm();
+        if( sz_squared < 0 )
+        {
+            this->n_rejected++;
+            continue;
+        }
+
+        const scalar sz_pre  = spin_j_pre.dot( para_projector );
+        const scalar sz_post = std::copysign( std::sqrt( sz_squared ), sz_pre );
+        spin_j_post += sz_post * para_projector;
+
+        // calculate magnetization
+        const scalar magnetization_post = magnetization_pre
+                                          + ( geometry.mu_s[ispin] * para_projector.dot( spin_i_post - spin_i_pre )
+                                              + geometry.mu_s[jspin] * ( sz_post - sz_pre ) )
+                                                / static_cast<scalar>( state.spin.size() );
+
+        if( magnetization_post < 0 )
+        {
+            this->n_rejected++;
+            continue;
+        }
+
+        // Energy difference of configurations with and without displacement
+        // The `Energy_Single_Spin` method assumes changes to a single spin.
+        // To determine the change in energy from the full change correctly
+        // we have to evaluate the differences from each change individually.
+        const scalar Ediff = [this, ispin, jspin, &spin_i_post, &spin_j_post, &state]
+        {
+            auto & hamiltonian = *this->system->hamiltonian;
+            scalar Ediff       = -1.0 * hamiltonian.Energy_Single_Spin( ispin, state );
+            state.spin[ispin]  = spin_i_post;
+            Ediff += hamiltonian.Energy_Single_Spin( ispin, state ) - hamiltonian.Energy_Single_Spin( jspin, state );
+            state.spin[jspin] = spin_j_post;
+            Ediff += hamiltonian.Energy_Single_Spin( jspin, state );
+            return Ediff;
+        }();
+
+        const scalar jacobian_pre  = magnetization_pre * magnetization_pre / std::abs( sz_pre );
+        const scalar jacobian_post = magnetization_post * magnetization_post / std::abs( sz_post );
+        const scalar metropolis_pb = jacobian_post / jacobian_pre * std::exp( -Ediff * beta );
+
+        // Metropolis criterion: reject the step with probability (1 - min(1, metropolis_pb))
+        if( ( metropolis_pb < 1e-12 )
+            || ( metropolis_pb < 1.0 && metropolis_pb < distribution( this->parameters_mc->prng ) ) )
+        {
+            // Restore the spin
+            state.spin[ispin] = spin_i_pre;
+            state.spin[jspin] = spin_j_pre;
+            // Counter for the number of rejections
+            ++this->n_rejected;
+            continue;
+        }
+
+        magnetization_pre = magnetization_post;
     }
 }
 

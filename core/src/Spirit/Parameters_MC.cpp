@@ -213,6 +213,21 @@ catch( ... )
     spirit_handle_exception_api( idx_image, idx_chain );
 }
 
+void Parameters_MC_Set_Constrained_Magnetization_Direction(
+    State * state, bool flag, int idx_image, int idx_chain ) noexcept
+try
+{
+
+    // Fetch correct indices and pointers
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+
+    image->mc_parameters->constrain_magnetization = flag;
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+}
+
 /*------------------------------------------------------------------------------------------------------ */
 /*---------------------------------- Get MC ------------------------------------------------------------ */
 /*------------------------------------------------------------------------------------------------------ */
@@ -363,6 +378,21 @@ try
     auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     return image->mc_parameters->metropolis_random_sample;
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+    return false;
+}
+
+bool Parameters_MC_Get_Constrained_Magnetization_Direction( State * state, int idx_image, int idx_chain ) noexcept
+try
+{
+
+    // Fetch correct indices and pointers
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+
+    return image->mc_parameters->constrain_magnetization;
 }
 catch( ... )
 {

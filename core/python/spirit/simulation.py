@@ -48,6 +48,11 @@ SOLVER_LBFGS_Atlas = 6
 SOLVER_VP_OSO = 7
 """Verlet-like velocity projection method, using exponential transforms."""
 
+MC_ALGORITHM_METROPOLIS = 0
+"""Metropolis Algorithm."""
+
+MC_ALGORITHM_METROPOLIS_MDC = 1
+"""Magnetization Direction Constrained Metropolis Algorithm."""
 
 METHOD_MC = 0
 """Monte Carlo.

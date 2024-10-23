@@ -35,7 +35,7 @@ private:
     void Metropolis( const StateType & state_old, StateType & state_new );
 
     // Metropolis iteration with adaptive cone radius
-    void MetropolisDirectionConstrained( vectorfield & spins );
+    void MetropolisDirectionConstrained( StateType & spins );
 
     // Save the current Step's Data: spins and energy
     void Save_Current( std::string starttime, int iteration, bool initial = false, bool final = false ) override;
@@ -71,6 +71,9 @@ private:
     int n_rejected;
     scalar acceptance_ratio_current;
     int nos_nonvacant;
+
+    // constrained direction for the direction constrained monte carlo algorithm
+    Vector3 constrained_direction{ 0, 0, 1 };
 
     // Random vector array
     vectorfield xi;
