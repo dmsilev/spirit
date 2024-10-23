@@ -47,6 +47,8 @@ Method_MC::Method_MC( std::shared_ptr<Data::Spin_System> system, int idx_img, in
     this->cone_angle               = Constants::Pi * this->parameters_mc->metropolis_cone_angle / 180.0;
     this->n_rejected               = 0;
     this->acceptance_ratio_current = this->parameters_mc->acceptance_ratio_target;
+
+    this->gammaE_avg = 0;
 }
 
 // This implementation is mostly serial as parallelization is nontrivial
@@ -94,6 +96,8 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
         this->parameters_mc->metropolis_cone_angle = this->cone_angle * 180.0 / Constants::Pi;
     }
     this->n_rejected = 0;
+
+    this->gammaE_avg = 0.0;
 
     // One Metropolis step for each spin
     Vector3 e_z{ 0, 0, 1 };
@@ -170,15 +174,19 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
             scalar Ediff = Enew - Eold;
 
             scalar gamma_E = 0.0;
+            float B_mag;
+            float normal[3];
 
             if (this->parameters_mc->tunneling_use_tunneling)
             {    
                 auto * ham = dynamic_cast<Engine::Hamiltonian_Heisenberg *>( this->systems[0]->hamiltonian.get() );
 
-                scalar xsquare = ham->external_field_normal.x()*ham->external_field_normal.x();
-                scalar ysquare = ham->external_field_normal.y()*ham->external_field_normal.y();
-                scalar gamma_E = (xsquare+ysquare)*ham->external_field_magnitude*this->parameters_mc->tunneling_gamma;
-            }
+                normal[0] = (float)ham->external_field_normal[0];
+                normal[1] = (float)ham->external_field_normal[1];
+                normal[2] = (float)ham->external_field_normal[2];
+                B_mag = (float)ham->external_field_magnitude / Constants::mu_B;
+                gamma_E = (normal[0]*normal[0] + normal[1]*normal[1])*B_mag*B_mag * this->parameters_mc->tunneling_gamma;
+           }
 
             // Metropolis criterion: reject the step if energy rose
             if( Ediff > 1e-14 )
@@ -205,6 +213,10 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
                         // Counter for the number of rejections
                         ++this->n_rejected;
                     }
+                    else if (Ediff<gamma_E)
+                    {
+                        ++this->gammaE_avg;
+                    }    
                 }
             }
         }
@@ -295,6 +307,13 @@ void Method_MC::Message_Step()
                 "    Current cone angle (deg): {:>6.3f} (non-adaptive)", this->cone_angle * 180 / Constants::Pi ) );
         }
     }
+
+    if ( this->parameters_mc->tunneling_use_tunneling )
+    {
+       block.emplace_back( fmt::format(
+            "   Tunneling spin flips: {:>6.3f}", this->gammaE_avg) );
+    }    
+
     block.emplace_back( fmt::format( "    Total energy:             {:20.10f}", this->systems[0]->E ) );
     Log.SendBlock( Log_Level::All, this->SenderName, block, this->idx_image, this->idx_chain );
 
@@ -344,6 +363,13 @@ void Method_MC::Message_End()
                 "    Cone angle (deg): {:>6.3f} (non-adaptive)", this->cone_angle * 180 / Constants::Pi ) );
         }
     }
+
+    if ( this->parameters_mc->tunneling_use_tunneling )
+    {
+       block.emplace_back( fmt::format(
+            "    Tunneling Spin Flips: {:>6.3f}", this->gammaE_avg) );
+    }    
+
     block.emplace_back( fmt::format( "    Total energy:     {:20.10f}", this->systems[0]->E ) );
     block.emplace_back( "-----------------------------------------------------" );
     Log.SendBlock( Log_Level::All, this->SenderName, block, this->idx_image, this->idx_chain );

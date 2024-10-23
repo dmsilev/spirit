@@ -57,6 +57,8 @@ private:
     scalar acceptance_ratio_current;
     int nos_nonvacant;
 
+    scalar gammaE_avg;
+
     // Random vector array
     vectorfield xi;
 };
