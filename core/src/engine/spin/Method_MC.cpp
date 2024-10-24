@@ -130,9 +130,9 @@ void Method_MC::Iteration()
     // TODO: add switch between Metropolis and heat bath
     // One Metropolis step
     if( this->parameters_mc->constrain_magnetization )
-        MetropolisDirectionConstrained( state_new );
+        MetropolisDirectionConstrained( state_new, *this->system->hamiltonian );
     else
-        Metropolis( state_old, state_new );
+        Metropolis( state_new, *this->system->hamiltonian );
 
     Vectormath::set_c_a( 1, state_new.spin, state_old.spin );
 }
@@ -159,11 +159,13 @@ void Method_MC::AdaptConeAngle()
 }
 
 // Simple metropolis step
-void Method_MC::Metropolis( const StateType & state_old, StateType & state_new )
+void Method_MC::Metropolis( StateType & state, HamiltonianVariant & hamiltonian )
 {
     auto distribution     = std::uniform_real_distribution<scalar>( 0, 1 );
     auto distribution_idx = std::uniform_int_distribution<>( 0, this->nos - 1 );
     scalar kB_T           = Constants::k_B * this->parameters_mc->temperature;
+
+    const auto & geometry = hamiltonian.get_geometry();
 
     this->AdaptConeAngle();
     this->n_rejected = 0;
@@ -180,52 +182,56 @@ void Method_MC::Metropolis( const StateType & state_old, StateType & state_new )
             // Faster, but worse statistics
             ispin = idx;
 
-        if( Indexing::check_atom_type( this->system->hamiltonian->get_geometry().atom_types[ispin] ) )
+        if( !Indexing::check_atom_type( geometry.atom_types[ispin] ) )
+            continue;
+
+        const Vector3 spin_pre  = state.spin[ispin];
+        const Vector3 spin_post = [this, &distribution, &spin_pre]
         {
             // Sample a cone
             if( this->parameters_mc->metropolis_step_cone )
             {
-                state_new.spin[ispin] = Metropolis::step_cone(
-                    distribution, this->parameters_mc->prng, state_old.spin[ispin], cone_angle );
+                return Metropolis::step_cone( distribution, this->parameters_mc->prng, spin_pre, this->cone_angle );
             }
             // Sample the entire unit sphere
             else
             {
-                state_new.spin[ispin] = Metropolis::step_sphere( distribution, this->parameters_mc->prng );
+                return Metropolis::step_sphere( distribution, this->parameters_mc->prng );
             }
+        }();
 
-            // Energy difference of configurations with and without displacement
-            const scalar Eold  = this->system->hamiltonian->Energy_Single_Spin( ispin, state_old );
-            const scalar Enew  = this->system->hamiltonian->Energy_Single_Spin( ispin, state_new );
-            const scalar Ediff = Enew - Eold;
+        // Energy difference of configurations with and without displacement
+        const scalar E_pre  = hamiltonian.Energy_Single_Spin( ispin, state );
+        state.spin[ispin]        = spin_post;
+        const scalar E_post = hamiltonian.Energy_Single_Spin( ispin, state );
+        const scalar Ediff  = E_post - E_pre;
 
-            // Metropolis criterion: accept the step if the energy fell
-            if( Ediff <= 1e-14 )
-                continue;
+        // Metropolis criterion: accept the step if the energy fell
+        if( Ediff <= 1e-14 )
+            continue;
 
-            // potentially reject the step if energy rose
-            if( this->parameters_mc->temperature < 1e-12 )
+        // potentially reject the step if energy rose
+        if( this->parameters_mc->temperature < 1e-12 )
+        {
+            // Restore the spin
+            state.spin[ispin] = spin_pre;
+            // Counter for the number of rejections
+            ++this->n_rejected;
+        }
+        else
+        {
+            // Exponential factor
+            scalar exp_ediff = std::exp( -Ediff / kB_T );
+            // Metropolis random number
+            scalar x_metropolis = distribution( this->parameters_mc->prng );
+
+            // Only reject if random number is larger than exponential
+            if( exp_ediff < x_metropolis )
             {
                 // Restore the spin
-                state_new.spin[ispin] = state_old.spin[ispin];
+                state.spin[ispin] = spin_pre;
                 // Counter for the number of rejections
                 ++this->n_rejected;
-            }
-            else
-            {
-                // Exponential factor
-                scalar exp_ediff = std::exp( -Ediff / kB_T );
-                // Metropolis random number
-                scalar x_metropolis = distribution( this->parameters_mc->prng );
-
-                // Only reject if random number is larger than exponential
-                if( exp_ediff < x_metropolis )
-                {
-                    // Restore the spin
-                    state_new.spin[ispin] = state_old.spin[ispin];
-                    // Counter for the number of rejections
-                    ++this->n_rejected;
-                }
             }
         }
     }
@@ -236,13 +242,13 @@ void Method_MC::Metropolis( const StateType & state_old, StateType & state_new )
  * This algorithm extends the one described in the paper by also taking
  * a variable `mu_s` into account.
  */
-void Method_MC::MetropolisDirectionConstrained( StateType & state )
+void Method_MC::MetropolisDirectionConstrained( StateType & state, HamiltonianVariant & hamiltonian )
 {
     auto distribution     = std::uniform_real_distribution<scalar>( 0, 1 );
     auto distribution_idx = std::uniform_int_distribution<>( 0, this->nos - 1 );
     const scalar beta     = scalar( 1.0 ) / ( Constants::k_B * this->parameters_mc->temperature );
 
-    const auto & geometry        = this->system->hamiltonian->get_geometry();
+    const auto & geometry        = hamiltonian.get_geometry();
     const Vector3 para_projector = constrained_direction;
     const Matrix3 orth_projector = Matrix3::Identity() - para_projector * para_projector.transpose();
 
@@ -362,11 +368,10 @@ void Method_MC::MetropolisDirectionConstrained( StateType & state )
         // The `Energy_Single_Spin` method assumes changes to a single spin.
         // To determine the change in energy from the full change correctly
         // we have to evaluate the differences from each change individually.
-        const scalar Ediff = [this, ispin, jspin, &spin_i_post, &spin_j_post, &state]
+        const scalar Ediff = [&hamiltonian, ispin, jspin, &spin_i_post, &spin_j_post, &state]
         {
-            auto & hamiltonian = *this->system->hamiltonian;
-            scalar Ediff       = -1.0 * hamiltonian.Energy_Single_Spin( ispin, state );
-            state.spin[ispin]  = spin_i_post;
+            scalar Ediff = -1.0 * hamiltonian.Energy_Single_Spin( ispin, state );
+            state.spin[ispin] = spin_i_post;
             Ediff += hamiltonian.Energy_Single_Spin( ispin, state ) - hamiltonian.Energy_Single_Spin( jspin, state );
             state.spin[jspin] = spin_j_post;
             Ediff += hamiltonian.Energy_Single_Spin( jspin, state );

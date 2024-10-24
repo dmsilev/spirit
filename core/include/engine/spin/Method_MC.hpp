@@ -32,10 +32,10 @@ private:
     void AdaptConeAngle();
 
     // Metropolis iteration with adaptive cone radius
-    void Metropolis( const StateType & state_old, StateType & state_new );
+    void Metropolis( StateType & state, HamiltonianVariant & hamiltonian );
 
     // Metropolis iteration with adaptive cone radius
-    void MetropolisDirectionConstrained( StateType & spins );
+    void MetropolisDirectionConstrained( StateType & spins, HamiltonianVariant & hamiltonian );
 
     // Save the current Step's Data: spins and energy
     void Save_Current( std::string starttime, int iteration, bool initial = false, bool final = false ) override;
