@@ -2,6 +2,7 @@
 #ifndef SPIRIT_CORE_ENGINE_SPIN_METHOD_MC_HPP
 #define SPIRIT_CORE_ENGINE_SPIN_METHOD_MC_HPP
 
+#include <Spirit/Simulation.h>
 #include <Spirit/Spirit_Defines.h>
 #include <data/Spin_System.hpp>
 #include <engine/spin/Method.hpp>
@@ -12,9 +13,17 @@ namespace Engine
 namespace Spin
 {
 
+enum struct MC_Algorithm
+{
+    None           = -1,
+    Metropolis     = MC_Algorithm_Metropolis,
+    Metropolis_MDC = MC_Algorithm_Metropolis_MDC,
+};
+
 /*
     The Monte Carlo method
 */
+template<MC_Algorithm algorithm>
 class Method_MC : public Method
 {
 public:
@@ -32,10 +41,7 @@ private:
     void AdaptConeAngle();
 
     // Metropolis iteration with adaptive cone radius
-    void Metropolis( StateType & state, HamiltonianVariant & hamiltonian );
-
-    // Metropolis iteration with adaptive cone radius
-    void MetropolisDirectionConstrained( StateType & spins, HamiltonianVariant & hamiltonian );
+    void Step( StateType & spins, HamiltonianVariant & hamiltonian );
 
     // Save the current Step's Data: spins and energy
     void Save_Current( std::string starttime, int iteration, bool initial = false, bool final = false ) override;

@@ -57,7 +57,9 @@ MC_ALGORITHM_METROPOLIS_MDC = 1
 METHOD_MC = 0
 """Monte Carlo.
 
-Standard implementation.
+Metropolis algorithm (free or magnetization direction constrained).
+Note: the direction constrained algorithm always fixes the
+*current* magnetization direction.
 """
 
 METHOD_LLG = 1
@@ -127,6 +129,7 @@ class simulation_run_info(ctypes.Structure):
 _MC_Start = _spirit.Simulation_MC_Start
 _MC_Start.argtypes = [
     ctypes.c_void_p,
+    ctypes.c_int,
     ctypes.c_int,
     ctypes.c_int,
     ctypes.c_bool,
@@ -217,6 +220,7 @@ def start(
             _MC_Start,
             [
                 ctypes.c_void_p(p_state),
+                ctypes.c_int(solver_type),
                 ctypes.c_int(n_iterations),
                 ctypes.c_int(n_iterations_log),
                 ctypes.c_bool(single_shot),

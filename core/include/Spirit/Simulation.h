@@ -53,6 +53,17 @@ Note that the VP and LBFGS Solvers are only meant for direct minimization and no
 // `Solver_VP_OSO`: Verlet-like velocity projection, exponential transform
 #define Solver_VP_OSO 7
 
+/*
+Definition of Monte Carlo Algorithms
+--------------------------------------------------------------------
+*/
+
+// `Metropolis`: Metropolis algorithm
+#define MC_Algorithm_Metropolis 0
+
+// `Metropolis_MDC`: Magnetization Direction Constrained Metropolis algorithm
+#define MC_Algorithm_Metropolis_MDC 1
+
 // A struct that can be passed as an additional argument to the `Simulation_XXX_Start` methods to gather some basic
 // information about the simulation run
 struct Simulation_Run_Info
@@ -79,8 +90,8 @@ Start or stop a simulation
 
 // Monte Carlo
 PREFIX void Simulation_MC_Start(
-    State * state, int n_iterations = -1, int n_iterations_log = -1, bool singleshot = false,
-    Simulation_Run_Info * info = nullptr, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
+    State * state, int mc_algorithm = MC_Algorithm_Metropolis, int n_iterations = -1, int n_iterations_log = -1,
+    bool singleshot = false, Simulation_Run_Info * info = nullptr, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
 
 // Landau-Lifshitz-Gilbert dynamics and energy minimisation
 PREFIX void Simulation_LLG_Start(

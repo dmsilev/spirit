@@ -50,17 +50,15 @@ TEST_CASE( "Direction Constrained Monte Carlo should preserve direction", "[mc]"
 
     const Vector3 magnetization_direction = init_magnetization.normalized();
 
-    REQUIRE( Parameters_MC_Get_Constrained_Magnetization_Direction( state.get() ) );
-
     Parameters_MC_Set_Metropolis_Cone( state.get(), true, 30, false, 0.5 );
 
-    Simulation_MC_Start( state.get(), -1, -1, true );
+    Simulation_MC_Start( state.get(), MC_Algorithm_Metropolis_MDC, -1, -1, true );
 
     {
         Vector3 magnetization = Vector3::Zero();
-        for( int i = 0; i < 100; ++i )
+        for( int i = 0; i < 10; ++i )
         {
-            Simulation_SingleShot( state.get() );
+            Simulation_N_Shot( state.get(), 50 );
             Quantity_Get_Magnetization( state.get(), magnetization.data() );
 
             const scalar m_para = magnetization_direction.dot( magnetization );
@@ -73,7 +71,7 @@ TEST_CASE( "Direction Constrained Monte Carlo should preserve direction", "[mc]"
             INFO( "M_para = " << m_para );
             INFO( "M_orth = " << m_orth );
 
-            REQUIRE_THAT( magnetization.norm(), WithinAbs( m_para, epsilon_6 ) );
+            REQUIRE_THAT( m_orth, WithinAbs( 0, epsilon_6 ) );
         }
     }
 

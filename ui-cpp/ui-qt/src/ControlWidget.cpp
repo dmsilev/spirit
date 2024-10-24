@@ -202,8 +202,8 @@ void ControlWidget::play_pause()
             int idx = System_Get_Index( state.get() );
             if( threads_image[idx].joinable() )
                 threads_image[System_Get_Index( state.get() )].join();
-            this->threads_image[System_Get_Index( state.get() )]
-                = std::thread( &Simulation_MC_Start, this->state.get(), -1, -1, false, nullptr, -1, -1 );
+            this->threads_image[System_Get_Index( state.get() )] = std::thread(
+                &Simulation_MC_Start, this->state.get(), MC_Algorithm_Metropolis, -1, -1, false, nullptr, -1, -1 );
         }
         else if( this->s_method == "GNEB" )
         {

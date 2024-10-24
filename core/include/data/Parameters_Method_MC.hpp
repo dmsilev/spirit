@@ -33,9 +33,6 @@ struct Parameters_Method_MC : public Parameters_Method
     // Target acceptance ratio of mc steps for adaptive cone angle
     scalar acceptance_ratio_target = 0.5;
 
-    // Flag to control whether the magnetization direction should be constrained or not.
-    bool constrain_magnetization = false;
-
     // ----------------- Output --------------
     // Energy output settings
     bool output_energy_step                  = false;

@@ -23,12 +23,15 @@ void free_run_info( Simulation_Run_Info info ) noexcept
 namespace
 {
 
+using Engine::Spin::MC_Algorithm;
 using Engine::Spin::Solver;
 
 // alias for efficiently smuggling a constexpr value into a C++17 lambda
 template<Solver solver>
 using solver_tag = std::integral_constant<Solver, solver>;
 
+template<MC_Algorithm algorithm>
+using algorithm_tag = std::integral_constant<MC_Algorithm, algorithm>;
 } // namespace
 
 // Helper function to start a simulation once a Method has been created
@@ -84,8 +87,8 @@ void run_method( Engine::Method & method, bool singleshot, Simulation_Run_Info *
 }
 
 void Simulation_MC_Start(
-    State * state, int n_iterations, int n_iterations_log, bool singleshot, Simulation_Run_Info * info, int idx_image,
-    int idx_chain ) noexcept
+    State * state, int mc_algorithm, int n_iterations, int n_iterations_log, bool singleshot,
+    Simulation_Run_Info * info, int idx_image, int idx_chain ) noexcept
 try
 {
     // Fetch correct indices and pointers
@@ -113,18 +116,38 @@ try
     else
     {
         // We are not iterating, so we create the Method and call Iterate
-        std::shared_ptr<Engine::Method> method = [&, &img = image]
+        std::shared_ptr<Engine::Method> method
+            = [mc_algorithm, &img = image, singleshot, n_iterations, n_iterations_log, idx_image,
+               idx_chain]() -> std::shared_ptr<Engine::Method>
         {
-            std::scoped_lock _{ *img };
-            img->iteration_allowed  = true;
-            img->singleshot_allowed = singleshot;
+            using Engine::Spin::MC_Algorithm;
+            using Engine::Spin::Method_MC;
 
-            if( n_iterations > 0 )
-                img->mc_parameters->n_iterations = n_iterations;
-            if( n_iterations_log > 0 )
-                img->mc_parameters->n_iterations_log = n_iterations_log;
+            // delay setting variables until after we have determined the solver
+            const auto dispatcher = [&]( auto && tag )
+            {
+                std::scoped_lock _{ *img };
 
-            return std::make_shared<Engine::Spin::Method_MC>( img, idx_image, idx_chain );
+                img->iteration_allowed  = true;
+                img->singleshot_allowed = singleshot;
+
+                if( n_iterations > 0 )
+                    img->llg_parameters->n_iterations = n_iterations;
+                if( n_iterations_log > 0 )
+                    img->llg_parameters->n_iterations_log = n_iterations_log;
+
+                return std::make_shared<Method_MC<std::decay_t<decltype( tag )>::value>>( img, idx_image, idx_chain );
+            };
+
+            switch( static_cast<MC_Algorithm>( mc_algorithm ) )
+            {
+                case MC_Algorithm::Metropolis: return dispatcher( algorithm_tag<MC_Algorithm::Metropolis>{} );
+                case MC_Algorithm::Metropolis_MDC: return dispatcher( algorithm_tag<MC_Algorithm::Metropolis_MDC>{} );
+                default:
+                    spirit_throw(
+                        Utility::Exception_Classifier::Unknown_Solver, Utility::Log_Level::Warning,
+                        fmt::format( "Invalid mc_algorithm {}", mc_algorithm ) );
+            }
         }();
 
         state->method_image[idx_image] = method;

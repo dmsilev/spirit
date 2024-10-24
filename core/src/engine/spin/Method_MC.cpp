@@ -20,7 +20,8 @@ namespace Engine
 namespace Spin
 {
 
-Method_MC::Method_MC( std::shared_ptr<system_t> system, int idx_img, int idx_chain )
+template<MC_Algorithm algorithm>
+Method_MC<algorithm>::Method_MC( std::shared_ptr<system_t> system, int idx_img, int idx_chain )
         : Method( system->mc_parameters, idx_img, idx_chain )
 {
     // Currently we only support a single image being iterated at once:
@@ -49,7 +50,7 @@ Method_MC::Method_MC( std::shared_ptr<system_t> system, int idx_img, int idx_cha
     this->acceptance_ratio_current = this->parameters_mc->acceptance_ratio_target;
 
     // fix current magnetization direction
-    if( this->parameters_mc->constrain_magnetization )
+    if constexpr( algorithm == MC_Algorithm::Metropolis_MDC )
     {
         const auto m_direction = this->system->M.mean.normalized();
         if( m_direction.squaredNorm() > 1e-4 )
@@ -118,26 +119,21 @@ auto step_sphere( Distribution && distribution, RandomFunc && prng ) -> Vector3
 
 // This implementation is mostly serial as parallelization is nontrivial
 //      if the range of neighbours for each atom is not pre-defined.
-void Method_MC::Iteration()
+template<MC_Algorithm algorithm>
+void Method_MC<algorithm>::Iteration()
 {
     // Temporaries
     auto & state_old = *this->system->state;
     auto state_new   = state_old;
 
-    // Generate randomly displaced spin configuration according to cone radius
-    // Vectormath::get_random_vectorfield_unitsphere(this->parameters_mc->prng, random_unit_vectors);
-
-    // TODO: add switch between Metropolis and heat bath
     // One Metropolis step
-    if( this->parameters_mc->constrain_magnetization )
-        MetropolisDirectionConstrained( state_new, *this->system->hamiltonian );
-    else
-        Metropolis( state_new, *this->system->hamiltonian );
+    Step( state_new, *this->system->hamiltonian );
 
     Vectormath::set_c_a( 1, state_new.spin, state_old.spin );
 }
 
-void Method_MC::AdaptConeAngle()
+template<MC_Algorithm algorithm>
+void Method_MC<algorithm>::AdaptConeAngle()
 {
     const scalar diff = 0.01;
 
@@ -157,9 +153,12 @@ void Method_MC::AdaptConeAngle()
         this->parameters_mc->metropolis_cone_angle = this->cone_angle * 180.0 / Constants::Pi;
     }
 }
+template<>
+void Method_MC<MC_Algorithm::None>::Step( StateType &, HamiltonianVariant & ) {};
 
 // Simple metropolis step
-void Method_MC::Metropolis( StateType & state, HamiltonianVariant & hamiltonian )
+template<>
+void Method_MC<MC_Algorithm::Metropolis>::Step( StateType & state, HamiltonianVariant & hamiltonian )
 {
     auto distribution     = std::uniform_real_distribution<scalar>( 0, 1 );
     auto distribution_idx = std::uniform_int_distribution<>( 0, this->nos - 1 );
@@ -242,7 +241,8 @@ void Method_MC::Metropolis( StateType & state, HamiltonianVariant & hamiltonian 
  * This algorithm extends the one described in the paper by also taking
  * a variable `mu_s` into account.
  */
-void Method_MC::MetropolisDirectionConstrained( StateType & state, HamiltonianVariant & hamiltonian )
+template<>
+void Method_MC<MC_Algorithm::Metropolis_MDC>::Step( StateType & state, HamiltonianVariant & hamiltonian )
 {
     auto distribution     = std::uniform_real_distribution<scalar>( 0, 1 );
     auto distribution_idx = std::uniform_int_distribution<>( 0, this->nos - 1 );
@@ -400,37 +400,52 @@ void Method_MC::MetropolisDirectionConstrained( StateType & state, HamiltonianVa
 
 // TODO:
 // Implement heat bath algorithm, see Y. Miyatake et al, J Phys C: Solid State Phys 19, 2539 (1986)
-// void Method_MC::HeatBath(const vectorfield & spins_old, vectorfield & spins_new)
+// template<MC_Algorithm::HeatBath>
+// void Method_MC::Step( vectorfield & spins, HamiltonianVariant & hamiltonian )
 // {
 // }
 
-void Method_MC::Hook_Pre_Iteration() {}
+template<MC_Algorithm algorithm>
+void Method_MC<algorithm>::Hook_Pre_Iteration()
+{
+}
 
-void Method_MC::Hook_Post_Iteration() {}
+template<MC_Algorithm algorithm>
+void Method_MC<algorithm>::Hook_Post_Iteration()
+{
+}
 
-void Method_MC::Initialize() {}
+template<MC_Algorithm algorithm>
+void Method_MC<algorithm>::Initialize()
+{
+}
 
-void Method_MC::Finalize()
+template<MC_Algorithm algorithm>
+void Method_MC<algorithm>::Finalize()
 {
     this->system->iteration_allowed = false;
 }
 
-void Method_MC::lock()
+template<MC_Algorithm algorithm>
+void Method_MC<algorithm>::lock()
 {
     this->system->lock();
 }
 
-void Method_MC::unlock()
+template<MC_Algorithm algorithm>
+void Method_MC<algorithm>::unlock()
 {
     this->system->unlock();
 }
 
-bool Method_MC::Iterations_Allowed()
+template<MC_Algorithm algorithm>
+bool Method_MC<algorithm>::Iterations_Allowed()
 {
     return this->system->iteration_allowed;
 }
 
-void Method_MC::Message_Start()
+template<MC_Algorithm algorithm>
+void Method_MC<algorithm>::Message_Start()
 {
     //---- Log messages
     std::vector<std::string> block( 0 );
@@ -454,11 +469,16 @@ void Method_MC::Message_Start()
                 fmt::format( "   Cone angle (deg): {:>6.3f} (non-adaptive)", this->cone_angle * 180 / Constants::Pi ) );
         }
     }
+    if constexpr( algorithm == MC_Algorithm::Metropolis_MDC )
+    {
+        block.emplace_back( fmt::format( "   constrained direction: {}", this->constrained_direction.transpose() ) );
+    }
     block.emplace_back( "-----------------------------------------------------" );
     Log( Log_Level::All, this->SenderName, block, this->idx_image, this->idx_chain );
 }
 
-void Method_MC::Message_Step()
+template<MC_Algorithm algorithm>
+void Method_MC<algorithm>::Message_Step()
 {
     // Update time of current step
     auto t_current = std::chrono::system_clock::now();
@@ -504,7 +524,8 @@ void Method_MC::Message_Step()
     this->t_last = t_current;
 }
 
-void Method_MC::Message_End()
+template<MC_Algorithm algorithm>
+void Method_MC<algorithm>::Message_End()
 {
     //---- End timings
     auto t_end = std::chrono::system_clock::now();
@@ -551,13 +572,39 @@ void Method_MC::Message_End()
     Log( Log_Level::All, this->SenderName, block, this->idx_image, this->idx_chain );
 }
 
-void Method_MC::Save_Current( std::string starttime, int iteration, bool initial, bool final ) {}
+template<MC_Algorithm algorithm>
+void Method_MC<algorithm>::Save_Current( std::string starttime, int iteration, bool initial, bool final )
+{
+}
 
 // Method name as string
-std::string_view Method_MC::Name()
+template<MC_Algorithm algorithm>
+std::string_view Method_MC<algorithm>::Name()
 {
     return "MC";
 }
+
+template<>
+std::string_view Method_MC<MC_Algorithm::None>::Name()
+{
+    return "MC (None)";
+}
+
+template<>
+std::string_view Method_MC<MC_Algorithm::Metropolis>::Name()
+{
+    return "MC (Metropolis)";
+}
+
+template<>
+std::string_view Method_MC<MC_Algorithm::Metropolis_MDC>::Name()
+{
+    return "MC (Magnetization Direction Constrained Metropolis)";
+}
+
+template class Method_MC<MC_Algorithm::None>;
+template class Method_MC<MC_Algorithm::Metropolis>;
+template class Method_MC<MC_Algorithm::Metropolis_MDC>;
 
 } // namespace Spin
 
