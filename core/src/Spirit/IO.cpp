@@ -911,7 +911,7 @@ try
     auto & spins  = *image->state;
 
     // Gather the data
-    system.UpdateEnergy();
+    system.update_energy();
     system.hamiltonian->Energy_Contributions_per_Spin( spins, image->E.per_interaction_per_spin );
     int dataperspin = 1 + image->E.per_interaction_per_spin.size();
     int datasize    = dataperspin * system.nos;

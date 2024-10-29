@@ -63,7 +63,7 @@ void ConfigurationsWidget::updateData() {}
 
 void ConfigurationsWidget::print_Energies_to_console()
 {
-    System_Update_Data( state.get() );
+    System_Update_Energy( state.get() );
     System_Print_Energy_Array( state.get() );
 }
 

@@ -105,9 +105,11 @@ catch( ... )
 }
 
 template<typename Hamiltonian>
-void Spin_System<Hamiltonian>::UpdateEnergy()
+void Spin_System<Hamiltonian>::update_energy()
 try
 {
+    core_throw_if_nullptr( this->hamiltonian.get(), "hamiltonian" );
+
     this->E.per_interaction = this->hamiltonian->Energy_Contributions( *this->state );
     scalar sum              = 0;
     for( auto & E_item : E.per_interaction )
@@ -116,19 +118,38 @@ try
 }
 catch( ... )
 {
-    spirit_rethrow( "Spin_System::UpdateEnergy failed" );
+    spirit_rethrow( "Spin_System::update_energy failed" );
 }
 
 template<typename Hamiltonian>
-void Spin_System<Hamiltonian>::UpdateEffectiveField()
+void Spin_System<Hamiltonian>::update_effective_field()
 try
 {
+    core_throw_if_nullptr( this->hamiltonian.get(), "hamiltonian" );
+
     this->hamiltonian->Gradient( *this->state, this->M.effective_field );
     Engine::Vectormath::scale( this->M.effective_field, -1 );
 }
 catch( ... )
 {
-    spirit_rethrow( "Spin_System::UpdateEffectiveField failed" );
+    spirit_rethrow( "Spin_System::update_effective_field failed" );
+}
+
+template<typename Hamiltonian>
+void Spin_System<Hamiltonian>::update_magnetization()
+try
+{
+    using Engine::Field;
+
+    core_throw_if_nullptr( this->state.get(), "state" );
+    core_throw_if_nullptr( this->hamiltonian.get(), "hamiltonian" );
+
+    this->M.mean = Engine::Vectormath::Magnetization(
+        Engine::get<Field::Spin>( *this->state ), this->hamiltonian->get_geometry().mu_s );
+}
+catch( ... )
+{
+    spirit_rethrow( "Spin_System::update_effective_field failed" );
 }
 
 template<typename Hamiltonian>

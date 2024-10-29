@@ -680,7 +680,7 @@ try
         chain->images[i]->lock();
         try
         {
-            chain->images[i]->UpdateEnergy();
+            chain->images[i]->update_energy();
             if( i > 0 )
                 chain->Rx[i] = chain->Rx[i - 1]
                                + Engine::Manifoldmath::dist_geodesic(

@@ -308,6 +308,9 @@ set( INTERFACE_EXPORT_FUNCTIONS
     '_System_Get_Energy_Array'
     '_System_Get_Eigenvalues'
     '_System_Print_Energy_Array'
+    '_System_Update_Energy'
+    '_System_Update_Magnetization'
+    '_System_Update_Effective_Field'
     '_System_Update_Data'
     '_System_Update_Eigenmodes'
     # Transition

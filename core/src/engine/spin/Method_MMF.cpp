@@ -577,7 +577,7 @@ void Method_MMF<solver>::Save_Current( std::string starttime, int iteration, boo
                 {
                     // Gather the data
                     Data::vectorlabeled<scalarfield> contributions_spins( 0 );
-                    sys.UpdateEnergy(); // needed to populate `E.total` and `E.per_interaction`
+                    sys.update_energy(); // needed to populate `E.total` and `E.per_interaction`
                     sys.hamiltonian->Energy_Contributions_per_Spin( *sys.state, sys.E.per_interaction_per_spin );
 
                     // write out the data

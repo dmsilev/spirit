@@ -68,10 +68,8 @@ Method_GNEB<solver>::Method_GNEB( std::shared_ptr<chain_t> chain, int idx_chain 
     this->Initialize();
 
     // Calculate Data for the border images, which will not be updated
-    this->chain->images[0]
-        ->UpdateEffectiveField(); // hamiltonian->Effective_Field(image, this->chain->images[0]->effective_field);
-    this->chain->images[this->noi - 1]
-        ->UpdateEffectiveField(); // hamiltonian->Effective_Field(image, this->chain->images[0]->effective_field);
+    this->chain->images[0]->update_effective_field();
+    this->chain->images[this->noi - 1]->update_effective_field();
 }
 
 template<Solver solver>

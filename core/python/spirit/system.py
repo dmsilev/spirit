@@ -198,6 +198,42 @@ def get_energy_contributions(
     return dict(zip(contrib_names, energies))
 
 
+_Update_Energy = _spirit.System_Update_Energy
+_Update_Energy.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
+_Update_Energy.restype = None
+
+
+def update_energy(p_state, idx_image=-1, idx_chain=-1):
+    """TODO: document when this needs to be called."""
+    _Update_Energy(
+        ctypes.c_void_p(p_state), ctypes.c_int(idx_image), ctypes.c_int(idx_chain)
+    )
+
+
+_Update_Magnetization = _spirit.System_Update_Magnetization
+_Update_Magnetization.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
+_Update_Magnetization.restype = None
+
+
+def update_magnetization(p_state, idx_image=-1, idx_chain=-1):
+    """TODO: document when this needs to be called."""
+    _Update_Magnetization(
+        ctypes.c_void_p(p_state), ctypes.c_int(idx_image), ctypes.c_int(idx_chain)
+    )
+
+
+_Update_Effective_Field = _spirit.System_Update_Effective_Field
+_Update_Effective_Field.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
+_Update_Effective_Field.restype = None
+
+
+def update_effective_field(p_state, idx_image=-1, idx_chain=-1):
+    """TODO: document when this needs to be called."""
+    _Update_Effective_Field(
+        ctypes.c_void_p(p_state), ctypes.c_int(idx_image), ctypes.c_int(idx_chain)
+    )
+
+
 ### Get Chain number of images
 _Update_Data = _spirit.System_Update_Data
 _Update_Data.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]

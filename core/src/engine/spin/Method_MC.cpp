@@ -484,7 +484,7 @@ void Method_MC<algorithm>::Message_Step()
     auto t_current = std::chrono::system_clock::now();
 
     // Update the system's energy
-    this->system->UpdateEnergy();
+    this->system->update_energy();
 
     // Send log message
     std::vector<std::string> block( 0 );
@@ -538,7 +538,7 @@ void Method_MC<algorithm>::Message_End()
         reason = "The maximum walltime has been reached";
 
     // Update the system's energy
-    this->system->UpdateEnergy();
+    this->system->update_energy();
 
     //---- Log messages
     std::vector<std::string> block;

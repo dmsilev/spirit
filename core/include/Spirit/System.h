@@ -70,6 +70,15 @@ System_Get_Eigenvalues( State * state, scalar * eigenvalues, int idx_image = -1,
 // Write the energy as formatted output to the console
 PREFIX void System_Print_Energy_Array( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
 
+// Update Energy
+PREFIX void System_Update_Energy( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
+
+// Update Magnetization
+PREFIX void System_Update_Magnetization( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
+
+// Update Effective Field
+PREFIX void System_Update_Effective_Field( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
+
 // Update Data (primarily for plots)
 PREFIX void System_Update_Data( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
 

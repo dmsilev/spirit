@@ -61,8 +61,9 @@ public:
     ~Spin_System()                                  = default;
 
     // Update
-    void UpdateEnergy();
-    void UpdateEffectiveField();
+    void update_energy();
+    void update_effective_field();
+    void update_magnetization();
 
     // For multithreading
     void lock() noexcept;

@@ -158,7 +158,7 @@ void Method_LLG<solver>::Hook_Post_Iteration()
     // Vectormath::scale(systems[0]->effective_field, -1);
     Manifoldmath::project_tangential( this->forces[0], this->systems[0]->state->spin );
     Vectormath::set_c_a( 1, this->forces[0], this->systems[0]->M.effective_field );
-    // systems[0]->UpdateEffectiveField();
+    // systems[0]->update_effective_field();
 
     // TODO: In order to update Rx with the neighbouring images etc., we need the state -> how to do this?
 
@@ -223,7 +223,7 @@ void Method_LLG<solver>::Save_Current( std::string starttime, int iteration, boo
     this->history_energy.push_back( sys.E.total );
 
     // this->history["max_torque"].push_back( this->max_torque );
-    // sys.UpdateEnergy();
+    // sys.update_energy();
     // this->history["E"].push_back( sys.E );
     // Removed magnetization, since at the moment it required a temporary allocation to compute
     // auto mag = Engine::Vectormath::Magnetization( *sys.spins );
@@ -362,7 +362,7 @@ void Method_LLG<solver>::Save_Current( std::string starttime, int iteration, boo
                 {
                     // Gather the data
                     Data::vectorlabeled<scalarfield> contributions_spins( 0 );
-                    sys.UpdateEnergy();
+                    sys.update_energy();
                     sys.hamiltonian->Energy_Contributions_per_Spin( *sys.state, sys.E.per_interaction_per_spin );
 
                     IO::Write_Image_Energy_Contributions(

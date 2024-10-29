@@ -236,6 +236,75 @@ catch( ... )
     spirit_handle_exception_api( idx_image, idx_chain );
 }
 
+void System_Update_Energy( State * state, int idx_image, int idx_chain ) noexcept
+try
+{
+
+    // Fetch correct indices and pointers
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+
+    image->lock();
+    try
+    {
+        image->update_energy();
+    }
+    catch( ... )
+    {
+        spirit_handle_exception_api( idx_image, idx_chain );
+    }
+    image->unlock();
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+}
+
+void System_Update_Magnetization( State * state, int idx_image, int idx_chain ) noexcept
+try
+{
+
+    // Fetch correct indices and pointers
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+
+    image->lock();
+    try
+    {
+        image->update_magnetization();
+    }
+    catch( ... )
+    {
+        spirit_handle_exception_api( idx_image, idx_chain );
+    }
+    image->unlock();
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+}
+
+void System_Update_Effective_Field( State * state, int idx_image, int idx_chain ) noexcept
+try
+{
+
+    // Fetch correct indices and pointers
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+
+    image->lock();
+    try
+    {
+        image->update_effective_field();
+    }
+    catch( ... )
+    {
+        spirit_handle_exception_api( idx_image, idx_chain );
+    }
+    image->unlock();
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+}
+
 void System_Update_Data( State * state, int idx_image, int idx_chain ) noexcept
 try
 {
@@ -246,7 +315,9 @@ try
     image->lock();
     try
     {
-        image->UpdateEnergy();
+        image->update_energy();
+        image->update_magnetization();
+        image->update_effective_field();
     }
     catch( ... )
     {
