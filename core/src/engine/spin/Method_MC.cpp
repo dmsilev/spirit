@@ -52,7 +52,10 @@ Method_MC<algorithm>::Method_MC( std::shared_ptr<system_t> system, int idx_img, 
     // fix current magnetization direction
     if constexpr( algorithm == MC_Algorithm::Metropolis_MDC )
     {
-        const auto m_direction = this->system->M.mean.normalized();
+        // caclulate magnetization directly to avoid stale cache data
+        const auto m_direction
+            = Vectormath::Magnetization( *this->system->state, this->system->hamiltonian->get_geometry().mu_s )
+                  .normalized();
         if( m_direction.squaredNorm() > 1e-4 )
             constrained_direction = m_direction;
         else
