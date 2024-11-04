@@ -37,9 +37,6 @@ private:
     // Solver_Iteration represents one iteration of a certain Solver
     void Iteration() override;
 
-    // Adaptive cone angle
-    void AdaptConeAngle();
-
     // Metropolis iteration with adaptive cone radius
     void Step( StateType & spins, HamiltonianVariant & hamiltonian );
 

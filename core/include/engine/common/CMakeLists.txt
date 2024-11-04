@@ -13,5 +13,8 @@ set(HEADER_SPIRIT_ENGINE_COMMON
     ${CMAKE_CURRENT_SOURCE_DIR}/Interaction_Traits.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Interaction_Wrapper.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StateType.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Method_MC.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Method_LLG.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Method_Solver.hpp
     PARENT_SCOPE
 )
