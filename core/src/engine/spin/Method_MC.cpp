@@ -162,11 +162,6 @@ void Method_MC<MC_Algorithm::Metropolis_MDC>::Step( StateType & state, Hamiltoni
         /* magnetization_pre=*/constrained_direction.dot( Vectormath::Magnetization( state.spin, geometry.mu_s ) )
     };
 
-    if( !this->parameters_mc->metropolis_random_sample )
-        Log( Log_Level::Warning, this->SenderName,
-             "Using the direction constrained metropolis algorithm without random sampling is strongly discouraged.",
-             this->idx_image, this->idx_chain );
-
     if( shared.magnetization_pre < 0 )
         spirit_throw(
             Exception_Classifier::Unknown_Exception, Log_Level::Error,
@@ -256,6 +251,11 @@ void Method_MC<algorithm>::Message_Start()
     if constexpr( algorithm == MC_Algorithm::Metropolis_MDC )
     {
         block.emplace_back( fmt::format( "   constrained direction: {}", this->constrained_direction.transpose() ) );
+        if( !this->parameters_mc->metropolis_random_sample )
+            Log(
+                Log_Level::Warning, this->SenderName,
+                "Using the direction constrained metropolis algorithm without random sampling is strongly discouraged.",
+                this->idx_image, this->idx_chain );
     }
     block.emplace_back( "-----------------------------------------------------" );
     Log( Log_Level::All, this->SenderName, block, this->idx_image, this->idx_chain );
