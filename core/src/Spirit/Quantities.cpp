@@ -29,7 +29,7 @@ try
 
     // image->lock(); // Mutex locks in these functions may cause problems with the performance of UIs
 
-    auto mean = Engine::Vectormath::mean( get<Field::Spin>( *image->state ) );
+    auto mean = Engine::Vectormath::mean( image->state->spin );
 
     for( int i = 0; i < 3; ++i )
         s[i] = mean[i];
@@ -49,9 +49,8 @@ try
 
     // image->lock(); // Mutex locks in these functions may cause problems with the performance of UIs
 
-    const auto mag = Engine::Vectormath::Magnetization(
-        get<Field::Spin>( *image->state ), image->hamiltonian->get_geometry().mu_s );
-    image->M.mean = mag;
+    const auto mag = Engine::Vectormath::Magnetization( image->state->spin, image->hamiltonian->get_geometry().mu_s );
+    image->M.mean  = mag;
 
     // image->unlock();
 
@@ -76,8 +75,7 @@ try
     int dimensionality = Geometry_Get_Dimensionality( state, idx_image, idx_chain );
     if( dimensionality == 2 )
         charge = Engine::Vectormath::TopologicalCharge(
-            get<Field::Spin>( *image->state ), image->hamiltonian->get_geometry(),
-            image->hamiltonian->get_boundary_conditions() );
+            image->state->spin, image->hamiltonian->get_geometry(), image->hamiltonian->get_boundary_conditions() );
 
     // image->unlock();
 
@@ -106,8 +104,8 @@ try
     if( dimensionality == 2 )
     {
         Engine::Vectormath::TopologicalChargeDensity(
-            get<Field::Spin>( *image->state ), image->hamiltonian->get_geometry(),
-            image->hamiltonian->get_boundary_conditions(), charge_density, triangle_indices );
+            image->state->spin, image->hamiltonian->get_geometry(), image->hamiltonian->get_boundary_conditions(),
+            charge_density, triangle_indices );
     }
 
     if( charge_density_ptr != nullptr && triangle_indices_ptr != nullptr )
@@ -273,7 +271,7 @@ try
     int mode_positive = 0;
     mode_positive     = std::max( 0, std::min( n_modes - 1, mode_positive ) );
 
-    Eigen::Ref<VectorX> image_3N = Eigen::Map<VectorX>( image[0].data(), 3 * nos );
+    Eigen::Ref<VectorX> image_3N = Eigen::Map<VectorX>( image.spin[0].data(), 3 * nos );
     Eigen::Ref<VectorX> grad_3N  = Eigen::Map<VectorX>( grad[0].data(), 3 * nos );
 
     // The gradient (unprojected)
@@ -305,7 +303,7 @@ try
     VectorX eigenvalues;
     MatrixX eigenvectors;
     bool successful = Engine::Spin::Eigenmodes::Hessian_Partial_Spectrum(
-        geometry, image, grad, hess, n_modes, basis_3Nx2N, hessian_final, eigenvalues, eigenvectors );
+        geometry, image.spin, grad, hess, n_modes, basis_3Nx2N, hessian_final, eigenvalues, eigenvectors );
 
     if( successful )
     {
@@ -333,7 +331,7 @@ try
         scalar mode_grad_angle  = std::abs( mode_grad / ( mode_3N.norm() * grad_3N.norm() ) );
 
         // Make sure there is nothing wrong
-        check_modes( image, grad, basis_3Nx2N, eigenvalues, eigenvectors, minimum_mode );
+        check_modes( image.spin, grad, basis_3Nx2N, eigenvalues, eigenvectors, minimum_mode );
 
         // If the lowest eigenvalue is negative, we follow the minimum mode
         if( eigenvalues[0] < -1e-6 && mode_grad_angle > 1e-8 ) // -1e-6)// || switched2)

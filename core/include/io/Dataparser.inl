@@ -1,5 +1,6 @@
 #pragma once
 
+#include <engine/spin/StateType.hpp>
 #include <io/Dataparser.hpp>
 
 namespace IO
@@ -18,7 +19,8 @@ class Buffer
     using pointer = std::conditional_t<std::is_const_v<T>, const T *, T *>;
 
 public:
-    explicit Buffer( T & state ) : m_state( &state ) {};
+    explicit Buffer( StateType & state ) : m_state( &state.spin ) {};
+    explicit Buffer( const StateType & state ) : m_state( &state.spin ) {};
 
     scalar * data()
     {
@@ -56,6 +58,9 @@ public:
 private:
     pointer m_state;
 };
+
+Buffer( StateType & ) -> Buffer<vectorfield>;
+Buffer( const StateType & ) -> Buffer<const vectorfield>;
 
 } // namespace State
 

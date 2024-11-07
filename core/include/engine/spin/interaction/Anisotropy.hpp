@@ -3,6 +3,7 @@
 #define SPIRIT_CORE_ENGINE_INTERACTION_ANISOTROPY_HPP
 
 #include <engine/Indexing.hpp>
+#include <engine/spin/StateType.hpp>
 #include <engine/spin/interaction/Functor_Prototypes.hpp>
 
 #include <Eigen/Dense>
@@ -18,7 +19,7 @@ namespace Interaction
 
 struct Anisotropy
 {
-    using state_t = vectorfield;
+    using state_t = StateType;
 
     struct Data
     {
@@ -116,31 +117,31 @@ protected:
 };
 
 template<>
-inline scalar Anisotropy::Energy::operator()( const Index & index, const Vector3 * spins ) const
+inline scalar Anisotropy::Energy::operator()( const Index & index, quantity<const Vector3 *> state ) const
 {
     return -1.0
            * Backend::transform_reduce(
                index.begin(), index.end(), scalar( 0 ), Backend::plus<scalar>{},
-               [this, spins] SPIRIT_LAMBDA( const Interaction::IndexType & idx ) -> scalar
+               [this, state] SPIRIT_LAMBDA( const Interaction::IndexType & idx ) -> scalar
                {
-                   const auto d = normals[idx.iani].dot( spins[idx.ispin] );
+                   const auto d = normals[idx.iani].dot( state.spin[idx.ispin] );
                    return magnitudes[idx.iani] * d * d;
                } );
 }
 
 template<>
-inline Vector3 Anisotropy::Gradient::operator()( const Index & index, const Vector3 * spins ) const
+inline Vector3 Anisotropy::Gradient::operator()( const Index & index, quantity<const Vector3 *> state ) const
 {
     return -2.0
            * Backend::transform_reduce(
                index.begin(), index.end(), Vector3( Vector3::Zero() ), Backend::plus<Vector3>{},
-               [this, spins] SPIRIT_LAMBDA( const Interaction::IndexType & idx ) -> Vector3
-               { return magnitudes[idx.iani] * normals[idx.iani].dot( spins[idx.ispin] ) * normals[idx.iani]; } );
+               [this, state] SPIRIT_LAMBDA( const Interaction::IndexType & idx ) -> Vector3
+               { return magnitudes[idx.iani] * normals[idx.iani].dot( state.spin[idx.ispin] ) * normals[idx.iani]; } );
 }
 
 template<>
 template<typename Callable>
-void Anisotropy::Hessian::operator()( const Index & index, const vectorfield &, Callable & hessian ) const
+void Anisotropy::Hessian::operator()( const Index & index, const StateType &, Callable & hessian ) const
 {
     Backend::cpu::for_each(
         index.begin(), index.end(),

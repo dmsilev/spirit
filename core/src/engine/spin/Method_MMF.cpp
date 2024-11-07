@@ -59,7 +59,7 @@ Method_MMF<solver>::Method_MMF( std::shared_ptr<system_t> system, int idx_chain 
     this->mode_follow_previous = 0;
 
     // Create shared pointers to the method's systems' spin configurations
-    this->configurations    = std::vector<std::shared_ptr<vectorfield>>( 1 );
+    this->configurations    = std::vector<std::shared_ptr<StateType>>( 1 );
     this->configurations[0] = this->system->state;
 
     //---- Initialise Solver-specific variables
@@ -68,7 +68,7 @@ Method_MMF<solver>::Method_MMF( std::shared_ptr<system_t> system, int idx_chain 
 
 template<Solver solver>
 void Method_MMF<solver>::Calculate_Force(
-    const std::vector<std::shared_ptr<vectorfield>> & configurations, std::vector<vectorfield> & forces )
+    const std::vector<std::shared_ptr<StateType>> & configurations, std::vector<vectorfield> & forces )
 {
     // if (this->mm_function == "Spectra Matrix")
     // {
@@ -177,7 +177,7 @@ void check_modes(
 
 template<Solver solver>
 void Method_MMF<solver>::Calculate_Force_Spectra_Matrix(
-    const std::vector<std::shared_ptr<vectorfield>> & configurations, std::vector<vectorfield> & forces )
+    const std::vector<std::shared_ptr<StateType>> & configurations, std::vector<vectorfield> & forces )
 {
     auto & image = *configurations[0];
     auto & force = forces[0];
@@ -206,7 +206,7 @@ void Method_MMF<solver>::Calculate_Force_Spectra_Matrix(
     // The Hessian (unprojected)
     hamiltonian.Hessian( image, hessian );
 
-    Eigen::Ref<VectorX> image_3N    = Eigen::Map<VectorX>( image[0].data(), 3 * nos );
+    Eigen::Ref<VectorX> image_3N    = Eigen::Map<VectorX>( image.spin[0].data(), 3 * nos );
     Eigen::Ref<VectorX> gradient_3N = Eigen::Map<VectorX>( gradient[0].data(), 3 * nos );
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -218,7 +218,7 @@ void Method_MMF<solver>::Calculate_Force_Spectra_Matrix(
     VectorX eigenvalues;
     MatrixX eigenvectors;
     bool successful = Eigenmodes::Hessian_Partial_Spectrum(
-        geometry, image, gradient, hessian, n_modes, basis_3Nx2N, hessian_final, eigenvalues, eigenvectors );
+        geometry, image.spin, gradient, hessian, n_modes, basis_3Nx2N, hessian_final, eigenvalues, eigenvectors );
 
     if( successful )
     {
@@ -289,9 +289,9 @@ void Method_MMF<solver>::Calculate_Force_Spectra_Matrix(
         scalar mode_grad_angle     = std::abs( mode_grad / ( mode_3N.norm() * gradient_3N.norm() ) );
 
         // Make sure there is nothing wrong
-        check_modes( image, gradient, basis_3Nx2N, eigenvalues, eigenvectors, minimum_mode );
+        check_modes( image.spin, gradient, basis_3Nx2N, eigenvalues, eigenvectors, minimum_mode );
 
-        Manifoldmath::project_tangential( gradient, image );
+        Manifoldmath::project_tangential( gradient, image.spin );
 
         // Some debugging prints
         if( mode_evalue < -1e-6 && mode_grad_angle > 1e-8 ) // -1e-6)// || switched2)
@@ -419,7 +419,7 @@ void Method_MMF<solver>::Hook_Post_Iteration()
     // Loop over images to calculate the maximum torques
     for( unsigned int img = 0; img < this->systems.size(); ++img )
     {
-        Manifoldmath::project_tangential( this->forces_virtual[img], *( this->systems[img]->state ) );
+        Manifoldmath::project_tangential( this->forces_virtual[img], this->systems[img]->state->spin );
         const scalar fmax = Vectormath::max_norm( this->forces_virtual[img] );
         if( fmax > 0 )
             this->max_torque = fmax;
@@ -476,16 +476,16 @@ void Method_MMF<solver>::Save_Current( std::string starttime, int iteration, boo
                 IO::VF_FileFormat format = sys.mmf_parameters->output_vf_filetype;
 
                 // Spin Configuration
-                const auto & spins  = *sys.state;
-                auto segment        = IO::OVF_Segment( sys.hamiltonian->get_geometry() );
-                std::string title   = fmt::format( "SPIRIT Version {}", Utility::version_full );
-                segment.title       = strdup( title.c_str() );
-                segment.comment     = strdup( output_comment.c_str() );
-                segment.valuedim    = IO::Spin::State::valuedim;
-                segment.valuelabels = strdup( IO::Spin::State::valuelabels.data() );
-                segment.valueunits  = strdup( IO::Spin::State::valueunits.data() );
+                const auto & system_state = *sys.state;
+                auto segment              = IO::OVF_Segment( sys.hamiltonian->get_geometry() );
+                std::string title         = fmt::format( "SPIRIT Version {}", Utility::version_full );
+                segment.title             = strdup( title.c_str() );
+                segment.comment           = strdup( output_comment.c_str() );
+                segment.valuedim          = IO::Spin::State::valuedim;
+                segment.valuelabels       = strdup( IO::Spin::State::valuelabels.data() );
+                segment.valueunits        = strdup( IO::Spin::State::valueunits.data() );
 
-                const IO::Spin::State::Buffer buffer( spins );
+                const IO::Spin::State::Buffer buffer( system_state );
                 if( append )
                     IO::OVF_File( spinsFile ).append_segment( segment, buffer.data(), int( format ) );
                 else

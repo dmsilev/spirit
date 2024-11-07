@@ -77,7 +77,8 @@ inline void Method_Solver<Solver::VP>::Iteration()
         Solver_Kernels::VP::projected_velocity( projections, forces[i], velocities[i] );
 
         // Apply the projected velocity
-        Solver_Kernels::VP::apply_velocity( velocities[i], forces[i], this->llg_parameters[i]->dt, *configurations[i] );
+        Solver_Kernels::VP::apply_velocity(
+            velocities[i], forces[i], this->llg_parameters[i]->dt, configurations[i]->spin );
     }
 }
 

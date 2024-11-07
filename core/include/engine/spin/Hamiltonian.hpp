@@ -60,7 +60,7 @@ public:
 
     void Gradient( const state_t & state, vectorfield & gradient )
     {
-        const auto nos = state.size();
+        const auto nos = state.spin.size();
 
         if( gradient.size() != nos )
             gradient = vectorfield( nos, Vector3::Zero() );
@@ -96,7 +96,7 @@ private:
 
 struct HamiltonianVariantTypes
 {
-    using state_t     = vectorfield;
+    using state_t     = StateType;
     using AdaptorType = Spin::Interaction::StandaloneAdaptor<state_t>;
 
     using Gaussian   = Hamiltonian<state_t, AdaptorType, Interaction::Gaussian>;

@@ -20,7 +20,7 @@ protected:
     // Virtual Forces used in the Steps
     std::vector<vectorfield> forces_virtual_predictor;
 
-    std::vector<std::shared_ptr<vectorfield>> configurations_predictor;
+    std::vector<std::shared_ptr<StateType>> configurations_predictor;
 };
 
 template<>
@@ -32,9 +32,9 @@ inline void Method_Solver<Solver::SIB>::Initialize()
     this->forces_predictor         = std::vector<vectorfield>( this->noi, vectorfield( this->nos, { 0, 0, 0 } ) );
     this->forces_virtual_predictor = std::vector<vectorfield>( this->noi, vectorfield( this->nos, { 0, 0, 0 } ) );
 
-    this->configurations_predictor = std::vector<std::shared_ptr<vectorfield>>( this->noi );
+    this->configurations_predictor = std::vector<std::shared_ptr<StateType>>( this->noi );
     for( int i = 0; i < this->noi; i++ )
-        configurations_predictor[i] = std::make_shared<vectorfield>( this->nos );
+        configurations_predictor[i] = std::make_shared<StateType>( make_state<StateType>( this->nos ) );
 }
 
 /*
@@ -54,8 +54,8 @@ inline void Method_Solver<Solver::SIB>::Iteration()
     this->Calculate_Force_Virtual( this->configurations, this->forces, this->forces_virtual );
     for( int i = 0; i < this->noi; ++i )
     {
-        auto & image     = *this->configurations[i];
-        auto & predictor = *this->configurations_predictor[i];
+        auto & image     = this->configurations[i]->spin;
+        auto & predictor = this->configurations_predictor[i]->spin;
 
         Solver_Kernels::sib_transform( image, forces_virtual[i], predictor );
         Backend::transform(
@@ -70,7 +70,7 @@ inline void Method_Solver<Solver::SIB>::Iteration()
         this->configurations_predictor, this->forces_predictor, this->forces_virtual_predictor );
     for( int i = 0; i < this->noi; ++i )
     {
-        auto & image = *this->configurations[i];
+        auto & image = this->configurations[i]->spin;
 
         Solver_Kernels::sib_transform( image, forces_virtual_predictor[i], image );
     }

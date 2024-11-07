@@ -58,7 +58,7 @@ TEST_CASE( "Ensure that Hamiltonian is really just an aggregator", "[aggregation
         Configuration_Random( state.get() );
         const auto & spins = *state->active_image->state;
         auto & hamiltonian = state->active_image->hamiltonian;
-        auto nos           = get<Field::Spin>( spins ).size();
+        auto nos           = spins.spin.size();
 
         if( hamiltonian->active_count() == 0 )
         {
@@ -86,7 +86,7 @@ TEST_CASE( "Ensure that Hamiltonian is really just an aggregator", "[aggregation
             scalarfield( nos, 0 ),
             [&spins]( const scalarfield & v, const auto & interaction ) -> scalarfield
             {
-                const auto nos       = get<Field::Spin>( spins ).size();
+                const auto nos       = spins.spin.size();
                 auto energy_per_spin = scalarfield( nos, 0 );
                 interaction->Energy_per_Spin( spins, energy_per_spin );
 #pragma omp parallel for
@@ -111,7 +111,7 @@ TEST_CASE( "Ensure that Hamiltonian is really just an aggregator", "[aggregation
             vectorfield( nos, Vector3::Zero() ),
             [&spins]( const vectorfield & v, const auto & interaction ) -> vectorfield
             {
-                auto gradient = vectorfield( get<Field::Spin>( spins ).size(), Vector3::Zero() );
+                auto gradient = vectorfield( spins.spin.size(), Vector3::Zero() );
                 interaction->Gradient( spins, gradient );
                 Engine::Vectormath::add_c_a( 1.0, v, gradient );
                 return gradient;

@@ -100,8 +100,8 @@ public:
     void Gradient( const state_t & state, vectorfield & gradient ) final
     {
         using std::begin, std::end;
-        auto functor           = typename InteractionType::Gradient( this->data, this->cache );
-        const auto * state_ptr = state.data();
+        auto functor   = typename InteractionType::Gradient( this->data, this->cache );
+        auto state_ptr = state.data();
         Backend::transform(
             SPIRIT_PAR this->indices.begin(), this->indices.end(), gradient.begin(),
             [state_ptr, functor] SPIRIT_LAMBDA( const IndexTuple & index )

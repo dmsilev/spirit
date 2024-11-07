@@ -682,9 +682,9 @@ try
         {
             chain->images[i]->UpdateEnergy();
             if( i > 0 )
-                chain->Rx[i]
-                    = chain->Rx[i - 1]
-                      + Engine::Manifoldmath::dist_geodesic( *chain->images[i - 1]->state, *chain->images[i]->state );
+                chain->Rx[i] = chain->Rx[i - 1]
+                               + Engine::Manifoldmath::dist_geodesic(
+                                   chain->images[i - 1]->state->spin, chain->images[i]->state->spin );
         }
         catch( ... )
         {

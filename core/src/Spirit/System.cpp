@@ -43,7 +43,7 @@ try
     // Fetch correct indices and pointers
     auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    return (scalar *)get<Field::Spin>( *image->state )[0].data();
+    return (scalar *)image->state->spin[0].data();
 }
 catch( ... )
 {

@@ -69,7 +69,7 @@ inline void Method_Solver<Solver::LBFGS_OSO>::Iteration()
     // calculate gradients for OSO
     for( int img = 0; img < this->noi; img++ )
     {
-        auto & image    = *this->configurations[img];
+        auto & image    = this->configurations[img]->spin;
         auto & grad_ref = this->grad[img];
 
         const auto * f = this->forces[img].data();
@@ -97,7 +97,7 @@ inline void Method_Solver<Solver::LBFGS_OSO>::Iteration()
     {
         Vectormath::scale( searchdir[img], scaling );
         // rotate spins
-        Solver_Kernels::oso_rotate( *this->configurations[img], this->searchdir[img] );
+        Solver_Kernels::oso_rotate( this->configurations[img]->spin, this->searchdir[img] );
     }
 }
 

@@ -27,14 +27,14 @@ void Add_Noise_Temperature( State::chain_t & c, int idx_1, int idx_2, scalar tem
     for( int img = idx_1 + 1; img <= idx_2 - 1; ++img )
     {
         Configurations::Add_Noise_Temperature_Sphere(
-            get<Field::Spin>( *c.images[img]->state ), c.images[img]->hamiltonian->get_geometry(), temperature, prng );
+            c.images[img]->state->spin, c.images[img]->hamiltonian->get_geometry(), temperature, prng );
     }
 }
 
 void Homogeneous_Rotation( State::chain_t & c, int idx_1, int idx_2 )
 {
-    auto & spins_1 = get<Field::Spin>( *c.images[idx_1]->state );
-    auto & spins_2 = get<Field::Spin>( *c.images[idx_2]->state );
+    auto & spins_1 = c.images[idx_1]->state->spin;
+    auto & spins_2 = c.images[idx_2]->state->spin;
 
     scalar angle, rot_angle;
     Vector3 rot_axis;
@@ -63,7 +63,7 @@ void Homogeneous_Rotation( State::chain_t & c, int idx_1, int idx_2 )
             for( int img = idx_1 + 1; img < idx_2; ++img )
             {
                 angle = rot_angle * scalar( img - idx_1 ) / scalar( idx_2 - idx_1 );
-                Engine::Vectormath::rotate( spins_1[i], rot_axis, angle, get<Field::Spin>( *c.images[img]->state )[i] );
+                Engine::Vectormath::rotate( spins_1[i], rot_axis, angle, c.images[img]->state->spin[i] );
             }
         }
         // Otherwise we simply leave the spin untouched
@@ -71,7 +71,7 @@ void Homogeneous_Rotation( State::chain_t & c, int idx_1, int idx_2 )
         {
             for( int img = idx_1 + 1; img < idx_2; ++img )
             {
-                get<Field::Spin>( *c.images[img]->state )[i] = spins_1[i];
+                c.images[img]->state->spin[i] = spins_1[i];
             }
         }
     }

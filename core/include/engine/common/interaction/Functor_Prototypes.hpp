@@ -56,7 +56,7 @@ struct Reduce_Functor
     scalar operator()( const typename Interaction::state_t & state ) const
     {
         using std::begin, std::end;
-        scalarfield energy_per_spin( state.size() );
+        scalarfield energy_per_spin( state.spin.size() );
         functor( state, energy_per_spin );
         return Backend::cpu::reduce( SPIRIT_CPU_PAR begin( energy_per_spin ), end( energy_per_spin ) );
     };

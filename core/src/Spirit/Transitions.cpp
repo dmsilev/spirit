@@ -41,8 +41,7 @@ try
     {
         Utility::Configuration_Chain::Homogeneous_Rotation( *chain, idx_1, idx_2 );
         for( int img = 0; img < chain->noi; ++img )
-            chain->images[img]->hamiltonian->get_geometry().Apply_Pinning(
-                get<Field::Spin>( *chain->images[img]->state ) );
+            chain->images[img]->hamiltonian->get_geometry().Apply_Pinning( chain->images[img]->state->spin );
 
         Log( Utility::Log_Level::Info, Utility::Log_Sender::API,
              fmt::format( "Set homogeneous transition between images {} and {}", idx_1 + 1, idx_2 + 1 ), -1,
@@ -105,8 +104,7 @@ try
     {
         Utility::Configuration_Chain::Add_Noise_Temperature( *chain, idx_1, idx_2, temperature );
         for( int img = 0; img < chain->noi; ++img )
-            chain->images[img]->hamiltonian->get_geometry().Apply_Pinning(
-                get<Field::Spin>( *chain->images[img]->state ) );
+            chain->images[img]->hamiltonian->get_geometry().Apply_Pinning( chain->images[img]->state->spin );
 
         Log( Utility::Log_Level::Info, Utility::Log_Sender::API,
              fmt::format( "Added noise with temperature T={} to images {} - {}", temperature, idx_1 + 1, idx_2 + 1 ),

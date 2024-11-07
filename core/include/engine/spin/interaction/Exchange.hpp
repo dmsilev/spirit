@@ -5,6 +5,7 @@
 #include <engine/Indexing.hpp>
 #include <engine/Neighbours.hpp>
 #include <engine/Span.hpp>
+#include <engine/spin/StateType.hpp>
 #include <engine/spin/interaction/Functor_Prototypes.hpp>
 
 #include <Eigen/Dense>
@@ -20,7 +21,7 @@ namespace Interaction
 
 struct Exchange
 {
-    using state_t = vectorfield;
+    using state_t = StateType;
 
     struct Data
     {
@@ -147,34 +148,34 @@ protected:
 };
 
 template<>
-inline scalar Exchange::Energy::operator()( const Index & index, const Vector3 * spins ) const
+inline scalar Exchange::Energy::operator()( const Index & index, quantity<const Vector3 *> state ) const
 {
     // don't need to check for `is_contributing` here, because the `transform_reduce` will short circuit correctly
     return Backend::transform_reduce(
         index.begin(), index.end(), scalar( 0.0 ), Backend::plus<scalar>{},
-        [this, spins] SPIRIT_LAMBDA( const Exchange::IndexType & idx ) -> scalar
+        [this, state] SPIRIT_LAMBDA( const Exchange::IndexType & idx ) -> scalar
         {
             const auto & [ispin, jspin, i_pair] = idx;
-            return -0.5 * magnitudes[i_pair] * spins[ispin].dot( spins[jspin] );
+            return -0.5 * magnitudes[i_pair] * state.spin[ispin].dot( state.spin[jspin] );
         } );
 }
 
 template<>
-inline Vector3 Exchange::Gradient::operator()( const Index & index, const Vector3 * spins ) const
+inline Vector3 Exchange::Gradient::operator()( const Index & index, quantity<const Vector3 *> state ) const
 {
     // don't need to check for `is_contributing` here, because the `transform_reduce` will short circuit correctly
     return Backend::transform_reduce(
         index.begin(), index.end(), Vector3{ 0.0, 0.0, 0.0 }, Backend::plus<Vector3>{},
-        [this, spins] SPIRIT_LAMBDA( const Exchange::IndexType & idx ) -> Vector3
+        [this, state] SPIRIT_LAMBDA( const Exchange::IndexType & idx ) -> Vector3
         {
             const auto & [ispin, jspin, i_pair] = idx;
-            return -magnitudes[i_pair] * spins[jspin];
+            return -magnitudes[i_pair] * state.spin[jspin];
         } );
 }
 
 template<>
 template<typename Callable>
-void Exchange::Hessian::operator()( const Index & index, const vectorfield &, Callable & hessian ) const
+void Exchange::Hessian::operator()( const Index & index, const StateType &, Callable & hessian ) const
 {
     // don't need to check for `is_contributing` here, because `for_each` will short circuit properly
     Backend::cpu::for_each(

@@ -219,8 +219,8 @@ TEST_CASE( "Finite difference and regular Hamiltonian should match", "[physics]"
 
         auto state = std::shared_ptr<State>( State_Setup( input_file ), State_Delete );
         Configuration_Random( state.get() );
-        const auto & spins = *state->active_image->state;
-        auto & hamiltonian = state->active_image->hamiltonian;
+        const auto & system_state = *state->active_image->state;
+        auto & hamiltonian        = state->active_image->hamiltonian;
 
         // Compare gradients
         auto grad    = vectorfield( state->nos, Vector3::Zero() );
@@ -229,10 +229,10 @@ TEST_CASE( "Finite difference and regular Hamiltonian should match", "[physics]"
         {
             Engine::Vectormath::fill( grad, Vector3::Zero() );
             Engine::Vectormath::fill( grad_fd, Vector3::Zero() );
-            interaction->Gradient( spins, grad );
+            interaction->Gradient( system_state, grad );
             Engine::Vectormath::Gradient(
-                spins, grad_fd,
-                [&interaction]( const auto & spins ) -> scalar { return interaction->Energy( spins ); } );
+                system_state, grad_fd,
+                [&interaction]( const auto & state ) -> scalar { return interaction->Energy( state ); } );
             INFO( "Interaction: " << interaction->Name() << "\n" );
             for( int i = 0; i < state->nos; i++ )
             {
@@ -252,9 +252,9 @@ TEST_CASE( "Finite difference and regular Hamiltonian should match", "[physics]"
             hessian_fd.setZero();
 
             Engine::Vectormath::Hessian(
-                spins, hessian_fd,
-                [&interaction]( const auto & spins, auto & gradient ) { interaction->Gradient( spins, gradient ); } );
-            interaction->Hessian( spins, hessian );
+                system_state, hessian_fd,
+                [&interaction]( const auto & state, auto & gradient ) { interaction->Gradient( state, gradient ); } );
+            interaction->Hessian( system_state, hessian );
             INFO( "Interaction: " << interaction->Name() << "\n" );
             INFO( "epsilon = " << epsilon_3 << "\n" );
             INFO( "Hessian (FD) =\n" << hessian_fd << "\n" );
@@ -271,19 +271,19 @@ TEST_CASE( "Dipole-Dipole Interaction", "[physics]" )
     auto state                = std::shared_ptr<State>( State_Setup( input_file ), State_Delete );
 
     Configuration_Random( state.get() );
-    auto & spins = *state->active_image->state;
+    auto & system_state = *state->active_image->state;
 
     auto ddi_interaction = state->active_image->hamiltonian->getInteraction<Engine::Spin::Interaction::DDI>();
 
     // FFT gradient and energy
     auto grad_fft = vectorfield( state->nos, Vector3::Zero() );
-    ddi_interaction->Gradient( spins, grad_fft );
-    auto energy_fft = ddi_interaction->Energy( spins );
+    ddi_interaction->Gradient( system_state, grad_fft );
+    auto energy_fft = ddi_interaction->Energy( system_state );
     {
         auto grad_fft_fd = vectorfield( state->nos, Vector3::Zero() );
         Engine::Vectormath::Gradient(
-            spins, grad_fft_fd,
-            [&ddi_interaction]( const auto & spins ) -> scalar { return ddi_interaction->Energy( spins ); } );
+            system_state, grad_fft_fd,
+            [&ddi_interaction]( const auto & state ) -> scalar { return ddi_interaction->Energy( state ); } );
 
         INFO( "Interaction: " << ddi_interaction->Name() << "\n" );
         for( int i = 0; i < state->nos; i++ )
@@ -298,8 +298,8 @@ TEST_CASE( "Dipole-Dipole Interaction", "[physics]" )
     auto n_periodic_images = std::vector<int>{ 4, 4, 4 };
     Hamiltonian_Set_DDI( state.get(), SPIRIT_DDI_METHOD_CUTOFF, n_periodic_images.data(), -1 );
     auto grad_direct = vectorfield( state->nos, Vector3::Zero() );
-    ddi_interaction->Gradient( spins, grad_direct );
-    auto energy_direct = ddi_interaction->Energy( spins );
+    ddi_interaction->Gradient( system_state, grad_direct );
+    auto energy_direct = ddi_interaction->Energy( system_state );
 
     // Compare gradients
     for( int i = 0; i < state->nos; i++ )

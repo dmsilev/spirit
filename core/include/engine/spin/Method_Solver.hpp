@@ -101,11 +101,11 @@ protected:
     using Method::Method;
 
     virtual void Prepare_Thermal_Field() = 0;
-    virtual void Calculate_Force(
-        const std::vector<std::shared_ptr<vectorfield>> & configurations, std::vector<vectorfield> & forces )
+    virtual void
+    Calculate_Force( const std::vector<std::shared_ptr<StateType>> & configurations, std::vector<vectorfield> & forces )
         = 0;
     virtual void Calculate_Force_Virtual(
-        const std::vector<std::shared_ptr<vectorfield>> & configurations, const std::vector<vectorfield> & forces,
+        const std::vector<std::shared_ptr<StateType>> & configurations, const std::vector<vectorfield> & forces,
         std::vector<vectorfield> & forces_virtual )
         = 0;
     // Actual Forces on the configurations
@@ -113,7 +113,7 @@ protected:
     // Virtual Forces used in the Steps
     std::vector<vectorfield> forces_virtual;
     // Pointers to Configurations (for Solver methods)
-    std::vector<std::shared_ptr<vectorfield>> configurations;
+    std::vector<std::shared_ptr<StateType>> configurations;
 };
 
 // default implementation (to be overwritten by class template specialization)
@@ -175,7 +175,7 @@ protected:
      * TODO: maybe rename to separate from deterministic and stochastic force functions
      */
     void Calculate_Force(
-        const std::vector<std::shared_ptr<vectorfield>> & configurations, std::vector<vectorfield> & forces ) override
+        const std::vector<std::shared_ptr<StateType>> & configurations, std::vector<vectorfield> & forces ) override
     {
         Log( Utility::Log_Level::Error, Utility::Log_Sender::All,
              "Tried to use Method_Solver::Calculate_Force() of the Method_Solver class!", this->idx_image,
@@ -190,7 +190,7 @@ protected:
      * Default implementation: direct minimization
      */
     void Calculate_Force_Virtual(
-        const std::vector<std::shared_ptr<vectorfield>> & configurations, const std::vector<vectorfield> & forces,
+        const std::vector<std::shared_ptr<StateType>> & configurations, const std::vector<vectorfield> & forces,
         std::vector<vectorfield> & forces_virtual ) override
     {
         // Not Implemented!

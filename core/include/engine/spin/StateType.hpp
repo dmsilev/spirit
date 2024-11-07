@@ -7,6 +7,9 @@
 namespace Engine
 {
 
+template<typename state_type>
+struct state_traits;
+
 namespace Spin
 {
 
@@ -16,35 +19,62 @@ enum struct Field
 };
 
 template<typename T>
-using quantity = T;
+struct quantity
+{
+    T spin;
+};
+
+template<typename T>
+struct quantity<field<T>>
+{
+    field<T> spin;
+
+    auto data() -> typename state_traits<quantity<field<T>>>::pointer
+    {
+        return { spin.data() };
+    }
+
+    auto data() const -> typename state_traits<quantity<field<T>>>::const_pointer
+    {
+        return { spin.data() };
+    }
+};
+
+template<typename T>
+constexpr auto make_quantity( T && value ) -> quantity<std::decay_t<T>>
+{
+    return { std::forward<T>( value ) };
+}
 
 template<Field field, typename T>
-T & get( T & q )
+T & get( quantity<T> & q )
 {
-    return q;
+    if constexpr( field == Field::Spin )
+        return q.spin;
 }
 
 template<Field field, typename T>
 const T & get( const T & q )
 {
-    return q;
+    if constexpr( field == Field::Spin )
+        return q.spin;
 }
 
-using StateType = vectorfield;
-using StatePtr  = Vector3 *;
-using StateCPtr = const Vector3 *;
+using StateType = quantity<vectorfield>;
+using StatePtr  = quantity<Vector3 *>;
+using StateCPtr = quantity<const Vector3 *>;
 
 } // namespace Spin
 
 template<typename state_type>
 struct state_traits;
 
-template<>
-struct state_traits<Spin::StateType>
+template<typename T>
+struct state_traits<Spin::quantity<T>>
 {
-    using type          = Spin::StateType;
-    using pointer       = Spin::StateType::pointer;
-    using const_pointer = Spin::StateType::const_pointer;
+    using type          = Spin::quantity<T>;
+    using pointer       = Spin::quantity<typename T::pointer>;
+    using const_pointer = Spin::quantity<typename T::const_pointer>;
 };
 
 template<typename state_t>
@@ -53,7 +83,7 @@ state_t make_state( int nos );
 template<>
 inline Spin::StateType make_state( int nos )
 {
-    return vectorfield( nos );
+    return { vectorfield( nos ) };
 };
 
 } // namespace Engine

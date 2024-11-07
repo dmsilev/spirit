@@ -42,7 +42,7 @@ Method_LLG<solver>::Method_LLG( std::shared_ptr<system_t> system, int idx_img, i
     this->max_torque      = system->llg_parameters->force_convergence + 1.0;
 
     // Create shared pointers to the method's systems' spin configurations
-    this->configurations = std::vector<std::shared_ptr<vectorfield>>( this->noi );
+    this->configurations = std::vector<std::shared_ptr<StateType>>( this->noi );
     for( int i = 0; i < this->noi; ++i )
         this->configurations[i] = this->systems[i]->state;
 
@@ -72,7 +72,7 @@ void Method_LLG<solver>::Prepare_Thermal_Field()
 
 template<Solver solver>
 void Method_LLG<solver>::Calculate_Force(
-    const std::vector<std::shared_ptr<vectorfield>> & configurations, std::vector<vectorfield> & forces )
+    const std::vector<std::shared_ptr<StateType>> & configurations, std::vector<vectorfield> & forces )
 {
     // Loop over images to calculate the total force on each Image
     for( std::size_t img = 0; img < this->systems.size(); ++img )
@@ -92,7 +92,7 @@ void Method_LLG<solver>::Calculate_Force(
 
 template<Solver solver>
 void Method_LLG<solver>::Calculate_Force_Virtual(
-    const std::vector<std::shared_ptr<vectorfield>> & configurations, const std::vector<vectorfield> & forces,
+    const std::vector<std::shared_ptr<StateType>> & configurations, const std::vector<vectorfield> & forces,
     std::vector<vectorfield> & forces_virtual )
 {
     for( int i = 0; i < this->noi; ++i )
@@ -100,7 +100,7 @@ void Method_LLG<solver>::Calculate_Force_Virtual(
         const auto & sys = *this->systems[i];
         common_methods[i].Virtual_Force_Spin(
             *sys.llg_parameters, sys.hamiltonian->get_geometry(), sys.hamiltonian->get_boundary_conditions(),
-            *configurations[i], forces[i], forces_virtual[i] );
+            configurations[i]->spin, forces[i], forces_virtual[i] );
     }
 }
 
@@ -133,7 +133,7 @@ void Method_LLG<solver>::Hook_Post_Iteration()
     for( std::size_t img = 0; img < this->systems.size(); ++img )
     {
         this->force_converged[img] = false;
-        Manifoldmath::project_tangential( this->forces_virtual[img], *( this->systems[img]->state ) );
+        Manifoldmath::project_tangential( this->forces_virtual[img], this->systems[img]->state->spin );
         const scalar fmax = Vectormath::max_norm( this->forces_virtual[img] );
 
         if( fmax > 0 )
@@ -153,7 +153,7 @@ void Method_LLG<solver>::Hook_Post_Iteration()
     // ToDo: How to update eff_field without numerical overhead?
     // systems[0]->effective_field = Gradient[0];
     // Vectormath::scale(systems[0]->effective_field, -1);
-    Manifoldmath::project_tangential( this->forces[0], *this->systems[0]->state );
+    Manifoldmath::project_tangential( this->forces[0], this->systems[0]->state->spin );
     Vectormath::set_c_a( 1, this->forces[0], this->systems[0]->M.effective_field );
     // systems[0]->UpdateEffectiveField();
 
@@ -263,7 +263,7 @@ void Method_LLG<solver>::Save_Current( std::string starttime, int iteration, boo
                 IO::VF_FileFormat format = sys.llg_parameters->output_vf_filetype;
 
                 // Spin Configuration
-                auto & spins        = *sys.state;
+                auto & system_state = *sys.state;
                 auto segment        = IO::OVF_Segment( sys.hamiltonian->get_geometry() );
                 std::string title   = fmt::format( "SPIRIT Version {}", Utility::version_full );
                 segment.title       = strdup( title.c_str() );
@@ -272,7 +272,7 @@ void Method_LLG<solver>::Save_Current( std::string starttime, int iteration, boo
                 segment.valuelabels = strdup( IO::Spin::State::valuelabels.data() );
                 segment.valueunits  = strdup( IO::Spin::State::valueunits.data() );
 
-                const IO::Spin::State::Buffer buffer( spins );
+                const IO::Spin::State::Buffer buffer( system_state );
                 if( append )
                     IO::OVF_File( spinsFile ).append_segment( segment, buffer.data(), static_cast<int>( format ) );
                 else

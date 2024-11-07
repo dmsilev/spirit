@@ -5,6 +5,7 @@
 #include <engine/Indexing.hpp>
 #include <engine/Neighbours.hpp>
 #include <engine/Span.hpp>
+#include <engine/spin/StateType.hpp>
 #include <engine/spin/interaction/Functor_Prototypes.hpp>
 
 #include <Eigen/Dense>
@@ -20,7 +21,7 @@ namespace Interaction
 
 struct DMI
 {
-    using state_t = vectorfield;
+    using state_t = StateType;
 
     struct Data
     {
@@ -167,35 +168,35 @@ protected:
 };
 
 template<>
-inline scalar DMI::Energy::operator()( const Index & index, const Vector3 * spins ) const
+inline scalar DMI::Energy::operator()( const Index & index, quantity<const Vector3 *> state ) const
 {
     // don't need to check for `is_contributing` here, because `transform_reduce` will short circuit properly
     return Backend::transform_reduce(
         index.begin(), index.end(), scalar( 0.0 ), Backend::plus<scalar>{},
-        [this, spins] SPIRIT_LAMBDA( const DMI::IndexType & idx ) -> scalar
+        [this, state] SPIRIT_LAMBDA( const DMI::IndexType & idx ) -> scalar
         {
             const auto & [ispin, jspin, i_pair, inverse] = idx;
             return ( inverse ? 0.5 : -0.5 ) * magnitudes[i_pair]
-                   * normals[i_pair].dot( spins[ispin].cross( spins[jspin] ) );
+                   * normals[i_pair].dot( state.spin[ispin].cross( state.spin[jspin] ) );
         } );
 }
 
 template<>
-inline Vector3 DMI::Gradient::operator()( const Index & index, const Vector3 * spins ) const
+inline Vector3 DMI::Gradient::operator()( const Index & index, quantity<const Vector3 *> state ) const
 {
     // don't need to check for `is_contributing` here, because `transform_reduce` will short circuit properly
     return Backend::transform_reduce(
         index.begin(), index.end(), Vector3{ 0.0, 0.0, 0.0 }, Backend::plus<Vector3>{},
-        [this, spins] SPIRIT_LAMBDA( const DMI::IndexType & idx ) -> Vector3
+        [this, state] SPIRIT_LAMBDA( const DMI::IndexType & idx ) -> Vector3
         {
             const auto & [ispin, jspin, i_pair, inverse] = idx;
-            return ( inverse ? 1.0 : -1.0 ) * magnitudes[i_pair] * spins[jspin].cross( normals[i_pair] );
+            return ( inverse ? 1.0 : -1.0 ) * magnitudes[i_pair] * state.spin[jspin].cross( normals[i_pair] );
         } );
 }
 
 template<>
 template<typename Callable>
-void DMI::Hessian::operator()( const Index & index, const vectorfield &, Callable & hessian ) const
+void DMI::Hessian::operator()( const Index & index, const StateType &, Callable & hessian ) const
 {
     // don't need to check for `is_contributing` here, because `for_each` will short circuit properly
     Backend::cpu::for_each(

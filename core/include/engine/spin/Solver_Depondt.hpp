@@ -26,7 +26,7 @@ protected:
     // Virtual Forces used in the Steps
     std::vector<vectorfield> forces_virtual_predictor;
 
-    std::vector<std::shared_ptr<vectorfield>> configurations_predictor;
+    std::vector<std::shared_ptr<StateType>> configurations_predictor;
 
     vectorfield temp1;
 };
@@ -44,9 +44,10 @@ inline void Method_Solver<Solver::Depondt>::Initialize()
     this->angle               = scalarfield( this->nos, 0 );
     this->forces_virtual_norm = std::vector<scalarfield>( this->noi, scalarfield( this->nos, 0 ) );
 
-    this->configurations_predictor = std::vector<std::shared_ptr<vectorfield>>( this->noi );
+    this->configurations_predictor = std::vector<std::shared_ptr<StateType>>( this->noi );
     for( int i = 0; i < this->noi; i++ )
-        configurations_predictor[i] = std::make_shared<vectorfield>( this->nos, Vector3{ 0, 0, 0 } );
+        configurations_predictor[i]
+            = std::make_shared<StateType>( StateType{ vectorfield( this->nos, Vector3{ 0, 0, 0 } ) } );
 
     this->temp1 = vectorfield( this->nos, { 0, 0, 0 } );
 }
@@ -72,7 +73,7 @@ inline void Method_Solver<Solver::Depondt>::Iteration()
     for( int i = 0; i < this->noi; ++i )
     {
         Solver_Kernels::depondt_predictor(
-            forces_virtual[i], rotationaxis[i], angle, *configurations[i], *configurations_predictor[i] );
+            forces_virtual[i], rotationaxis[i], angle, configurations[i]->spin, configurations_predictor[i]->spin );
     }
 
     // Calculate_Force for the Corrector
@@ -84,7 +85,7 @@ inline void Method_Solver<Solver::Depondt>::Iteration()
     for( int i = 0; i < this->noi; i++ )
     {
         Solver_Kernels::depondt_corrector(
-            forces_virtual[i], forces_virtual_predictor[i], temp1, angle, *configurations[i] );
+            forces_virtual[i], forces_virtual_predictor[i], temp1, angle, configurations[i]->spin );
     }
 }
 

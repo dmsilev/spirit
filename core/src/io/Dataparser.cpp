@@ -29,8 +29,7 @@ namespace Spin
 
 // Reads a non-OVF spins file with plain text and discarding any headers starting with '#'
 void Read_NonOVF_System_Configuration(
-    vectorfield & spins, Data::Geometry & geometry, const int nos, const int idx_image_infile,
-    const std::string & file )
+    StateType & state, Data::Geometry & geometry, const int nos, const int idx_image_infile, const std::string & file )
 {
     IO::Filter_File_Handle file_handle( file, "#" );
 
@@ -40,13 +39,13 @@ void Read_NonOVF_System_Configuration(
 
     for( int i = 0; i < nos && file_handle.GetLine( "," ); i++ )
     {
-        file_handle >> spins[i][0];
-        file_handle >> spins[i][1];
-        file_handle >> spins[i][2];
+        file_handle >> state.spin[i][0];
+        file_handle >> state.spin[i][1];
+        file_handle >> state.spin[i][2];
 
-        if( spins[i].norm() < 1e-5 )
+        if( state.spin[i].norm() < 1e-5 )
         {
-            spins[i] = { 0, 0, 1 };
+            state.spin[i] = { 0, 0, 1 };
             // In case of spin vector close to zero we have a vacancy
 #ifdef SPIRIT_ENABLE_DEFECTS
             geometry.atom_types[i] = -1;
@@ -55,7 +54,7 @@ void Read_NonOVF_System_Configuration(
     }
 
     // normalize read in spins
-    Engine::Vectormath::normalize_vectors( spins );
+    Engine::Vectormath::normalize_vectors( state.spin );
 }
 
 } // namespace Spin

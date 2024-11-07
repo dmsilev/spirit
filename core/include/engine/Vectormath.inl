@@ -2,6 +2,7 @@
 
 #include <data/Geometry.hpp>
 #include <engine/Backend.hpp>
+#include <engine/StateType.hpp>
 #include <engine/Vectormath_Defines.hpp>
 #include <utility/Constants.hpp>
 
@@ -317,41 +318,41 @@ inline void cross( const vectorfield & vf1, const vectorfield & vf2, vectorfield
 }
 
 template<typename StateType, typename GradientType, typename EnergyFunction>
-void Gradient( const StateType & spins, GradientType & gradient, EnergyFunction && energy, scalar delta )
+void Gradient( const StateType & state, GradientType & gradient, EnergyFunction && energy, scalar delta )
 {
-    static_assert( std::is_convertible_v<decltype( energy( spins ) ), scalar> );
+    static_assert( std::is_convertible_v<decltype( energy( state ) ), scalar> );
 
-    std::size_t nos = spins.size();
+    std::size_t nos = state.spin.size();
 
     // Calculate finite difference
-    vectorfield spins_plus( nos );
-    vectorfield spins_minus( nos );
+    StateType state_plus  = Engine::make_state<StateType>( nos );
+    StateType state_minus = Engine::make_state<StateType>( nos );
 
-    spins_plus  = spins;
-    spins_minus = spins;
+    state_plus  = state;
+    state_minus = state;
 
     for( std::size_t i = 0; i < nos; ++i )
     {
         for( std::uint8_t dim = 0; dim < 3; ++dim )
         {
             // Displace
-            spins_plus[i][dim] += delta;
-            spins_minus[i][dim] -= delta;
+            state_plus.spin[i][dim] += delta;
+            state_minus.spin[i][dim] -= delta;
 
             // Calculate gradient component
-            scalar E_plus    = energy( spins_plus );
-            scalar E_minus   = energy( spins_minus );
+            scalar E_plus    = energy( state_plus );
+            scalar E_minus   = energy( state_minus );
             gradient[i][dim] = 0.5 * ( E_plus - E_minus ) / delta;
 
             // Un-Displace
-            spins_plus[i][dim] -= delta;
-            spins_minus[i][dim] += delta;
+            state_plus.spin[i][dim] -= delta;
+            state_minus.spin[i][dim] += delta;
         }
     }
 }
 
 template<typename StateType, typename HessianType, typename GradientFunction>
-void Hessian( const StateType & spins, HessianType & hessian, GradientFunction && gradient, scalar delta )
+void Hessian( const StateType & state, HessianType & hessian, GradientFunction && gradient, scalar delta )
 {
     static_assert( std::is_invocable_v<GradientFunction, const StateType &, vectorfield &> );
 
@@ -359,17 +360,17 @@ void Hessian( const StateType & spins, HessianType & hessian, GradientFunction &
     // using the differences between gradient values (not function)
     // see https://v8doc.sas.com/sashtml/ormp/chap5/sect28.htm
 
-    std::size_t nos = spins.size();
+    std::size_t nos = state.spin.size();
 
-    vectorfield spins_pi( nos );
-    vectorfield spins_mi( nos );
-    vectorfield spins_pj( nos );
-    vectorfield spins_mj( nos );
+    StateType state_pi = Engine::make_state<StateType>( nos );
+    StateType state_mi = Engine::make_state<StateType>( nos );
+    StateType state_pj = Engine::make_state<StateType>( nos );
+    StateType state_mj = Engine::make_state<StateType>( nos );
 
-    spins_pi = spins;
-    spins_mi = spins;
-    spins_pj = spins;
-    spins_mj = spins;
+    state_pi = state;
+    state_mi = state;
+    state_pj = state;
+    state_mj = state;
 
     vectorfield grad_pi( nos );
     vectorfield grad_mi( nos );
@@ -385,26 +386,26 @@ void Hessian( const StateType & spins, HessianType & hessian, GradientFunction &
                 for( std::uint8_t beta = 0; beta < 3; ++beta )
                 {
                     // Displace
-                    spins_pi[i][alpha] += delta;
-                    spins_mi[i][alpha] -= delta;
-                    spins_pj[j][beta] += delta;
-                    spins_mj[j][beta] -= delta;
+                    state_pi.spin[i][alpha] += delta;
+                    state_mi.spin[i][alpha] -= delta;
+                    state_pj.spin[j][beta] += delta;
+                    state_mj.spin[j][beta] -= delta;
 
                     // Calculate Hessian component
-                    gradient( spins_pi, grad_pi );
-                    gradient( spins_mi, grad_mi );
-                    gradient( spins_pj, grad_pj );
-                    gradient( spins_mj, grad_mj );
+                    gradient( state_pi, grad_pi );
+                    gradient( state_mi, grad_mi );
+                    gradient( state_pj, grad_pj );
+                    gradient( state_mj, grad_mj );
 
                     hessian( 3 * i + alpha, 3 * j + beta )
                         = 0.25 / delta
                           * ( grad_pj[i][alpha] - grad_mj[i][alpha] + grad_pi[j][beta] - grad_mi[j][beta] );
 
                     // Un-Displace
-                    spins_pi[i][alpha] -= delta;
-                    spins_mi[i][alpha] += delta;
-                    spins_pj[j][beta] -= delta;
-                    spins_mj[j][beta] += delta;
+                    state_pi.spin[i][alpha] -= delta;
+                    state_mi.spin[i][alpha] += delta;
+                    state_pj.spin[j][beta] -= delta;
+                    state_mj.spin[j][beta] += delta;
                 }
             }
         }

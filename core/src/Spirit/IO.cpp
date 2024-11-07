@@ -256,11 +256,9 @@ try
         }
 
         // Read data
-        file.read_segment_data( idx_image_infile, segment, system_state[0].data() );
-        using Engine::Field;
-        using Engine::get;
+        file.read_segment_data( idx_image_infile, segment, system_state.spin[0].data() );
 
-        vectorfield & spins = get<Field::Spin>( system_state );
+        auto & spins = system_state.spin;
         for( std::size_t ispin = 0; ispin < spins.size(); ++ispin )
         {
             if( spins[ispin].norm() < 1e-5 )
@@ -564,8 +562,8 @@ try
                 }
 
                 // Read data
-                file.read_segment_data( start_image_infile, segment, system_state[0].data() );
-                auto & spins = Engine::get<Engine::Field::Spin>( system_state );
+                auto & spins = system_state.spin;
+                file.read_segment_data( start_image_infile, segment, spins[0].data() );
                 for( unsigned int ispin = 0; ispin < spins.size(); ++ispin )
                 {
                     if( spins[ispin].norm() < 1e-5 )
@@ -1012,7 +1010,7 @@ try
     {
         const std::string extension = Get_Extension( filename );
 
-        auto & spins = *image->state;
+        auto & system_state = *image->state;
 
         // Open
         auto file = IO::OVF_File( filename, true );
@@ -1065,7 +1063,7 @@ try
         {
             // If the mode buffer is created by resizing then it needs to be allocated
             if( !image->modes[idx].has_value() )
-                image->modes[idx].emplace( vectorfield( spins.size(), Vector3{ 1, 0, 0 } ) );
+                image->modes[idx].emplace( vectorfield( system_state.spin.size(), Vector3{ 1, 0, 0 } ) );
 
             // Read header
             file.read_segment_header( idx + 1, segment );

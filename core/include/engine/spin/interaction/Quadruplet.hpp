@@ -4,6 +4,7 @@
 
 #include <engine/Indexing.hpp>
 #include <engine/Span.hpp>
+#include <engine/spin/StateType.hpp>
 #include <engine/spin/interaction/Functor_Prototypes.hpp>
 
 namespace Engine
@@ -17,7 +18,7 @@ namespace Interaction
 
 struct Quadruplet
 {
-    using state_t = vectorfield;
+    using state_t = StateType;
 
     struct Data
     {
@@ -142,53 +143,55 @@ protected:
 };
 
 template<>
-inline scalar Quadruplet::Energy::operator()( const Index & index, const Vector3 * spins ) const
+inline scalar Quadruplet::Energy::operator()( const Index & index, quantity<const Vector3 *> state ) const
 {
     // don't need to check for `is_contributing` here, because the `transform_reduce` will short circuit correctly
     return Backend::transform_reduce(
         index.begin(), index.end(), scalar( 0.0 ), Backend::plus<scalar>{},
-        [this, spins] SPIRIT_LAMBDA( const Quadruplet::IndexType & idx ) -> scalar
+        [this, state] SPIRIT_LAMBDA( const Quadruplet::IndexType & idx ) -> scalar
         {
             const auto & [ispin, jspin, kspin, lspin, iquad] = idx;
-            return -0.25 * magnitudes[iquad] * ( spins[ispin].dot( spins[jspin] ) )
-                   * ( spins[kspin].dot( spins[lspin] ) );
+            return -0.25 * magnitudes[iquad] * ( state.spin[ispin].dot( state.spin[jspin] ) )
+                   * ( state.spin[kspin].dot( state.spin[lspin] ) );
         } );
 }
 
 template<>
-inline Vector3 Quadruplet::Gradient::operator()( const Index & index, const Vector3 * spins ) const
+inline Vector3 Quadruplet::Gradient::operator()( const Index & index, quantity<const Vector3 *> state ) const
 {
     // don't need to check for `is_contributing` here, because the `transform_reduce` will short circuit correctly
     return Backend::transform_reduce(
         index.begin(), index.end(), Vector3{ 0.0, 0.0, 0.0 }, Backend::plus<Vector3>{},
-        [this, spins] SPIRIT_LAMBDA( const Quadruplet::IndexType & idx ) -> Vector3
+        [this, state] SPIRIT_LAMBDA( const Quadruplet::IndexType & idx ) -> Vector3
         {
             const auto & [ispin, jspin, kspin, lspin, iquad] = idx;
-            return spins[jspin] * ( -magnitudes[iquad] * ( spins[kspin].dot( spins[lspin] ) ) );
+            return state.spin[jspin] * ( -magnitudes[iquad] * ( state.spin[kspin].dot( state.spin[lspin] ) ) );
         } );
 }
 
 template<>
 template<typename Callable>
-void Quadruplet::Hessian::operator()( const Index & index, const vectorfield & spins, Callable & hessian ) const
+void Quadruplet::Hessian::operator()( const Index & index, const StateType & state, Callable & hessian ) const
 {
     Backend::cpu::for_each(
         index.begin(), index.end(),
-        [this, &index, &spins, &hessian]( const Quadruplet::IndexType & idx )
+        [this, &index, &state, &hessian]( const Quadruplet::IndexType & idx )
         {
             const auto & [ispin, jspin, kspin, lspin, iquad] = idx;
 
             for( int alpha = 0; alpha < 3; ++alpha )
             {
-                hessian( 3 * ispin + alpha, 3 * jspin + alpha, -magnitudes[iquad] * spins[kspin].dot( spins[lspin] ) );
+                hessian(
+                    3 * ispin + alpha, 3 * jspin + alpha,
+                    -magnitudes[iquad] * state.spin[kspin].dot( state.spin[lspin] ) );
                 for( int beta = 0; beta < 3; ++beta )
                 {
                     hessian(
                         3 * ispin + alpha, 3 * kspin + beta,
-                        -magnitudes[iquad] * spins[jspin][alpha] * spins[lspin][beta] );
+                        -magnitudes[iquad] * state.spin[jspin][alpha] * state.spin[lspin][beta] );
                     hessian(
                         3 * ispin + alpha, 3 * lspin + beta,
-                        -magnitudes[iquad] * spins[jspin][alpha] * spins[kspin][beta] );
+                        -magnitudes[iquad] * state.spin[jspin][alpha] * state.spin[kspin][beta] );
                 }
             }
         } );

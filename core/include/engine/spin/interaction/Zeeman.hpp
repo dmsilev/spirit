@@ -3,6 +3,7 @@
 #define SPIRIT_CORE_ENGINE_INTERACTION_ZEEMANN_HPP
 
 #include <engine/Indexing.hpp>
+#include <engine/spin/StateType.hpp>
 #include <engine/spin/interaction/Functor_Prototypes.hpp>
 
 namespace Engine
@@ -16,7 +17,7 @@ namespace Interaction
 
 struct Zeeman
 {
-    using state_t = vectorfield;
+    using state_t = StateType;
 
     struct Data
     {
@@ -109,19 +110,19 @@ protected:
 };
 
 template<>
-inline scalar Zeeman::Energy::operator()( const Index & index, const Vector3 * spins ) const
+inline scalar Zeeman::Energy::operator()( const Index & index, quantity<const Vector3 *> state ) const
 {
     if( is_contributing && index != nullptr && *index >= 0 )
     {
         const auto & ispin = *index;
-        return -mu_s[ispin] * external_field_magnitude * external_field_normal.dot( spins[ispin] );
+        return -mu_s[ispin] * external_field_magnitude * external_field_normal.dot( state.spin[ispin] );
     }
     else
         return 0;
 }
 
 template<>
-inline Vector3 Zeeman::Gradient::operator()( const Index & index, const Vector3 * ) const
+inline Vector3 Zeeman::Gradient::operator()( const Index & index, quantity<const Vector3 *> ) const
 {
     if( is_contributing && index != nullptr && *index >= 0 )
     {
@@ -134,7 +135,7 @@ inline Vector3 Zeeman::Gradient::operator()( const Index & index, const Vector3 
 
 template<>
 template<typename Callable>
-void Zeeman::Hessian::operator()( const Index &, const vectorfield &, Callable & ) const {};
+void Zeeman::Hessian::operator()( const Index &, const StateType &, Callable & ) const {};
 
 } // namespace Interaction
 

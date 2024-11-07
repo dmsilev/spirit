@@ -20,8 +20,8 @@ protected:
     // Virtual Forces used in the Steps
     std::vector<vectorfield> forces_virtual_predictor;
 
-    std::vector<std::shared_ptr<vectorfield>> configurations_predictor;
-    std::vector<std::shared_ptr<vectorfield>> delta_configurations;
+    std::vector<std::shared_ptr<StateType>> configurations_predictor;
+    std::vector<std::shared_ptr<StateType>> delta_configurations;
 };
 
 template<>
@@ -33,13 +33,13 @@ inline void Method_Solver<Solver::Heun>::Initialize()
     this->forces_predictor         = std::vector<vectorfield>( this->noi, vectorfield( this->nos, { 0, 0, 0 } ) );
     this->forces_virtual_predictor = std::vector<vectorfield>( this->noi, vectorfield( this->nos, { 0, 0, 0 } ) );
 
-    this->configurations_predictor = std::vector<std::shared_ptr<vectorfield>>( this->noi );
+    this->configurations_predictor = std::vector<std::shared_ptr<StateType>>( this->noi );
     for( int i = 0; i < this->noi; i++ )
-        configurations_predictor[i] = std::make_shared<vectorfield>( this->nos );
+        configurations_predictor[i] = std::make_shared<StateType>( make_state<StateType>( this->nos ) );
 
-    this->delta_configurations = std::vector<std::shared_ptr<vectorfield>>( this->noi );
+    this->delta_configurations = std::vector<std::shared_ptr<StateType>>( this->noi );
     for( int i = 0; i < this->noi; i++ )
-        delta_configurations[i] = std::make_shared<vectorfield>( this->nos );
+        delta_configurations[i] = std::make_shared<StateType>( make_state<StateType>( this->nos ) );
 }
 
 /*
@@ -65,8 +65,8 @@ inline void Method_Solver<Solver::Heun>::Iteration()
     {
         // First step - Predictor
         Solver_Kernels::heun_predictor(
-            *this->configurations[i], this->forces_virtual[i], *this->delta_configurations[i],
-            *this->configurations_predictor[i] );
+            this->configurations[i]->spin, this->forces_virtual[i], this->delta_configurations[i]->spin,
+            this->configurations_predictor[i]->spin );
     }
 
     // Calculate_Force for the Corrector
@@ -79,8 +79,8 @@ inline void Method_Solver<Solver::Heun>::Iteration()
     {
         // Second Step - Corrector
         Solver_Kernels::heun_corrector(
-            this->forces_virtual_predictor[i], *this->delta_configurations[i], *this->configurations_predictor[i],
-            *this->configurations[i] );
+            this->forces_virtual_predictor[i], this->delta_configurations[i]->spin,
+            this->configurations_predictor[i]->spin, this->configurations[i]->spin );
     }
 }
 

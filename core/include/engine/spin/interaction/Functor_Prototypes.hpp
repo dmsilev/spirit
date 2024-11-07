@@ -7,6 +7,7 @@
 #include <engine/Span.hpp>
 #include <engine/Vectormath_Defines.hpp>
 #include <engine/common/interaction/Functor_Prototypes.hpp>
+#include <engine/spin/StateType.hpp>
 
 #include <vector>
 
@@ -78,7 +79,7 @@ struct Energy_Functor : public DataRef
     using Data        = typename Interaction::Data;
     using Cache       = typename Interaction::Cache;
 
-    void operator()( const vectorfield & spins, scalarfield & energy ) const;
+    void operator()( const StateType & state, scalarfield & energy ) const;
 
     using DataRef::DataRef;
 };
@@ -90,7 +91,7 @@ struct Energy_Single_Spin_Functor : public DataRef
     using Data        = typename Interaction::Data;
     using Cache       = typename Interaction::Cache;
 
-    scalar operator()( int ispin, const vectorfield & spins ) const;
+    scalar operator()( int ispin, const StateType & state ) const;
 
     using DataRef::DataRef;
 };
@@ -102,7 +103,7 @@ struct Gradient_Functor : public DataRef
     using Data        = typename Interaction::Data;
     using Cache       = typename Interaction::Cache;
 
-    void operator()( const vectorfield & spins, vectorfield & gradient ) const;
+    void operator()( const StateType & state, vectorfield & gradient ) const;
 
     using DataRef::DataRef;
 };
@@ -115,7 +116,7 @@ struct Hessian_Functor : public DataRef
     using Cache       = typename Interaction::Cache;
 
     template<typename Callable>
-    void operator()( const vectorfield & spins, Callable & hessian ) const;
+    void operator()( const StateType & state, Callable & hessian ) const;
 
     using DataRef::DataRef;
 };
@@ -150,7 +151,7 @@ struct Energy_Functor : public DataRef
     using Cache       = typename Interaction::Cache;
     using Index       = typename Interaction::Index;
 
-    SPIRIT_HOSTDEVICE scalar operator()( const Index & index, const Vector3 * spins ) const;
+    SPIRIT_HOSTDEVICE scalar operator()( const Index & index, quantity<const Vector3 *> state ) const;
 
     using DataRef::DataRef;
 };
@@ -163,7 +164,7 @@ struct Gradient_Functor : public DataRef
     using Cache       = typename Interaction::Cache;
     using Index       = typename Interaction::Index;
 
-    SPIRIT_HOSTDEVICE Vector3 operator()( const Index & index, const Vector3 * spins ) const;
+    SPIRIT_HOSTDEVICE Vector3 operator()( const Index & index, quantity<const Vector3 *> state ) const;
 
     using DataRef::DataRef;
 };
@@ -177,7 +178,7 @@ struct Hessian_Functor : public DataRef
     using Index       = typename Interaction::Index;
 
     template<typename Callable>
-    void operator()( const Index & index, const vectorfield & spins, Callable & hessian ) const;
+    void operator()( const Index & index, const StateType & state, Callable & hessian ) const;
 
     using DataRef::DataRef;
 };

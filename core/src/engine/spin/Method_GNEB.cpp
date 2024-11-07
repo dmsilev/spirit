@@ -57,7 +57,7 @@ Method_GNEB<solver>::Method_GNEB( std::shared_ptr<chain_t> chain, int idx_chain 
     this->max_torque_all = std::vector<scalar>( this->noi, 0 );
 
     // Create shared pointers to the method's systems' spin configurations
-    this->configurations = std::vector<std::shared_ptr<vectorfield>>( this->noi );
+    this->configurations = std::vector<std::shared_ptr<StateType>>( this->noi );
     for( int i = 0; i < this->noi; ++i )
         this->configurations[i] = this->systems[i]->state;
 
@@ -82,7 +82,7 @@ std::vector<scalar> Method_GNEB<solver>::getTorqueMaxNorm_All()
 
 template<Solver solver>
 void Method_GNEB<solver>::Calculate_Force(
-    const std::vector<std::shared_ptr<vectorfield>> & configurations, std::vector<vectorfield> & forces )
+    const std::vector<std::shared_ptr<StateType>> & configurations, std::vector<vectorfield> & forces )
 {
     // We assume here that we receive a vector of configurations that corresponds to the vector of systems we gave the
     // Solver.
@@ -102,7 +102,7 @@ void Method_GNEB<solver>::Calculate_Force(
         auto * eff_field = this->chain->images[img]->M.effective_field.data();
         auto * f_grad    = F_gradient[img].data();
         Backend::for_each_n(
-            SPIRIT_PAR Backend::make_counting_iterator( 0 ), image.size(),
+            SPIRIT_PAR Backend::make_counting_iterator( 0 ), image.spin.size(),
             [eff_field, f_grad] SPIRIT_LAMBDA( const int idx )
             {
                 eff_field[idx] *= -1;
@@ -111,7 +111,7 @@ void Method_GNEB<solver>::Calculate_Force(
 
         if( img > 0 )
         {
-            Rx[img] = Rx[img - 1] + Manifoldmath::dist_geodesic( image, *configurations[img - 1] );
+            Rx[img] = Rx[img - 1] + Manifoldmath::dist_geodesic( image.spin, configurations[img - 1]->spin );
             if( Rx[img] - Rx[img - 1] < 1e-10 )
             {
                 Log( Log_Level::Error, Log_Sender::GNEB,
@@ -167,10 +167,10 @@ void Method_GNEB<solver>::Calculate_Force(
 
     // Get the total force on the image chain
     // Loop over images to calculate the total force on each Image
-    std::size_t nos = configurations[0]->size();
+    std::size_t nos = configurations[0]->spin.size();
     for( int img = 1; img < chain->noi - 1; ++img )
     {
-        auto & image = *configurations[img];
+        auto & image = configurations[img]->spin;
 
         // The gradient force (unprojected) is simply the effective field
         // this->chain->images[img]->hamiltonian->Gradient(image, F_gradient[img]);
@@ -203,10 +203,10 @@ void Method_GNEB<solver>::Calculate_Force(
                 // Calculate finite difference secants
                 vectorfield t_plus( nos );
                 vectorfield t_minus( nos );
-                Vectormath::set_c_a( 1, *this->chain->images[img + 1]->state, t_plus );
-                Vectormath::add_c_a( -1, *this->chain->images[img]->state, t_plus );
-                Vectormath::set_c_a( 1, *this->chain->images[img]->state, t_minus );
-                Vectormath::add_c_a( -1, *this->chain->images[img - 1]->state, t_minus );
+                Vectormath::set_c_a( 1, this->chain->images[img + 1]->state->spin, t_plus );
+                Vectormath::add_c_a( -1, this->chain->images[img]->state->spin, t_plus );
+                Vectormath::set_c_a( 1, this->chain->images[img]->state->spin, t_minus );
+                Vectormath::add_c_a( -1, this->chain->images[img - 1]->state->spin, t_minus );
                 Manifoldmath::normalize( t_plus );
                 Manifoldmath::normalize( t_minus );
                 // Get the finite difference (path shrinking) direction
@@ -258,16 +258,16 @@ void Method_GNEB<solver>::Calculate_Force(
     if( chain->gneb_parameters->moving_endpoints )
     {
         int noi = chain->noi;
-        Manifoldmath::project_tangential( F_gradient[0], *configurations[0] );
-        Manifoldmath::project_tangential( F_gradient[noi - 1], *configurations[noi - 1] );
+        Manifoldmath::project_tangential( F_gradient[0], configurations[0]->spin );
+        Manifoldmath::project_tangential( F_gradient[noi - 1], configurations[noi - 1]->spin );
 
         // Overall translational force
         if( chain->gneb_parameters->translating_endpoints )
         {
             const auto * F_gradient_left   = F_gradient[0].data();
             const auto * F_gradient_right  = F_gradient[noi - 1].data();
-            const auto * spins_left        = this->chain->images[0]->state->data();
-            const auto * spins_right       = this->chain->images[noi - 1]->state->data();
+            const auto * spins_left        = this->chain->images[0]->state->spin.data();
+            const auto * spins_right       = this->chain->images[noi - 1]->state->spin.data();
             auto * F_translation_left_ptr  = F_translation_left.data();
             auto * F_translation_right_ptr = F_translation_right.data();
             // clang-format off
@@ -348,7 +348,7 @@ void Method_GNEB<solver>::Calculate_Force(
 
 template<Solver solver>
 void Method_GNEB<solver>::Calculate_Force_Virtual(
-    const std::vector<std::shared_ptr<vectorfield>> & configurations, const std::vector<vectorfield> & forces,
+    const std::vector<std::shared_ptr<StateType>> & configurations, const std::vector<vectorfield> & forces,
     std::vector<vectorfield> & forces_virtual )
 {
     using namespace Utility;
@@ -362,7 +362,7 @@ void Method_GNEB<solver>::Calculate_Force_Virtual(
             continue;
         }
 
-        auto & image         = *configurations[i];
+        auto & image         = configurations[i]->spin;
         const auto & force   = forces[i];
         auto & force_virtual = forces_virtual[i];
         auto & parameters    = *this->systems[i]->llg_parameters;
@@ -407,7 +407,7 @@ void Method_GNEB<solver>::Hook_Post_Iteration()
 
     for( int img = 0; img < chain->noi; ++img )
     {
-        Manifoldmath::project_tangential( F_total[img], *( this->systems[img]->state ) );
+        Manifoldmath::project_tangential( F_total[img], this->systems[img]->state->spin );
         const scalar fmax = Vectormath::max_norm( F_total[img] );
         // Set maximum per image
         this->max_torque_all[img] = fmax;
@@ -416,7 +416,7 @@ void Method_GNEB<solver>::Hook_Post_Iteration()
             this->max_torque = fmax;
 
         // Set the effective fields
-        Manifoldmath::project_tangential( this->forces[img], *this->systems[img]->state );
+        Manifoldmath::project_tangential( this->forces[img], this->systems[img]->state->spin );
         // Vectormath::set_c_a(1, this->forces[img], this->systems[img]->effective_field);
     }
 
@@ -457,7 +457,7 @@ void Method_GNEB<solver>::Calculate_Interpolated_Energy_Contributions()
     Log( Utility::Log_Level::Debug, Utility::Log_Sender::GNEB,
          std::string( "Calculating interpolated energy contributions" ), -1, -1 );
 
-    std::size_t nos = this->configurations[0]->size();
+    std::size_t nos = this->configurations[0]->spin.size();
     int noi         = this->chain->noi;
 
     if( chain->images[0]->hamiltonian->Name() != "Heisenberg" )
@@ -515,21 +515,24 @@ void Method_GNEB<solver>::Finalize()
 template<Solver solver>
 void Method_GNEB<solver>::Message_Block_Start( std::vector<std::string> & block )
 {
-    scalar length = Manifoldmath::dist_geodesic( *this->configurations[0], *this->configurations[this->noi - 1] );
+    scalar length
+        = Manifoldmath::dist_geodesic( this->configurations[0]->spin, this->configurations[this->noi - 1]->spin );
     block.emplace_back( fmt::format( "    Total path length: {}", length ) );
 }
 
 template<Solver solver>
 void Method_GNEB<solver>::Message_Block_Step( std::vector<std::string> & block )
 {
-    scalar length = Manifoldmath::dist_geodesic( *this->configurations[0], *this->configurations[this->noi - 1] );
+    scalar length
+        = Manifoldmath::dist_geodesic( this->configurations[0]->spin, this->configurations[this->noi - 1]->spin );
     block.emplace_back( fmt::format( "    Total path length: {}", length ) );
 }
 
 template<Solver solver>
 void Method_GNEB<solver>::Message_Block_End( std::vector<std::string> & block )
 {
-    scalar length = Manifoldmath::dist_geodesic( *this->configurations[0], *this->configurations[this->noi - 1] );
+    scalar length
+        = Manifoldmath::dist_geodesic( this->configurations[0]->spin, this->configurations[this->noi - 1]->spin );
     block.emplace_back( fmt::format( "    Total path length: {}", length ) );
 }
 
@@ -587,21 +590,23 @@ void Method_GNEB<solver>::Save_Current( std::string starttime, int iteration, bo
                     segment.title     = strdup( title.c_str() );
                     std::string output_comment
                         = fmt::format( "{}\n# Desc: Image {} of {}", output_comment_base, 0, chain->noi );
-                    segment.comment     = strdup( output_comment.c_str() );
-                    segment.valuedim    = IO::Spin::State::valuedim;
-                    segment.valuelabels = strdup( IO::Spin::State::valuelabels.data() );
-                    segment.valueunits  = strdup( IO::Spin::State::valueunits.data() );
-                    auto & spins        = *this->chain->images[0]->state;
-                    IO::OVF_File( chainFile ).write_segment( segment, spins[0].data(), static_cast<int>( format ) );
+                    segment.comment           = strdup( output_comment.c_str() );
+                    segment.valuedim          = IO::Spin::State::valuedim;
+                    segment.valuelabels       = strdup( IO::Spin::State::valuelabels.data() );
+                    segment.valueunits        = strdup( IO::Spin::State::valueunits.data() );
+                    const auto & system_state = *this->chain->images[0]->state;
+                    IO::OVF_File( chainFile )
+                        .write_segment( segment, system_state.spin[0].data(), static_cast<int>( format ) );
                 }
                 // Append all the others
                 for( int i = 1; i < this->chain->noi; i++ )
                 {
-                    auto & spins = *this->chain->images[i]->state;
+                    const auto & system_state = *this->chain->images[i]->state;
                     std::string output_comment
                         = fmt::format( "{}\n# Desc: Image {} of {}", output_comment_base, i, chain->noi );
                     segment.comment = strdup( output_comment.c_str() );
-                    IO::OVF_File( chainFile ).append_segment( segment, spins[0].data(), static_cast<int>( format ) );
+                    IO::OVF_File( chainFile )
+                        .append_segment( segment, system_state.spin[0].data(), static_cast<int>( format ) );
                 }
             }
             catch( ... )

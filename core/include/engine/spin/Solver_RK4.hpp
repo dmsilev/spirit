@@ -21,11 +21,11 @@ protected:
     // Virtual Forces used in the Steps
     std::vector<vectorfield> forces_virtual_predictor;
 
-    std::vector<std::shared_ptr<vectorfield>> configurations_predictor;
+    std::vector<std::shared_ptr<StateType>> configurations_predictor;
 
-    std::vector<std::shared_ptr<vectorfield>> configurations_k1;
-    std::vector<std::shared_ptr<vectorfield>> configurations_k2;
-    std::vector<std::shared_ptr<vectorfield>> configurations_k3;
+    std::vector<std::shared_ptr<StateType>> configurations_k1;
+    std::vector<std::shared_ptr<StateType>> configurations_k2;
+    std::vector<std::shared_ptr<StateType>> configurations_k3;
 };
 
 template<>
@@ -37,21 +37,21 @@ inline void Method_Solver<Solver::RungeKutta4>::Initialize()
     this->forces_predictor         = std::vector<vectorfield>( this->noi, vectorfield( this->nos, { 0, 0, 0 } ) );
     this->forces_virtual_predictor = std::vector<vectorfield>( this->noi, vectorfield( this->nos, { 0, 0, 0 } ) );
 
-    this->configurations_predictor = std::vector<std::shared_ptr<vectorfield>>( this->noi );
+    this->configurations_predictor = std::vector<std::shared_ptr<StateType>>( this->noi );
     for( int i = 0; i < this->noi; i++ )
-        this->configurations_predictor[i] = std::make_shared<vectorfield>( this->nos );
+        this->configurations_predictor[i] = std::make_shared<StateType>( make_state<StateType>( this->nos ) );
 
-    this->configurations_k1 = std::vector<std::shared_ptr<vectorfield>>( this->noi );
+    this->configurations_k1 = std::vector<std::shared_ptr<StateType>>( this->noi );
     for( int i = 0; i < this->noi; i++ )
-        this->configurations_k1[i] = std::make_shared<vectorfield>( this->nos );
+        this->configurations_k1[i] = std::make_shared<StateType>( make_state<StateType>( this->nos ) );
 
-    this->configurations_k2 = std::vector<std::shared_ptr<vectorfield>>( this->noi );
+    this->configurations_k2 = std::vector<std::shared_ptr<StateType>>( this->noi );
     for( int i = 0; i < this->noi; i++ )
-        this->configurations_k2[i] = std::make_shared<vectorfield>( this->nos );
+        this->configurations_k2[i] = std::make_shared<StateType>( make_state<StateType>( this->nos ) );
 
-    this->configurations_k3 = std::vector<std::shared_ptr<vectorfield>>( this->noi );
+    this->configurations_k3 = std::vector<std::shared_ptr<StateType>>( this->noi );
     for( int i = 0; i < this->noi; i++ )
-        this->configurations_k3[i] = std::make_shared<vectorfield>( this->nos );
+        this->configurations_k3[i] = std::make_shared<StateType>( make_state<StateType>( this->nos ) );
 }
 
 /*
@@ -71,8 +71,8 @@ inline void Method_Solver<Solver::RungeKutta4>::Iteration()
     for( int i = 0; i < this->noi; ++i )
     {
         Solver_Kernels::rk4_predictor_1(
-            *this->configurations[i], this->forces_virtual[i], *this->configurations_k1[i],
-            *this->configurations_predictor[i] );
+            this->configurations[i]->spin, this->forces_virtual[i], this->configurations_k1[i]->spin,
+            this->configurations_predictor[i]->spin );
     }
 
     // Calculate_Force for the predictor
@@ -84,8 +84,8 @@ inline void Method_Solver<Solver::RungeKutta4>::Iteration()
     for( int i = 0; i < this->noi; ++i )
     {
         Solver_Kernels::rk4_predictor_2(
-            *this->configurations[i], this->forces_virtual_predictor[i], *this->configurations_k2[i],
-            *this->configurations_predictor[i] );
+            this->configurations[i]->spin, this->forces_virtual_predictor[i], this->configurations_k2[i]->spin,
+            this->configurations_predictor[i]->spin );
     }
 
     // Calculate_Force for the predictor (k3)
@@ -97,8 +97,8 @@ inline void Method_Solver<Solver::RungeKutta4>::Iteration()
     for( int i = 0; i < this->noi; ++i )
     {
         Solver_Kernels::rk4_predictor_3(
-            *this->configurations[i], this->forces_virtual_predictor[i], *this->configurations_k3[i],
-            *this->configurations_predictor[i] );
+            this->configurations[i]->spin, this->forces_virtual_predictor[i], this->configurations_k3[i]->spin,
+            this->configurations_predictor[i]->spin );
     }
 
     // Calculate_Force for the predictor (k4)
@@ -110,8 +110,8 @@ inline void Method_Solver<Solver::RungeKutta4>::Iteration()
     for( int i = 0; i < this->noi; i++ )
     {
         Solver_Kernels::rk4_corrector(
-            forces_virtual_predictor[i], *configurations_k1[i], *configurations_k2[i], *configurations_k3[i],
-            *configurations_predictor[i], *configurations[i] );
+            forces_virtual_predictor[i], configurations_k1[i]->spin, configurations_k2[i]->spin,
+            configurations_k3[i]->spin, configurations_predictor[i]->spin, configurations[i]->spin );
     }
 }
 

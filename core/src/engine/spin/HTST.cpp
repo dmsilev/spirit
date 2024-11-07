@@ -43,7 +43,7 @@ void Calculate( Data::HTST_Info<system_t> & htst_info, int n_eigenmodes_keep )
     auto & image_minimum = *htst_info.minimum->state;
     auto & image_sp      = *htst_info.saddle_point->state;
 
-    int nos = image_minimum.size();
+    int nos = image_minimum.spin.size();
 
     if( n_eigenmodes_keep < 0 )
         n_eigenmodes_keep = 2 * nos;
@@ -68,7 +68,7 @@ void Calculate( Data::HTST_Info<system_t> & htst_info, int n_eigenmodes_keep )
     Log( Utility::Log_Level::Info, Utility::Log_Sender::HTST,
          "    Checking if initial configuration is an extremum..." );
     Vectormath::set_c_a( 1, gradient_minimum, force_tmp );
-    Manifoldmath::project_tangential( force_tmp, image_minimum );
+    Manifoldmath::project_tangential( force_tmp, image_minimum.spin );
     scalar fmax_minimum = Vectormath::max_norm( force_tmp );
     if( fmax_minimum > epsilon_force )
     {
@@ -90,7 +90,7 @@ void Calculate( Data::HTST_Info<system_t> & htst_info, int n_eigenmodes_keep )
     Log( Utility::Log_Level::Info, Utility::Log_Sender::HTST,
          "    Checking if transition configuration is an extremum..." );
     Vectormath::set_c_a( 1, gradient_sp, force_tmp );
-    Manifoldmath::project_tangential( force_tmp, image_sp );
+    Manifoldmath::project_tangential( force_tmp, image_sp.spin );
     scalar fmax_sp = Vectormath::max_norm( force_tmp );
     if( fmax_sp > epsilon_force )
     {
@@ -119,8 +119,8 @@ void Calculate( Data::HTST_Info<system_t> & htst_info, int n_eigenmodes_keep )
         htst_info.eigenvalues_sp       = VectorX::Zero( 2 * nos );
         htst_info.eigenvectors_sp      = MatrixX::Zero( 2 * nos, 2 * nos );
         Geodesic_Eigen_Decomposition(
-            image_sp, gradient_sp, hessian_sp, hessian_geodesic_sp_3N, hessian_geodesic_sp_2N, htst_info.eigenvalues_sp,
-            htst_info.eigenvectors_sp );
+            image_sp.spin, gradient_sp, hessian_sp, hessian_geodesic_sp_3N, hessian_geodesic_sp_2N,
+            htst_info.eigenvalues_sp, htst_info.eigenvectors_sp );
 
         // Print some eigenvalues
         block = std::vector<std::string>{ "10 lowest eigenvalues at saddle point:" };
@@ -163,12 +163,12 @@ void Calculate( Data::HTST_Info<system_t> & htst_info, int n_eigenmodes_keep )
         // Calculation of the 'a' parameters...
         htst_info.perpendicular_velocity = VectorX::Zero( 2 * nos );
         MatrixX basis_sp                 = MatrixX::Zero( 3 * nos, 2 * nos );
-        Manifoldmath::tangent_basis_spherical( image_sp, basis_sp );
+        Manifoldmath::tangent_basis_spherical( image_sp.spin, basis_sp );
         // Manifoldmath::tangent_basis(image_sp, basis_sp);
         // Calculate_Perpendicular_Velocity_2N(image_sp, hessian_geodesic_sp_2N, basis_sp, htst_info.eigenvectors_sp,
         // perpendicular_velocity_sp);
         Calculate_Perpendicular_Velocity(
-            image_sp, htst_info.saddle_point->hamiltonian->get_geometry().mu_s, hessian_geodesic_sp_3N, basis_sp,
+            image_sp.spin, htst_info.saddle_point->hamiltonian->get_geometry().mu_s, hessian_geodesic_sp_3N, basis_sp,
             htst_info.eigenvectors_sp, htst_info.perpendicular_velocity );
 
         // Reduce the number of saved eigenmodes
@@ -223,8 +223,8 @@ void Calculate( Data::HTST_Info<system_t> & htst_info, int n_eigenmodes_keep )
         htst_info.eigenvalues_min           = VectorX::Zero( 2 * nos );
         htst_info.eigenvectors_min          = MatrixX::Zero( 2 * nos, 2 * nos );
         Geodesic_Eigen_Decomposition(
-            image_minimum, gradient_minimum, hessian_minimum, hessian_geodesic_minimum_3N, hessian_geodesic_minimum_2N,
-            htst_info.eigenvalues_min, htst_info.eigenvectors_min );
+            image_minimum.spin, gradient_minimum, hessian_minimum, hessian_geodesic_minimum_3N,
+            hessian_geodesic_minimum_2N, htst_info.eigenvalues_min, htst_info.eigenvectors_min );
 
         // Print some eigenvalues
         block = std::vector<std::string>{ "10 lowest eigenvalues at minimum:" };
@@ -324,7 +324,7 @@ void Calculate( Data::HTST_Info<system_t> & htst_info, int n_eigenmodes_keep )
 
 scalar Calculate_Zero_Volume( const system_t & system )
 {
-    const auto & spins           = *system.state;
+    const auto & spins           = system.state->spin;
     const auto & geometry        = system.hamiltonian->get_geometry();
     const int nos                = geometry.nos;
     const auto & bravais_vectors = geometry.bravais_vectors;

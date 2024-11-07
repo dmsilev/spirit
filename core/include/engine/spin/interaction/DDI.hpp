@@ -3,6 +3,7 @@
 #define SPIRIT_CORE_ENGINE_INTERACTION_DDI_HPP
 
 #include <engine/FFT.hpp>
+#include <engine/spin/StateType.hpp>
 #include <engine/spin/interaction/Functor_Prototypes.hpp>
 #include <utility/Constants.hpp>
 
@@ -25,7 +26,7 @@ namespace Interaction
 
 struct DDI
 {
-    using state_t = vectorfield;
+    using state_t = StateType;
 
     struct Data
     {
@@ -110,7 +111,7 @@ struct DDI
 
 template<>
 template<typename Callable>
-void DDI::Hessian::operator()( const vectorfield & spins, Callable & hessian ) const
+void DDI::Hessian::operator()( const StateType & state, Callable & hessian ) const
 {
     namespace C = Utility::Constants;
     if( !is_contributing )
@@ -121,7 +122,7 @@ void DDI::Hessian::operator()( const vectorfield & spins, Callable & hessian ) c
         return;
 
     const auto & geometry = *cache.geometry;
-    const auto nos        = spins.size();
+    const auto nos        = state.spin.size();
 
     // Tentative Dipole-Dipole (only works for open boundary conditions)
     if( data.method != DDI_Method::None )

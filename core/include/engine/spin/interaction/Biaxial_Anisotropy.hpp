@@ -3,6 +3,7 @@
 #define SPIRIT_CORE_ENGINE_INTERACTION_BIAXIAL_ANISOTROPY_HPP
 
 #include <engine/Indexing.hpp>
+#include <engine/spin/StateType.hpp>
 #include <engine/spin/interaction/Functor_Prototypes.hpp>
 #include <utility/Fastpow.hpp>
 
@@ -24,7 +25,7 @@ namespace Interaction
  */
 struct Biaxial_Anisotropy
 {
-    using state_t = vectorfield;
+    using state_t = StateType;
 
     struct Data
     {
@@ -127,7 +128,7 @@ protected:
 };
 
 template<>
-inline scalar Biaxial_Anisotropy::Energy::operator()( const Index & index, const Vector3 * spins ) const
+inline scalar Biaxial_Anisotropy::Energy::operator()( const Index & index, quantity<const Vector3 *> state ) const
 {
     using Utility::fastpow;
     scalar result = 0;
@@ -135,9 +136,9 @@ inline scalar Biaxial_Anisotropy::Energy::operator()( const Index & index, const
         return result;
 
     const auto & [ispin, iani] = *index;
-    const scalar s1            = bases[iani].k1.dot( spins[ispin] );
-    const scalar s2            = bases[iani].k2.dot( spins[ispin] );
-    const scalar s3            = bases[iani].k3.dot( spins[ispin] );
+    const scalar s1            = bases[iani].k1.dot( state.spin[ispin] );
+    const scalar s2            = bases[iani].k2.dot( state.spin[ispin] );
+    const scalar s3            = bases[iani].k3.dot( state.spin[ispin] );
 
     const scalar sin_theta_2 = 1 - s1 * s1;
 
@@ -151,7 +152,7 @@ inline scalar Biaxial_Anisotropy::Energy::operator()( const Index & index, const
 }
 
 template<>
-inline Vector3 Biaxial_Anisotropy::Gradient::operator()( const Index & index, const Vector3 * spins ) const
+inline Vector3 Biaxial_Anisotropy::Gradient::operator()( const Index & index, quantity<const Vector3 *> state ) const
 {
     using Utility::fastpow;
     Vector3 result = Vector3::Zero();
@@ -161,9 +162,9 @@ inline Vector3 Biaxial_Anisotropy::Gradient::operator()( const Index & index, co
     const auto & [ispin, iani] = *index;
     const auto & [k1, k2, k3]  = bases[iani];
 
-    const scalar s1 = k1.dot( spins[ispin] );
-    const scalar s2 = k2.dot( spins[ispin] );
-    const scalar s3 = k3.dot( spins[ispin] );
+    const scalar s1 = k1.dot( state.spin[ispin] );
+    const scalar s2 = k2.dot( state.spin[ispin] );
+    const scalar s3 = k3.dot( state.spin[ispin] );
 
     const scalar sin_theta_2 = 1 - s1 * s1;
 
@@ -188,7 +189,7 @@ inline Vector3 Biaxial_Anisotropy::Gradient::operator()( const Index & index, co
 
 template<>
 template<typename Callable>
-void Biaxial_Anisotropy::Hessian::operator()( const Index & index, const vectorfield & spins, Callable & hessian ) const
+void Biaxial_Anisotropy::Hessian::operator()( const Index & index, const StateType & state, Callable & hessian ) const
 {
     using Utility::fastpow;
     if( !is_contributing || index == nullptr )
@@ -197,9 +198,9 @@ void Biaxial_Anisotropy::Hessian::operator()( const Index & index, const vectorf
     const auto & [ispin, iani] = *index;
     const auto & [k1, k2, k3]  = bases[iani];
 
-    const scalar s1 = k1.dot( spins[ispin] );
-    const scalar s2 = k2.dot( spins[ispin] );
-    const scalar s3 = k3.dot( spins[ispin] );
+    const scalar s1 = k1.dot( state.spin[ispin] );
+    const scalar s2 = k2.dot( state.spin[ispin] );
+    const scalar s3 = k3.dot( state.spin[ispin] );
 
     const scalar st2 = 1 - s1 * s1;
 

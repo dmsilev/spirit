@@ -68,7 +68,7 @@ void Calculate_Eigenmodes( system_t & system, int idx_img, int idx_chain )
     auto & n_modes = system.ema_parameters->n_modes;
 
     // vectorfield mode(nos, Vector3{1, 0, 0});
-    auto spins_initial = *system.state;
+    auto state_initial = *system.state;
 
     Log( Log_Level::Info, Log_Sender::EMA, fmt::format( "Started calculation of {} Eigenmodes ", n_modes ), idx_img,
          idx_chain );
@@ -77,7 +77,7 @@ void Calculate_Eigenmodes( system_t & system, int idx_img, int idx_chain )
     vectorfield gradient( nos );
 
     // The gradient (unprojected)
-    system.hamiltonian->Gradient( spins_initial, gradient );
+    system.hamiltonian->Gradient( state_initial, gradient );
     // auto mask = system.geometry->mask_unpinned.data();
     // auto g    = gradient.data();
     // Backend::for_each_n( SPIRIT_PAR Backend::make_counting_iterator( 0 ), gradient.size(), [g, mask]
@@ -96,25 +96,25 @@ void Calculate_Eigenmodes( system_t & system, int idx_img, int idx_chain )
     {
         // The Hessian (unprojected)
         SpMatrixX hessian( 3 * nos, 3 * nos );
-        system.hamiltonian->Sparse_Hessian( spins_initial, hessian );
+        system.hamiltonian->Sparse_Hessian( state_initial, hessian );
         // Get the eigenspectrum
         SpMatrixX hessian_constrained = SpMatrixX( 2 * nos, 2 * nos );
 
         successful = Eigenmodes::Sparse_Hessian_Partial_Spectrum(
-            system.hamiltonian->get_geometry(), spins_initial, gradient, hessian, n_modes, tangent_basis,
+            system.hamiltonian->get_geometry(), state_initial.spin, gradient, hessian, n_modes, tangent_basis,
             hessian_constrained, eigenvalues, eigenvectors );
     }
     else
     {
         // The Hessian (unprojected)
         MatrixX hessian( 3 * nos, 3 * nos );
-        system.hamiltonian->Hessian( spins_initial, hessian );
+        system.hamiltonian->Hessian( state_initial, hessian );
         // Get the eigenspectrum
         MatrixX hessian_constrained = MatrixX::Zero( 2 * nos, 2 * nos );
         MatrixX _tangent_basis      = MatrixX( tangent_basis );
 
         successful = Eigenmodes::Hessian_Partial_Spectrum(
-            system.hamiltonian->get_geometry(), spins_initial, gradient, hessian, n_modes, _tangent_basis,
+            system.hamiltonian->get_geometry(), state_initial.spin, gradient, hessian, n_modes, _tangent_basis,
             hessian_constrained, eigenvalues, eigenvectors );
 
         tangent_basis = _tangent_basis.sparseView();

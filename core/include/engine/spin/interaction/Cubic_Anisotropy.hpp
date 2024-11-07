@@ -3,6 +3,7 @@
 #define SPIRIT_CORE_ENGINE_INTERACTION_CUBIC_ANISOTROPY_HPP
 
 #include <engine/Indexing.hpp>
+#include <engine/spin/StateType.hpp>
 #include <engine/spin/interaction/Functor_Prototypes.hpp>
 #include <utility/Fastpow.hpp>
 
@@ -19,7 +20,7 @@ namespace Interaction
 
 struct Cubic_Anisotropy
 {
-    using state_t = vectorfield;
+    using state_t = StateType;
 
     struct Data
     {
@@ -106,7 +107,7 @@ protected:
 };
 
 template<>
-inline scalar Cubic_Anisotropy::Energy::operator()( const Index & index, const Vector3 * spins ) const
+inline scalar Cubic_Anisotropy::Energy::operator()( const Index & index, quantity<const Vector3 *> state ) const
 {
     using Utility::fastpow;
     scalar result = 0;
@@ -115,11 +116,12 @@ inline scalar Cubic_Anisotropy::Energy::operator()( const Index & index, const V
 
     const auto & [ispin, iani] = *index;
     return -0.5 * magnitudes[iani]
-           * ( fastpow( spins[ispin][0], 4u ) + fastpow( spins[ispin][1], 4u ) + fastpow( spins[ispin][2], 4u ) );
+           * ( fastpow( state.spin[ispin][0], 4u ) + fastpow( state.spin[ispin][1], 4u )
+               + fastpow( state.spin[ispin][2], 4u ) );
 }
 
 template<>
-inline Vector3 Cubic_Anisotropy::Gradient::operator()( const Index & index, const Vector3 * spins ) const
+inline Vector3 Cubic_Anisotropy::Gradient::operator()( const Index & index, quantity<const Vector3 *> state ) const
 {
     using Utility::fastpow;
     Vector3 result = Vector3::Zero();
@@ -130,14 +132,14 @@ inline Vector3 Cubic_Anisotropy::Gradient::operator()( const Index & index, cons
 
     for( int icomp = 0; icomp < 3; ++icomp )
     {
-        result[icomp] = -2.0 * magnitudes[iani] * fastpow( spins[ispin][icomp], 3u );
+        result[icomp] = -2.0 * magnitudes[iani] * fastpow( state.spin[ispin][icomp], 3u );
     }
     return result;
 }
 
 template<>
 template<typename Callable>
-void Cubic_Anisotropy::Hessian::operator()( const Index & index, const vectorfield & spins, Callable & hessian ) const
+void Cubic_Anisotropy::Hessian::operator()( const Index & index, const StateType & spins, Callable & hessian ) const
 {
     // TODO: Not yet implemented
 }

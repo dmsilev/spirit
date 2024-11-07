@@ -54,20 +54,20 @@ Method_MC::Method_MC( std::shared_ptr<system_t> system, int idx_img, int idx_cha
 void Method_MC::Iteration()
 {
     // Temporaries
-    auto & spins_old = *this->system->state;
-    auto spins_new   = spins_old;
+    auto & state_old = *this->system->state;
+    auto state_new   = state_old;
 
     // Generate randomly displaced spin configuration according to cone radius
     // Vectormath::get_random_vectorfield_unitsphere(this->parameters_mc->prng, random_unit_vectors);
 
     // TODO: add switch between Metropolis and heat bath
     // One Metropolis step
-    Metropolis( spins_old, spins_new );
-    Vectormath::set_c_a( 1, spins_new, spins_old );
+    Metropolis( state_old, state_new );
+    Vectormath::set_c_a( 1, state_new.spin, state_old.spin );
 }
 
 // Simple metropolis step
-void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_new )
+void Method_MC::Metropolis( const StateType & state_old, StateType & state_new )
 {
     auto distribution     = std::uniform_real_distribution<scalar>( 0, 1 );
     auto distribution_idx = std::uniform_int_distribution<>( 0, this->nos - 1 );
@@ -115,9 +115,9 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
             if( this->parameters_mc->metropolis_step_cone )
             {
                 // Calculate local basis for the spin
-                if( spins_old[ispin].z() < 1 - 1e-10 )
+                if( state_old.spin[ispin].z() < 1 - 1e-10 )
                 {
-                    local_basis.col( 2 ) = spins_old[ispin];
+                    local_basis.col( 2 ) = state_old.spin[ispin];
                     local_basis.col( 0 ) = ( local_basis.col( 2 ).cross( e_z ) ).normalized();
                     local_basis.col( 1 ) = local_basis.col( 2 ).cross( local_basis.col( 0 ) );
                 }
@@ -138,7 +138,7 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
                 Vector3 local_spin_new{ sintheta * std::cos( phi ), sintheta * std::sin( phi ), costheta };
 
                 // New spin orientation in regular basis
-                spins_new[ispin] = local_basis * local_spin_new;
+                state_new.spin[ispin] = local_basis * local_spin_new;
             }
             // Sample the entire unit sphere
             else
@@ -152,12 +152,12 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
                 phi = 2 * Constants::Pi * distribution( this->parameters_mc->prng );
 
                 // New spin orientation in local basis
-                spins_new[ispin] = Vector3{ sintheta * std::cos( phi ), sintheta * std::sin( phi ), costheta };
+                state_new.spin[ispin] = Vector3{ sintheta * std::cos( phi ), sintheta * std::sin( phi ), costheta };
             }
 
             // Energy difference of configurations with and without displacement
-            scalar Eold  = this->system->hamiltonian->Energy_Single_Spin( ispin, spins_old );
-            scalar Enew  = this->system->hamiltonian->Energy_Single_Spin( ispin, spins_new );
+            scalar Eold  = this->system->hamiltonian->Energy_Single_Spin( ispin, state_old );
+            scalar Enew  = this->system->hamiltonian->Energy_Single_Spin( ispin, state_new );
             scalar Ediff = Enew - Eold;
 
             // Metropolis criterion: reject the step if energy rose
@@ -166,7 +166,7 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
                 if( this->parameters_mc->temperature < 1e-12 )
                 {
                     // Restore the spin
-                    spins_new[ispin] = spins_old[ispin];
+                    state_new.spin[ispin] = state_old.spin[ispin];
                     // Counter for the number of rejections
                     ++this->n_rejected;
                 }
@@ -181,7 +181,7 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
                     if( exp_ediff < x_metropolis )
                     {
                         // Restore the spin
-                        spins_new[ispin] = spins_old[ispin];
+                        state_new.spin[ispin] = state_old.spin[ispin];
                         // Counter for the number of rejections
                         ++this->n_rejected;
                     }

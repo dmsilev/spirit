@@ -264,7 +264,7 @@ void Calculate( Data::HTST_Info<system_t> & htst_info )
     auto & image_minimum = *htst_info.minimum->state;
     auto & image_sp      = *htst_info.saddle_point->state;
 
-    std::size_t nos = image_minimum.size();
+    std::size_t nos = image_minimum.spin.size();
 
     Log( Utility::Log_Level::Info, Utility::Log_Sender::HTST, "    Saving NO eigenvectors." );
 
@@ -284,7 +284,7 @@ void Calculate( Data::HTST_Info<system_t> & htst_info )
     Log( Utility::Log_Level::Info, Utility::Log_Sender::HTST,
          "    Checking if initial configuration is an extremum..." );
     Vectormath::set_c_a( 1, gradient_minimum, force_tmp );
-    Manifoldmath::project_tangential( force_tmp, image_minimum );
+    Manifoldmath::project_tangential( force_tmp, image_minimum.spin );
     scalar fmax_minimum = Vectormath::max_norm( force_tmp );
     if( fmax_minimum > epsilon_force )
     {
@@ -306,7 +306,7 @@ void Calculate( Data::HTST_Info<system_t> & htst_info )
     Log( Utility::Log_Level::Info, Utility::Log_Sender::HTST,
          "    Checking if transition configuration is an extremum..." );
     Vectormath::set_c_a( 1, gradient_sp, force_tmp );
-    Manifoldmath::project_tangential( force_tmp, image_sp );
+    Manifoldmath::project_tangential( force_tmp, image_sp.spin );
     scalar fmax_sp = Vectormath::max_norm( force_tmp );
     if( fmax_sp > epsilon_force )
     {
@@ -327,7 +327,7 @@ void Calculate( Data::HTST_Info<system_t> & htst_info )
 
         Log( Utility::Log_Level::Info, Utility::Log_Sender::HTST, "    Evaluate tangent basis ..." );
         SpMatrixX tangent_basis = SpMatrixX( 3 * nos, 2 * nos );
-        Manifoldmath::sparse_tangent_basis_spherical( image_sp, tangent_basis );
+        Manifoldmath::sparse_tangent_basis_spherical( image_sp.spin, tangent_basis );
 
         // Evaluation of the Hessian...
         Log( Utility::Log_Level::Info, Utility::Log_Sender::HTST, "    Evaluate the Hessian..." );
@@ -337,7 +337,7 @@ void Calculate( Data::HTST_Info<system_t> & htst_info )
         // Transform into geodesic Hessian
         Log( Utility::Log_Level::Info, Utility::Log_Sender::HTST, "    Transform Hessian into geodesic Hessian..." );
         SpMatrixX sparse_hessian_sp_geodesic_3N( 3 * nos, 3 * nos );
-        sparse_hessian_bordered_3N( image_sp, gradient_sp, sparse_hessian_sp, sparse_hessian_sp_geodesic_3N );
+        sparse_hessian_bordered_3N( image_sp.spin, gradient_sp, sparse_hessian_sp, sparse_hessian_sp_geodesic_3N );
         SpMatrixX sparse_hessian_sp_geodesic_2N
             = tangent_basis.transpose() * sparse_hessian_sp_geodesic_3N * tangent_basis;
 
@@ -394,7 +394,7 @@ void Calculate( Data::HTST_Info<system_t> & htst_info )
         Log( Utility::Log_Level::Info, Utility::Log_Sender::HTST, "    Evaluate the dynamical matrix" );
         SpMatrixX velocity( 3 * nos, 3 * nos );
         Sparse_Calculate_Dynamical_Matrix(
-            image_sp, htst_info.saddle_point->hamiltonian->get_geometry().mu_s, sparse_hessian_sp_geodesic_3N,
+            image_sp.spin, htst_info.saddle_point->hamiltonian->get_geometry().mu_s, sparse_hessian_sp_geodesic_3N,
             velocity );
         SpMatrixX projected_velocity = tangent_basis.transpose() * velocity * tangent_basis;
 
@@ -432,7 +432,7 @@ void Calculate( Data::HTST_Info<system_t> & htst_info )
 
         Log( Utility::Log_Level::Info, Utility::Log_Sender::HTST, "    Evaluate tangent basis ..." );
         SpMatrixX tangent_basis = SpMatrixX( 3 * nos, 2 * nos );
-        Manifoldmath::sparse_tangent_basis_spherical( image_minimum, tangent_basis );
+        Manifoldmath::sparse_tangent_basis_spherical( image_minimum.spin, tangent_basis );
 
         // Evaluation of the Hessian...
         Log( Utility::Log_Level::Info, Utility::Log_Sender::HTST, "    Evaluate the Hessian..." );
@@ -443,7 +443,7 @@ void Calculate( Data::HTST_Info<system_t> & htst_info )
         Log( Utility::Log_Level::Info, Utility::Log_Sender::HTST, "    Transforming Hessian into geodesic Hessian..." );
         SpMatrixX sparse_hessian_geodesic_min_3N = SpMatrixX( 3 * nos, 3 * nos );
         sparse_hessian_bordered_3N(
-            image_minimum, gradient_minimum, sparse_hessian_minimum, sparse_hessian_geodesic_min_3N );
+            image_minimum.spin, gradient_minimum, sparse_hessian_minimum, sparse_hessian_geodesic_min_3N );
         SpMatrixX sparse_hessian_geodesic_min_2N
             = tangent_basis.transpose() * sparse_hessian_geodesic_min_3N * tangent_basis;
 

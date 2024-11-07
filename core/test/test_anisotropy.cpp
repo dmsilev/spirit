@@ -76,31 +76,32 @@ TEST_CASE( "Uniaxial nisotropy", "[anisotropy]" )
         REQUIRE_THAT( normal[2], within_digits( init_normal[2], 12 ) );
     }
 
+    using Engine::Spin::StateType;
     SECTION( "Total energies for different orientations should match expected values" )
     {
-        vectorfield spins( state->nos );
+        StateType system_state{ vectorfield( state->nos ) };
 
-        for( auto & spin : spins )
+        for( auto & spin : system_state.spin )
             spin = { 1.0, 0.0, 0.0 };
-        scalar energy_x = state->active_image->hamiltonian->Energy( spins );
+        scalar energy_x = state->active_image->hamiltonian->Energy( system_state );
 
         // X and Z orientations energies should differ by NOS*init_magnitude
-        for( auto & spin : spins )
+        for( auto & spin : system_state.spin )
             spin = { 0.0, 0.0, 1.0 };
-        scalar energy_z = state->active_image->hamiltonian->Energy( spins );
+        scalar energy_z = state->active_image->hamiltonian->Energy( system_state );
         REQUIRE_THAT( energy_x - energy_z, within_digits( init_magnitude * state->nos, digits_a ) );
 
         // X and XY orientations energies should have equal energies
         scalar sqrt2_2 = std::sqrt( 2 ) / 2;
-        for( auto & spin : spins )
+        for( auto & spin : system_state.spin )
             spin = { sqrt2_2, sqrt2_2, 0.0 };
-        scalar energy_xy = state->active_image->hamiltonian->Energy( spins );
+        scalar energy_xy = state->active_image->hamiltonian->Energy( system_state );
         REQUIRE_THAT( energy_x - energy_xy, within_digits( 0, 12 ) );
     }
 
     SECTION( "All individual energy gradients should match the expected value" )
     {
-        vectorfield spins( state->nos, { 0.0, 0.0, 1.0 } );
+        StateType spins{ vectorfield( state->nos, { 0.0, 0.0, 1.0 } ) };
 
         auto gradients = vectorfield( state->nos );
         state->active_image->hamiltonian->Gradient( spins, gradients );
@@ -118,8 +119,10 @@ TEST_CASE( "Uniaxial nisotropy", "[anisotropy]" )
 
 TEST_CASE( "Cubic anisotropy", "[anisotropy]" )
 {
+    using Engine::Spin::StateType;
+
     auto state = std::shared_ptr<State>( State_Setup(), State_Delete );
-    vectorfield spins( state->nos );
+    StateType system_state{ vectorfield( state->nos ) };
 
     // Set uniaxial anisotropy to zero
     scalar init_normal_uniaxial[3] = { 0.0, 0.0, 1.0 };
@@ -138,35 +141,35 @@ TEST_CASE( "Cubic anisotropy", "[anisotropy]" )
     SECTION( "Total energies for different orientations should match expected values" )
     {
         scalar sqrt2_2 = std::sqrt( 2 ) / 2;
-        for( auto & spin : spins )
+        for( auto & spin : system_state.spin )
             spin = { sqrt2_2, sqrt2_2, 0.0 };
-        scalar energy_xy = state->active_image->hamiltonian->Energy( spins );
+        scalar energy_xy = state->active_image->hamiltonian->Energy( system_state );
 
         // X and XY orientations energies should differ by NOS*init_magnitude/4
-        for( auto & spin : spins )
+        for( auto & spin : system_state.spin )
             spin = { 1.0, 0.0, 0.0 };
-        scalar energy_x = state->active_image->hamiltonian->Energy( spins );
+        scalar energy_x = state->active_image->hamiltonian->Energy( system_state );
         REQUIRE_THAT( energy_x - energy_xy, within_digits( -init_magnitude / 4 * state->nos, digits_a ) );
 
         // Y and XY orientations energies should differ by NOS*init_magnitude/4
-        for( auto & spin : spins )
+        for( auto & spin : system_state.spin )
             spin = { 0.0, 1.0, 0.0 };
-        scalar energy_y = state->active_image->hamiltonian->Energy( spins );
+        scalar energy_y = state->active_image->hamiltonian->Energy( system_state );
         REQUIRE_THAT( energy_y - energy_xy, within_digits( -init_magnitude / 4 * state->nos, digits_a ) );
 
         // Y and Z orientations should have equal energies
-        for( auto & spin : spins )
+        for( auto & spin : system_state.spin )
             spin = { 0.0, 0.0, 1.0 };
-        scalar energy_z = state->active_image->hamiltonian->Energy( spins );
+        scalar energy_z = state->active_image->hamiltonian->Energy( system_state );
         REQUIRE_THAT( energy_y - energy_z, within_digits( 0, 12 ) );
     }
 
     SECTION( "All individual energy gradients should match the expected value" )
     {
-        for( auto & spin : spins )
+        for( auto & spin : system_state.spin )
             spin = { 0.0, 0.0, 1.0 };
         auto gradients = vectorfield( state->nos );
-        state->active_image->hamiltonian->Gradient( spins, gradients );
+        state->active_image->hamiltonian->Gradient( system_state, gradients );
 
         Vector3 gradient_expected{ 0.0, 0.0, scalar( -2.0 * init_magnitude ) };
 
@@ -183,19 +186,19 @@ TEST_CASE( "Cubic anisotropy", "[anisotropy]" )
     {
         Hamiltonian_Set_Anisotropy( state.get(), 0.1, init_normal_uniaxial );
 
-        for( auto & spin : spins )
+        for( auto & spin : system_state.spin )
             spin = { 0.0, 0.0, 1.0 };
 
         // Direct energy calculation and energy calculated from gradient should be equal
         auto gradients_a = vectorfield( state->nos );
         scalar energy_from_gradient{};
-        state->active_image->hamiltonian->Gradient_and_Energy( spins, gradients_a, energy_from_gradient );
-        scalar energy_direct = state->active_image->hamiltonian->Energy( spins );
+        state->active_image->hamiltonian->Gradient_and_Energy( system_state, gradients_a, energy_from_gradient );
+        scalar energy_direct = state->active_image->hamiltonian->Energy( system_state );
         REQUIRE_THAT( energy_from_gradient, within_digits( energy_direct, 12 ) );
 
         // Direct gradient calculation and gradient out of gradient-and-energy calculation should be equal
         auto gradients_b = vectorfield( state->nos );
-        state->active_image->hamiltonian->Gradient( spins, gradients_b );
+        state->active_image->hamiltonian->Gradient( system_state, gradients_b );
         for( int idx = 0; idx < state->nos; ++idx )
         {
             INFO(
@@ -209,6 +212,8 @@ TEST_CASE( "Cubic anisotropy", "[anisotropy]" )
 
 TEST_CASE( "Biaxial anisotropy", "[anisotropy]" )
 {
+    using Engine::Spin::StateType;
+
     auto state = std::shared_ptr<State>( State_Setup(), State_Delete );
 
     int idx_image = -1, idx_chain = -1;
@@ -329,9 +334,9 @@ TEST_CASE( "Biaxial anisotropy", "[anisotropy]" )
             Hamiltonian_Set_Biaxial_Anisotropy(
                 state.get(), magnitude.data(), array_cast( exponents ), init_primary.data(), init_secondary.data(), N );
 
-            vectorfield spins( state->nos, make_spherical( theta, phi ) );
+            StateType system_state{ vectorfield( state->nos, make_spherical( theta, phi ) ) };
             scalarfield energy( state->nos, 0.0 );
-            interaction->Energy_per_Spin( spins, energy );
+            interaction->Energy_per_Spin( system_state, energy );
 
             // reference energy
             const scalar ref_energy
@@ -351,10 +356,11 @@ TEST_CASE( "Biaxial anisotropy", "[anisotropy]" )
             INFO( "trial: " << idx << ", theta=" << theta << ", phi=" << phi );
             INFO( term_info( terms... ) );
             REQUIRE_THAT(
-                interaction->Energy( spins ) / static_cast<scalar>( state->nos ), WithinAbs( ref_energy, epsilon_3 ) );
+                interaction->Energy( system_state ) / static_cast<scalar>( state->nos ),
+                WithinAbs( ref_energy, epsilon_3 ) );
 
             vectorfield gradient( state->nos, Vector3::Zero() );
-            interaction->Gradient( spins, gradient );
+            interaction->Gradient( system_state, gradient );
 
             const auto k1 = Vector3{ init_primary[0], init_primary[1], init_primary[2] };
             const auto k2 = Vector3{ init_secondary[0], init_secondary[1], init_secondary[2] };

@@ -28,7 +28,7 @@ public:
 private:
     // Calculate Forces onto Systems
     void Calculate_Force(
-        const std::vector<std::shared_ptr<vectorfield>> & configurations, std::vector<vectorfield> & forces ) override;
+        const std::vector<std::shared_ptr<StateType>> & configurations, std::vector<vectorfield> & forces ) override;
 
     // Check if the Forces are converged
     bool Converged() override;
@@ -66,9 +66,9 @@ private:
 
     // Functions for getting the minimum mode of a Hessian
     void Calculate_Force_Spectra_Matrix(
-        const std::vector<std::shared_ptr<vectorfield>> & configurations, std::vector<vectorfield> & forces );
+        const std::vector<std::shared_ptr<StateType>> & configurations, std::vector<vectorfield> & forces );
     void Calculate_Force_Lanczos(
-        const std::vector<std::shared_ptr<vectorfield>> configurations, std::vector<vectorfield> & forces );
+        const std::vector<std::shared_ptr<StateType>> configurations, std::vector<vectorfield> & forces );
 };
 
 } // namespace Spin

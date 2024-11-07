@@ -2,6 +2,7 @@
 #ifndef SPIRIT_CORE_ENGINE_INTERACTION_GAUSSIAN_HPP
 #define SPIRIT_CORE_ENGINE_INTERACTION_GAUSSIAN_HPP
 
+#include <engine/spin/StateType.hpp>
 #include <engine/spin/interaction/Functor_Prototypes.hpp>
 
 #include <Eigen/Dense>
@@ -23,7 +24,7 @@ E = sum_i^N a_i exp( -l_i^2(m)/(2sigma_i^2) ) where l_i(m) is the distance of m 
 */
 struct Gaussian
 {
-    using state_t = vectorfield;
+    using state_t = StateType;
 
     struct Data
     {
@@ -113,7 +114,7 @@ protected:
 };
 
 template<>
-inline scalar Gaussian::Energy::operator()( const Index & index, const Vector3 * spins ) const
+inline scalar Gaussian::Energy::operator()( const Index & index, quantity<const Vector3 *> state ) const
 {
     scalar result = 0;
 
@@ -125,14 +126,14 @@ inline scalar Gaussian::Energy::operator()( const Index & index, const Vector3 *
     for( unsigned int igauss = 0; igauss < n_gaussians; ++igauss )
     {
         // Distance between spin and gaussian center
-        scalar l = 1 - center[igauss].dot( spins[ispin] );
+        scalar l = 1 - center[igauss].dot( state.spin[ispin] );
         result += amplitude[igauss] * std::exp( -l * l / ( 2.0 * width[igauss] * width[igauss] ) );
     };
     return result;
 }
 
 template<>
-inline Vector3 Gaussian::Gradient::operator()( const Index & index, const Vector3 * spins ) const
+inline Vector3 Gaussian::Gradient::operator()( const Index & index, quantity<const Vector3 *> state ) const
 {
     Vector3 result = Vector3::Zero();
 
@@ -144,7 +145,7 @@ inline Vector3 Gaussian::Gradient::operator()( const Index & index, const Vector
     for( unsigned int i = 0; i < n_gaussians; ++i )
     {
         // Scalar product of spin and gaussian center
-        scalar l = 1 - center[i].dot( spins[ispin] );
+        scalar l = 1 - center[i].dot( state.spin[ispin] );
         // Prefactor
         scalar prefactor
             = amplitude[i] * std::exp( -l * l / ( 2.0 * width[i] * width[i] ) ) * l / ( width[i] * width[i] );
@@ -156,7 +157,7 @@ inline Vector3 Gaussian::Gradient::operator()( const Index & index, const Vector
 
 template<>
 template<typename Callable>
-void Gaussian::Hessian::operator()( const Index & index, const vectorfield & spins, Callable & hessian ) const
+void Gaussian::Hessian::operator()( const Index & index, const StateType & state, Callable & hessian ) const
 {
     if( !is_contributing || index == nullptr )
         return;
@@ -166,7 +167,7 @@ void Gaussian::Hessian::operator()( const Index & index, const vectorfield & spi
     for( unsigned int igauss = 0; igauss < n_gaussians; ++igauss )
     {
         // Distance between spin and gaussian center
-        scalar l = 1 - center[igauss].dot( spins[ispin] );
+        scalar l = 1 - center[igauss].dot( state.spin[ispin] );
         // Prefactor for all alpha, beta
         scalar prefactor = amplitude[igauss] * std::exp( -std::pow( l, 2 ) / ( 2.0 * std::pow( width[igauss], 2 ) ) )
                            / std::pow( width[igauss], 2 ) * ( std::pow( l, 2 ) / std::pow( width[igauss], 2 ) - 1 );

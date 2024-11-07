@@ -1,6 +1,7 @@
 #include <engine/Backend.hpp>
 #include <engine/Manifoldmath.hpp>
 #include <engine/Vectormath.hpp>
+#include <engine/spin/StateType.hpp>
 #include <utility/Constants.hpp>
 #include <utility/Exception.hpp>
 #include <utility/Logging.hpp>
@@ -111,20 +112,21 @@ void Geodesic_Tangent(
 /*
 Calculates the 'tangent' vectors, i.e.in crudest approximation the difference between an image and the neighbouring
 */
+template<typename StateType>
 void Tangents(
-    std::vector<std::shared_ptr<vectorfield>> configurations, const std::vector<scalar> & energies,
+    const std::vector<std::shared_ptr<StateType>> & configurations, const std::vector<scalar> & energies,
     std::vector<vectorfield> & tangents )
 {
     const auto noi = configurations.size();
-    const auto nos = ( *configurations[0] ).size();
+    const auto nos = configurations[0]->spin.size();
 
     if( noi < 2 )
         return;
 
     // first image
     {
-        const auto & image      = *configurations[0];
-        const auto & image_plus = *configurations[1];
+        const auto & image      = configurations[0]->spin;
+        const auto & image_plus = configurations[1]->spin;
         Geodesic_Tangent(
             tangents[0], image, image_plus,
             image ); // Use the accurate tangent at the endpoints, useful for the dimer method
@@ -133,9 +135,9 @@ void Tangents(
     // Images Inbetween
     for( unsigned int idx_img = 1; idx_img < noi - 1; ++idx_img )
     {
-        const auto & image       = *configurations[idx_img];
-        const auto & image_plus  = *configurations[idx_img + 1];
-        const auto & image_minus = *configurations[idx_img - 1];
+        const auto & image       = configurations[idx_img]->spin;
+        const auto & image_plus  = configurations[idx_img + 1]->spin;
+        const auto & image_minus = configurations[idx_img - 1]->spin;
 
         // Energies
         scalar E_mid = 0, E_plus = 0, E_minus = 0;
@@ -200,13 +202,17 @@ void Tangents(
 
     // Last Image
     {
-        const auto & image       = *configurations[noi - 1];
-        const auto & image_minus = *configurations[noi - 2];
+        const auto & image       = configurations[noi - 1]->spin;
+        const auto & image_minus = configurations[noi - 2]->spin;
         Geodesic_Tangent(
             tangents[noi - 1], image_minus, image,
             image ); // Use the accurate tangent at the endpoints, useful for the dimer method
     }
 } // end Tangents
+
+template void Tangents(
+    const std::vector<std::shared_ptr<Engine::Spin::StateType>> & configurations, const std::vector<scalar> & energies,
+    std::vector<vectorfield> & tangents );
 
 scalar norm( const vectorfield & vf )
 {

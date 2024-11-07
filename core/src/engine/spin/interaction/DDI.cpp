@@ -108,7 +108,7 @@ void DDI::applyGeometry(
 }
 
 template<>
-void DDI::Energy::operator()( const vectorfield & spins, scalarfield & energy ) const
+void DDI::Energy::operator()( const StateType & state, scalarfield & energy ) const
 {
     if( !is_contributing )
         return;
@@ -118,19 +118,19 @@ void DDI::Energy::operator()( const vectorfield & spins, scalarfield & energy ) 
         return;
 
     if( data.method == DDI_Method::FFT )
-        Energy_per_Spin_FFT( *cache.geometry, *cache.boundary_conditions, cache, spins, energy );
+        Energy_per_Spin_FFT( *cache.geometry, *cache.boundary_conditions, cache, state.spin, energy );
     else if( data.method == DDI_Method::Cutoff )
     {
         // TODO: Merge these implementations in the future
         if( data.cutoff_radius >= 0 )
-            Energy_per_Spin_Cutoff( *cache.geometry, *cache.boundary_conditions, cache, spins, energy );
+            Energy_per_Spin_Cutoff( *cache.geometry, *cache.boundary_conditions, cache, state.spin, energy );
         else
-            Energy_per_Spin_Direct( *cache.geometry, *cache.boundary_conditions, data, spins, energy );
+            Energy_per_Spin_Direct( *cache.geometry, *cache.boundary_conditions, data, state.spin, energy );
     }
 };
 
 template<>
-void DDI::Gradient::operator()( const vectorfield & spins, vectorfield & gradient ) const
+void DDI::Gradient::operator()( const StateType & state, vectorfield & gradient ) const
 {
     if( !is_contributing )
         return;
@@ -140,21 +140,21 @@ void DDI::Gradient::operator()( const vectorfield & spins, vectorfield & gradien
         return;
 
     if( data.method == DDI_Method::FFT )
-        Gradient_FFT( *cache.geometry, *cache.boundary_conditions, cache, spins, gradient );
+        Gradient_FFT( *cache.geometry, *cache.boundary_conditions, cache, state.spin, gradient );
     else if( data.method == DDI_Method::Cutoff )
     {
         // TODO: Merge these implementations in the future
         if( data.cutoff_radius >= 0 )
-            Gradient_Cutoff( *cache.geometry, *cache.boundary_conditions, cache, spins, gradient );
+            Gradient_Cutoff( *cache.geometry, *cache.boundary_conditions, cache, state.spin, gradient );
         else
-            Gradient_Direct( *cache.geometry, *cache.boundary_conditions, data, spins, gradient );
+            Gradient_Direct( *cache.geometry, *cache.boundary_conditions, data, state.spin, gradient );
     }
 };
 
 // Calculate the total energy for a single spin to be used in Monte Carlo.
 //      Note: therefore the energy of pairs is weighted x2 and of quadruplets x4.
 template<>
-scalar DDI::Energy_Single_Spin::operator()( const int ispin, const vectorfield & spins ) const
+scalar DDI::Energy_Single_Spin::operator()( const int ispin, const StateType & state ) const
 {
     if( !is_contributing )
         return 0;

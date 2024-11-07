@@ -25,7 +25,7 @@ protected:
     std::vector<vectorfield> grad_pr;
     std::vector<vectorfield> searchdir;
 
-    std::vector<std::shared_ptr<vectorfield>> configurations_temp;
+    std::vector<std::shared_ptr<StateType>> configurations_temp;
 
     std::vector<std::shared_ptr<const Data::Parameters_Method_LLG>> llg_parameters;
 };
@@ -36,9 +36,9 @@ inline void Method_Solver<Solver::VP_OSO>::Initialize()
     this->forces         = std::vector<vectorfield>( this->noi, vectorfield( this->nos, { 0, 0, 0 } ) );
     this->forces_virtual = std::vector<vectorfield>( this->noi, vectorfield( this->nos, { 0, 0, 0 } ) );
 
-    this->configurations_temp = std::vector<std::shared_ptr<vectorfield>>( this->noi );
+    this->configurations_temp = std::vector<std::shared_ptr<StateType>>( this->noi );
     for( int i = 0; i < this->noi; i++ )
-        configurations_temp[i] = std::make_shared<vectorfield>( this->nos );
+        configurations_temp[i] = std::make_shared<StateType>( make_state<StateType>( this->nos ) );
 
     this->velocities = std::vector<vectorfield>( this->noi, vectorfield( this->nos, Vector3::Zero() ) ); // [noi][nos]
     this->forces_previous = forces;                                                                      // [noi][nos]
@@ -78,7 +78,7 @@ inline void Method_Solver<Solver::VP_OSO>::Iteration()
 
     for( int img = 0; img < this->noi; img++ )
     {
-        auto & image = *this->configurations[img];
+        auto & image = this->configurations[img]->spin;
         auto & grad  = this->grad[img];
         Solver_Kernels::oso_calc_gradients( grad, image, this->forces[img] );
         Vectormath::scale( grad, -1.0 );
@@ -101,7 +101,7 @@ inline void Method_Solver<Solver::VP_OSO>::Iteration()
         Solver_Kernels::VP::set_step( velocities[img], grad[img], this->llg_parameters[img]->dt, searchdir[img] );
 
         // rotate spins
-        Solver_Kernels::oso_rotate( *this->configurations[img], this->searchdir[img] );
+        Solver_Kernels::oso_rotate( this->configurations[img]->spin, this->searchdir[img] );
     }
 }
 

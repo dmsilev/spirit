@@ -136,7 +136,7 @@ try
     state->active_image = IO::Spin_System_from_Config( state->config_file );
     auto & image        = state->active_image;
     Configurations::Random_Sphere(
-        get<Field::Spin>( *image->state ), image->hamiltonian->get_geometry(), image->llg_parameters->prng );
+        image->state->spin, image->hamiltonian->get_geometry(), image->llg_parameters->prng );
     //------------------------------------------------------------------------------------------
 
     //----------------------- Initialize spin system chain -------------------------------------

@@ -42,7 +42,7 @@ void Helper_System_Set_Geometry( State::system_t & system, const Data::Geometry 
 
     if( !same_size( old_geometry, new_geometry ) )
     {
-        Helper_Change_Dimensions( get<Field::Spin>( *system.state ), old_geometry, new_geometry, { 0, 0, 1 } );
+        Helper_Change_Dimensions( system.state->spin, old_geometry, new_geometry, { 0, 0, 1 } );
         Helper_Change_Dimensions( system.M.effective_field, old_geometry, new_geometry, { 0, 0, 0 } );
     }
     // Update the system geometry

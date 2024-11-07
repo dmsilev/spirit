@@ -118,8 +118,9 @@ void hessian_covariant(
 scalar dist_geodesic( const vectorfield & v1, const vectorfield & v2 );
 
 // Calculate the "tangent" vectorfields pointing between a set of configurations
+template<typename StateType>
 void Tangents(
-    std::vector<std::shared_ptr<vectorfield>> configurations, const std::vector<scalar> & energies,
+    const std::vector<std::shared_ptr<StateType>> & configurations, const std::vector<scalar> & energies,
     std::vector<vectorfield> & tangents );
 
 } // namespace Manifoldmath

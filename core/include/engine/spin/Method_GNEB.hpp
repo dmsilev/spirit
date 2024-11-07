@@ -32,13 +32,13 @@ public:
     std::string_view Name() override;
 
     void Calculate_Force(
-        const std::vector<std::shared_ptr<vectorfield>> & configurations,
+        const std::vector<std::shared_ptr<StateType>> & configurations,
         std::vector<vectorfield> & forces ) override; // Moved to public, because of cuda device lambda restrictions
 
 private:
     // Calculate Forces onto Systems
     void Calculate_Force_Virtual(
-        const std::vector<std::shared_ptr<vectorfield>> & configurations, const std::vector<vectorfield> & forces,
+        const std::vector<std::shared_ptr<StateType>> & configurations, const std::vector<vectorfield> & forces,
         std::vector<vectorfield> & forces_virtual ) override;
 
     // Check if the Forces are converged
