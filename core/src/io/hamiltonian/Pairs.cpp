@@ -46,7 +46,8 @@ try
                 &geometry]( const PairTableParser::read_row_t & row ) -> std::tuple<Pair, scalar, Vector3, scalar>
         {
             auto [i, j, da, db, dc, Dij, Dijx, Dijy, Dijz, Dija, Dijb, Dijc, Jij] = row;
-            Vector3 D_temp;
+
+            Vector3 D_temp = Vector3::Zero();
             if( DMI_xyz )
                 D_temp = { Dijx, Dijy, Dijz };
             // Anisotropy vector orientation
