@@ -83,20 +83,28 @@ catch( ... )
     return nullptr;
 }
 
-void System_Set_DDI_Field(State * state, int idx_image, int idx_chain, int n_atoms, float ** ddi_fields  ) noexcept
+void System_Set_DDI_Field(State * state, int idx_image, int idx_chain, int n_atoms, float * ddi_fields  ) noexcept
 try
 {
     std::shared_ptr<Data::Spin_System> image;
     std::shared_ptr<Data::Spin_System_Chain> chain;
+
+    if( ddi_fields == nullptr )
+    {
+        spirit_throw(
+            Utility::Exception_Classifier::System_not_Initialized, Utility::Log_Level::Error,
+            "Got passed a null pointer for 'ddi_fields'" );
+    }
+
 
     // Fetch correct indices and pointers
     from_indices( state, idx_image, idx_chain, image, chain );
 
     for( std::size_t i = 0; i < static_cast<std::size_t>( n_atoms ); ++i )
     {
-        image->ddi_field[i][0] = ddi_fields[i][0];        
-        image->ddi_field[i][1] = ddi_fields[i][1];        
-        image->ddi_field[i][2] = ddi_fields[i][2];        
+        image->ddi_field[i][0] = ddi_fields[3*i+0];        
+        image->ddi_field[i][1] = ddi_fields[3*i+1];        
+        image->ddi_field[i][2] = ddi_fields[3*i+2];        
     }    
 }
 catch( ... )

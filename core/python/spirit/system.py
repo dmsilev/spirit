@@ -11,7 +11,9 @@ _spirit = spiritlib.load_spirit_library()
 
 from spirit.scalar import scalar
 from spirit import parameters
-from numpy import frombuffer, ndarray as np
+import numpy as np
+from numpy.ctypeslib import ndpointer 
+from numpy import frombuffer, ndarray
 
 ### Get Chain index
 _Get_Index = _spirit.System_Get_Index
@@ -103,19 +105,22 @@ def get_DDI_field(p_state, idx_image=-1, idx_chain=-1):
 
 ### Set dipole-dipole Field
 # NOTE: This changes the values of the array_view inside the simulation
+
 _Set_DDI_Field = _spirit.System_Set_DDI_Field
 _Set_DDI_Field.argtypes = [
     ctypes.c_void_p,
     ctypes.c_int,
     ctypes.c_int,
     ctypes.c_int,
-    ctypes.POINTER(ctypes.c_float)]
+    np.ctypeslib.ndpointer(dtype=np.float32,ndim=1,flags="C")
+    ]
 _Set_DDI_Field.restype = None
 
-def set_DDI_Field(p_state, idx_image=-1, idx_chain=-1, n_atoms=0, ddi_fields=-1):
+def set_DDI_field(p_state, idx_image=-1, idx_chain=-1, n_atoms=0, ddi_fields=-1):
     """Loads a dipole-dipole field array (from an external Ewald summation calculation) into Spirit"""
-    buffer = ctypes.c_float * 3 * n_atoms
-    _Set_DDI_Field(ctypes.c_void_p(p_state), ctypes.c_int(idx_image), ctypes.c_int(idx_chain),ctypes.c_int(n_atoms),buffer(*ddi_fields))
+
+    _Set_DDI_Field(ctypes.c_void_p(p_state), ctypes.c_int(idx_image), ctypes.c_int(idx_chain),ctypes.c_int(n_atoms),
+        ddi_fields.astype(np.float32).flatten())
 
 
 ### Get Pointer to an eigenmode
