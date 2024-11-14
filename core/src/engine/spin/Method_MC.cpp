@@ -75,11 +75,11 @@ void Method_MC<algorithm>::Iteration()
 
     const scalar diff = 0.01;
 
+    this->acceptance_ratio_current = 1 - (scalar)this->n_rejected / (scalar)this->nos_nonvacant;
+
     // Cone angle feedback algorithm
     if( this->parameters_mc->metropolis_step_cone && this->parameters_mc->metropolis_cone_adaptive )
     {
-        this->acceptance_ratio_current = 1 - (scalar)this->n_rejected / (scalar)this->nos_nonvacant;
-
         if( ( this->acceptance_ratio_current < this->parameters_mc->acceptance_ratio_target )
             && ( this->cone_angle > diff ) )
             this->cone_angle -= diff;
