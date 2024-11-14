@@ -214,16 +214,16 @@ void trial_spin_magnetization_constrained(
     }();
 
     // calculate compensation spin
-    Vector3 spin_j_post     = shared.orth_projector * ( spin_j_pre + mu_s_ratio * ( spin_i_pre - spin_i_post ) );
-    const scalar sz_squared = 1 - spin_j_post.squaredNorm();
-    if( sz_squared < 0 )
+    Vector3 spin_j_post          = shared.orth_projector * ( spin_j_pre + mu_s_ratio * ( spin_i_pre - spin_i_post ) );
+    const scalar sz_post_squared = 1 - spin_j_post.squaredNorm();
+    if( sz_post_squared < 0 )
     {
         ++shared.n_rejected;
         return;
     }
 
-    const scalar sz_pre  = spin_j_pre.dot( shared.para_projector );
-    const scalar sz_post = std::copysign( std::sqrt( sz_squared ), sz_pre );
+    const scalar sz_pre  = shared.para_projector.dot( spin_j_pre );
+    const scalar sz_post = std::copysign( std::sqrt( sz_post_squared ), sz_pre );
     spin_j_post += sz_post * shared.para_projector;
 
     // calculate magnetization
@@ -242,7 +242,7 @@ void trial_spin_magnetization_constrained(
     // The `Energy_Single_Spin` method assumes changes to a single spin.
     // To determine the change in energy from the full change correctly
     // we have to evaluate the differences from each change individually.
-    const scalar Ediff = [&hamiltonian, ispin, jspin, &spin_i_post, &spin_j_post, &state]
+    const scalar Ediff = [ispin, jspin, &spin_i_post, &spin_j_post, &state, &hamiltonian]
     {
         scalar Ediff      = -1.0 * hamiltonian.Energy_Single_Spin( ispin, state );
         state.spin[ispin] = spin_i_post;
@@ -252,9 +252,9 @@ void trial_spin_magnetization_constrained(
         return Ediff;
     }();
 
-    const scalar jacobian_pre  = shared.magnetization_pre * shared.magnetization_pre / std::abs( sz_pre );
-    const scalar jacobian_post = magnetization_post * magnetization_post / std::abs( sz_post );
-    const scalar metropolis_pb = jacobian_post / jacobian_pre * std::exp( -Ediff * shared.beta );
+    const scalar jacobian_pre  = shared.magnetization_pre * shared.magnetization_pre / sz_pre;
+    const scalar jacobian_post = magnetization_post * magnetization_post / sz_post;
+    const scalar metropolis_pb = std::abs( jacobian_post / jacobian_pre ) * std::exp( -Ediff * shared.beta );
 
     // Metropolis criterion: reject the step with probability (1 - min(1, metropolis_pb))
     if( ( metropolis_pb < 1e-14 )
@@ -268,6 +268,7 @@ void trial_spin_magnetization_constrained(
         return;
     }
 
+    // finally accept the step and update the current magnetization
     shared.magnetization_pre = magnetization_post;
 }
 
