@@ -109,7 +109,7 @@ public:
     // Number of warnings in the Log
     int n_warnings{ 0 };
     // Length of the tags before each message in spaces
-    const std::string tags_space = std::string( 49, ' ' );
+    const std::string tags_space = std::string( 44, ' ' );
     // Whether to put brackets around bits before each log message
     bool bracket_separators{ true };
 
