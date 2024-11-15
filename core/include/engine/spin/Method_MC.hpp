@@ -77,6 +77,12 @@ private:
 
     // constrained direction for the direction constrained monte carlo algorithm
     Vector3 constrained_direction{ 0, 0, 1 };
+    Matrix3 constrained_orthogonal_projector = []
+    {
+        Matrix3 m;
+        m << 1, 0, 0, 0, 1, 0, 0, 0, 0;
+        return m;
+    }();
 
     // Random vector array
     vectorfield xi;

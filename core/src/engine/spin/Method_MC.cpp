@@ -58,9 +58,18 @@ Method_MC<algorithm>::Method_MC( std::shared_ptr<system_t> system, int idx_img, 
             = Vectormath::Magnetization( this->system->state->spin, this->system->hamiltonian->get_geometry().mu_s )
                   .normalized();
         if( m_direction.squaredNorm() > 1e-4 )
+        {
             constrained_direction = m_direction;
+            constrained_orthogonal_projector
+                = Matrix3::Identity() - constrained_direction * constrained_direction.transpose();
+        }
         else
+        {
             constrained_direction = Vector3{ 0, 0, 1 };
+            constrained_orthogonal_projector << 1, 0, 0, 0, 1, 0, 0, 0, 0;
+        }
+
+        assert( ( this->constrained_orthogonal_projector * this->constrained_direction ).norm() < 1e-12 );
     }
 }
 
@@ -158,7 +167,7 @@ void Method_MC<MC_Algorithm::Metropolis_MDC>::Step( StateType & state, Hamiltoni
         /*beta=*/scalar( 1.0 ) / ( Constants::k_B * this->parameters_mc->temperature ),
         /*cone_angle=*/this->cone_angle,
         /* para_projector=*/constrained_direction,
-        /* orth_projector=*/Matrix3::Identity() - constrained_direction * constrained_direction.transpose(),
+        /* orth_projector=*/constrained_orthogonal_projector,
         /* magnetization_pre=*/constrained_direction.dot( Vectormath::Magnetization( state.spin, geometry.mu_s ) )
     };
 
