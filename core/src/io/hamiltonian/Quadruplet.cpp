@@ -23,7 +23,7 @@ try
          fmt::format( "Reading spin quadruplets from file \"{}\"", quadruplets_file ) );
 
     // parser initialization
-    using QuadrupletTableParser = TableParser<int, int, int, int, int, int, int, int, int, int, int, int, int, scalar>;
+    using QuadrupletTableParser = TableParserInit<std::array<int, 13>, std::array<scalar, 1>>;
     const QuadrupletTableParser parser(
         { "i", "j", "da_j", "db_j", "dc_j", "k", "da_k", "db_k", "dc_k", "l", "da_l", "db_l", "dc_l", "q" } );
 

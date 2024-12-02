@@ -20,8 +20,7 @@ void Biaxial_Anisotropy_Axes_from_File(
 try
 {
     // parser initialization
-    using AnisotropyTableParser = TableParser<
-        int, scalar, scalar, scalar, scalar, scalar, scalar, scalar, scalar, scalar, scalar, scalar, scalar>;
+    using AnisotropyTableParser = TableParserInit<std::array<int, 1>, std::array<scalar, 12>>;
     const AnisotropyTableParser parser(
         { "i", "k1x", "k1y", "k1z", "k1a", "k1b", "k1c", "k2x", "k2y", "k2z", "k2a", "k2b", "k2c" } );
 
@@ -90,7 +89,8 @@ void Biaxial_Anisotropy_Terms_from_File(
 try
 {
     // parser initialization
-    using AnisotropyTableParser = TableParser<int, unsigned int, unsigned int, unsigned int, scalar>;
+    using AnisotropyTableParser
+        = TableParserInit<std::array<int, 1>, std::array<unsigned int, 3>, std::array<scalar, 1>>;
     const AnisotropyTableParser parser( { "i", "n1", "n2", "n3", "k" } );
 
     // factory function for creating a lambda that transforms the row that is read

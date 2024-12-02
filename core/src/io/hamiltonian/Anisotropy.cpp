@@ -23,7 +23,7 @@ try
     Log( Log_Level::Debug, Log_Sender::IO, "Reading anisotropy from file " + anisotropy_file );
 
     // parser initialization
-    using AnisotropyTableParser = TableParser<int, scalar, scalar, scalar, scalar, scalar, scalar, scalar, scalar>;
+    using AnisotropyTableParser = TableParserInit<std::array<int, 1>, std::array<scalar, 8>>;
     const AnisotropyTableParser parser( { "i", "k", "kx", "ky", "kz", "ka", "kb", "kc", "k4" } );
 
     // factory function for creating a lambda that transforms the row that is read

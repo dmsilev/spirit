@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <tuple>
 #include <type_traits>
 
@@ -88,6 +89,26 @@ template<
     template<class...> class NewVariadic = Variadic>
 using variadic_map_t = typename variadic_map<F, Variadic, T, NewVariadic>::type;
 
+// metafunction to transfer types from tuple to a different variadic type
+template<template<typename...> typename, typename>
+struct variadic_from_tuple;
+
+template<template<typename...> typename Variadic, typename... T>
+struct variadic_from_tuple<Variadic, std::tuple<T...>>
+{
+    using type = Variadic<T...>;
+};
+
+// metafunction to transfer types to tuple from a different variadic type
+template<template<typename...> typename, typename>
+struct variadic_to_tuple;
+
+template<template<typename...> typename Variadic, typename... T>
+struct variadic_to_tuple<Variadic, Variadic<T...>>
+{
+    using type = std::tuple<T...>;
+};
+
 // metafunction to test if all types within a variadic container are the same
 template<class T, template<class...> class Variadic = std::tuple>
 struct all_same;
@@ -154,4 +175,55 @@ struct are_disjoint<FirstVariadic<Ts...>, SecondVariadic>
 {
 };
 
+template<typename... Arrays>
+struct arrays_to_tuple
+{
+private:
+    template<typename...>
+    struct concat;
+
+    template<typename... Ts>
+    struct concat<std::tuple<Ts...>>
+    {
+        using type = std::tuple<Ts...>;
+    };
+
+    template<typename... Ts, typename... Us, typename... Tuple>
+    struct concat<std::tuple<Ts...>, std::tuple<Us...>, Tuple...>
+    {
+        using type = typename concat<std::tuple<Ts..., Us...>, Tuple...>::type;
+    };
+
+    template<typename>
+    struct flatten;
+
+    template<typename T, std::size_t N>
+    struct flatten<std::array<T, N>>
+    {
+    private:
+        template<typename>
+        struct helper;
+
+        template<std::size_t... Is>
+        struct helper<std::index_sequence<Is...>>
+        {
+            using type = std::tuple<typename std::tuple_element<Is, std::array<T, N>>::type...>;
+        };
+
+    public:
+        using type = typename helper<decltype( std::make_index_sequence<N>{} )>::type;
+    };
+
+public:
+    using type = typename concat<typename flatten<Arrays>::type...>::type;
+};
+
 } // namespace Utility
+
+static_assert( std::is_same_v<
+               typename Utility::arrays_to_tuple<std::array<int, 3>, std::array<float, 2>>::type,
+               std::tuple<int, int, int, float, float>> );
+
+static_assert( std::is_same_v<
+               typename Utility::arrays_to_tuple<std::array<int, 3>, std::array<float, 2>, std::array<int, 1>>::type,
+               std::tuple<int, int, int, float, float, int>> );

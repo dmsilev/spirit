@@ -2,6 +2,7 @@
 
 #include <io/Filter_File_Handle.hpp>
 #include <utility/Logging.hpp>
+#include <utility/Variadic_Traits.hpp>
 
 #include <map>
 #include <string_view>
@@ -38,6 +39,13 @@ constexpr T make_from_tuple( Tuple && tuple )
 template<typename In>
 static constexpr auto forwarding_factory
     = []( const std::map<std::string_view, int> & ) { return []( In row ) -> In { return row; }; };
+
+template<typename... Args>
+class TableParser;
+
+template<typename... Arrays>
+using TableParserInit =
+    typename Utility::variadic_from_tuple<TableParser, typename Utility::arrays_to_tuple<Arrays...>::type>::type;
 
 /*
  * Universal implementation of a table parser.

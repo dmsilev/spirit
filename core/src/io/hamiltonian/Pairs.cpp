@@ -22,8 +22,7 @@ try
 {
     Log( Log_Level::Debug, Log_Sender::IO, fmt::format( "Reading spin pairs from file \"{}\"", pairs_file ) );
 
-    using PairTableParser
-        = TableParser<int, int, int, int, int, scalar, scalar, scalar, scalar, scalar, scalar, scalar, scalar>;
+    using PairTableParser = TableParserInit<std::array<int, 5>, std::array<scalar, 8>>;
     const PairTableParser parser(
         { "i", "j", "da", "db", "dc", "dij", "dijx", "dijy", "dijz", "dija", "dijb", "dijc", "jij" } );
 
