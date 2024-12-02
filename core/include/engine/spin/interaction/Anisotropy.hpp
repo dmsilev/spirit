@@ -59,8 +59,8 @@ struct Anisotropy
         int ispin, iani;
     };
 
-    using Index        = const IndexType *;
-    using IndexStorage = Backend::optional<IndexType>;
+    using Index        = Engine::Span<const IndexType>;
+    using IndexStorage = Backend::vector<IndexType>;
 
     using Energy   = Functor::Local::Energy_Functor<Functor::Local::DataRef<Anisotropy>>;
     using Gradient = Functor::Local::Gradient_Functor<Functor::Local::DataRef<Anisotropy>>;
@@ -90,7 +90,7 @@ struct Anisotropy
             {
                 int ispin = icell * geometry.n_cell_atoms + data.indices[iani];
                 if( check_atom_type( geometry.atom_types[ispin] ) )
-                    Backend::get<IndexStorage>( indices[ispin] ) = IndexType{ ispin, iani };
+                    Backend::get<IndexStorage>( indices[ispin] ).push_back( IndexType{ ispin, iani } );
             }
         }
     };
@@ -118,50 +118,45 @@ protected:
 template<>
 inline scalar Anisotropy::Energy::operator()( const Index & index, const Vector3 * spins ) const
 {
-    if( is_contributing && index != nullptr )
-    {
-        const auto & [ispin, iani] = *index;
-        const auto d               = normals[iani].dot( spins[ispin] );
-        return -magnitudes[iani] * d * d;
-    }
-    else
-    {
-        return 0;
-    }
+    return -1.0
+           * Backend::transform_reduce(
+               index.begin(), index.end(), scalar( 0 ), Backend::plus<scalar>{},
+               [this, spins] SPIRIT_LAMBDA( const Interaction::IndexType & idx ) -> scalar
+               {
+                   const auto d = normals[idx.iani].dot( spins[idx.ispin] );
+                   return magnitudes[idx.iani] * d * d;
+               } );
 }
 
 template<>
 inline Vector3 Anisotropy::Gradient::operator()( const Index & index, const Vector3 * spins ) const
 {
-    if( is_contributing && index != nullptr )
-    {
-        const auto & [ispin, iani] = *index;
-        return -2.0 * magnitudes[iani] * normals[iani] * normals[iani].dot( spins[ispin] );
-    }
-    else
-    {
-        return Vector3::Zero();
-    }
+    return -2.0
+           * Backend::transform_reduce(
+               index.begin(), index.end(), Vector3( Vector3::Zero() ), Backend::plus<Vector3>{},
+               [this, spins] SPIRIT_LAMBDA( const Interaction::IndexType & idx ) -> Vector3
+               { return magnitudes[idx.iani] * normals[idx.iani].dot( spins[idx.ispin] ) * normals[idx.iani]; } );
 }
 
 template<>
 template<typename Callable>
 void Anisotropy::Hessian::operator()( const Index & index, const vectorfield &, Callable & hessian ) const
 {
-    if( !is_contributing || index == nullptr )
-        return;
-
-    const auto & [ispin, iani] = *index;
-
-    for( int alpha = 0; alpha < 3; ++alpha )
-    {
-        for( int beta = 0; beta < 3; ++beta )
+    Backend::cpu::for_each(
+        index.begin(), index.end(),
+        [this, &index, &hessian]( const Interaction::IndexType & idx )
         {
-            const int i = 3 * ispin + alpha;
-            const int j = 3 * ispin + alpha;
-            hessian( i, j, -2.0 * magnitudes[iani] * normals[iani][alpha] * normals[iani][beta] );
-        }
-    }
+            for( int alpha = 0; alpha < 3; ++alpha )
+            {
+                for( int beta = 0; beta < 3; ++beta )
+                {
+                    const int i = 3 * idx.ispin + alpha;
+                    const int j = 3 * idx.ispin + alpha;
+
+                    hessian( i, j, -2.0 * magnitudes[idx.iani] * normals[idx.iani][alpha] * normals[idx.iani][beta] );
+                }
+            }
+        } );
 }
 
 } // namespace Interaction
