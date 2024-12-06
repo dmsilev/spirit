@@ -766,7 +766,7 @@ jobs:
         path: ui-cpp/ui-imgui/webapp/
         if-no-files-found: error
 
-  deploy-pypi:
+  build-pypi:
     if: github.event_name != 'pull_request'
     needs:
       - lint
@@ -780,7 +780,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - platform: linux
+            os: ubuntu-latest
+          - platform: macos
+            os: macos-latest
+          - platform: windows
+            os: windows-latest
     env:
       BUILD_TYPE: Release
       CMAKE_FLAGS: -DSPIRIT_UI_USE_IMGUI=OFF -DSPIRIT_UI_CXX_USE_QT=OFF
@@ -823,21 +829,43 @@ jobs:
         echo "Add suffix to spirit version tag for python package $SPIRIT_ADD_VERSION_SUFFIX"
         python setup.py sdist bdist_wheel
 
-    - name: 🚀 Deploy to TestPyPI
-      working-directory: ./core/python
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      if: github.ref != 'refs/heads/master'
-      run: twine upload --skip-existing --repository testpypi dist/*
+    - uses: actions/upload-artifact@v4
+      with:
+        name: dist-${{ matrix.platform }}
+        path: ./core/python/dist
+        if-no-files-found: error
 
-    - name: 🚀 Deploy to PyPI
-      working-directory: ./core/python
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      if: github.ref == 'refs/heads/master'
-      run: twine upload --skip-existing dist/*
+  deploy-pypi:
+    if: github.event_name != 'pull_request'
+    needs: ['build-pypi']
+    environment: 'publish'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/download-artifact@v4
+
+      - name: 📚 Install necessary packages
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install twine
+
+      - name: 🚀 Deploy to TestPyPI
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        if: github.ref != 'refs/heads/master'
+        run: twine upload --skip-existing --repository testpypi dist/*
+
+      - name: 🚀 Deploy to PyPI
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        if: github.ref == 'refs/heads/master'
+        run: twine upload --skip-existing dist/*
 
   deploy-package:
     if: github.event_name != 'pull_request'
