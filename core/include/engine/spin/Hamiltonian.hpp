@@ -82,6 +82,26 @@ public:
         return this->Energy( state );
     };
 
+    [[nodiscard]] std::string_view Name() const noexcept
+    {
+        if( !this->template is_contributing<Interaction::Gaussian>() )
+            return "Heisenberg";
+
+        auto gaussian_func = []( auto &... interaction )
+        {
+            return (
+                true && ...
+                && ( std::is_same_v<
+                         typename std::decay_t<decltype( interaction )>::Interaction, Spin::Interaction::Gaussian>
+                     || !interaction.is_contributing() ) );
+        };
+
+        if( Backend::apply( gaussian_func, this->local ) && Backend::apply( gaussian_func, this->nonlocal ) )
+            return "Gaussian";
+
+        return "Unknown";
+    };
+
 private:
     template<typename Callable>
     void Hessian_Impl( const state_t & state, Callable hessian )
@@ -103,9 +123,9 @@ struct HamiltonianVariantTypes
     using Heisenberg = Hamiltonian<
         state_t, AdaptorType, Interaction::Zeeman, Interaction::Anisotropy, Interaction::Biaxial_Anisotropy,
         Interaction::Cubic_Anisotropy, Interaction::Exchange, Interaction::DMI, Interaction::Quadruplet,
-        Interaction::DDI>;
+        Interaction::DDI, Interaction::Gaussian>;
 
-    using Variant = std::variant<Gaussian, Heisenberg>;
+    using Variant = Heisenberg;
 };
 
 // Single Type wrapper around Variant Hamiltonian type
@@ -123,46 +143,33 @@ private:
     using base_t = Common::HamiltonianVariant<HamiltonianVariant, HamiltonianVariantTypes>;
 
 public:
-    explicit HamiltonianVariant( Gaussian && gaussian ) noexcept( std::is_nothrow_move_constructible_v<Gaussian> )
-            : base_t( std::move( gaussian ) ) {};
-
     explicit HamiltonianVariant( Heisenberg && heisenberg ) noexcept( std::is_nothrow_move_constructible_v<Heisenberg> )
             : base_t( std::move( heisenberg ) ) {};
 
-    [[nodiscard]] std::string_view Name() const noexcept
-    {
-        if( std::holds_alternative<Gaussian>( hamiltonian ) )
-            return "Gaussian";
-
-        if( std::holds_alternative<Heisenberg>( hamiltonian ) )
-            return "Heisenberg";
-
-        // std::unreachable();
-
-        return "Unknown";
-    };
-
     void Gradient( const state_t & state, vectorfield & gradient )
     {
-        std::visit( [&state, &gradient]( auto & h ) { h.Gradient( state, gradient ); }, hamiltonian );
+        hamiltonian.Gradient( state, gradient );
     }
 
     void Hessian( const state_t & state, MatrixX & hessian )
     {
-        std::visit( [&state, &hessian]( auto & h ) { h.Hessian( state, hessian ); }, hamiltonian );
+        hamiltonian.Hessian( state, hessian );
     }
 
     void Sparse_Hessian( const state_t & state, SpMatrixX & hessian )
     {
-        std::visit( [&state, &hessian]( auto & h ) { h.Sparse_Hessian( state, hessian ); }, hamiltonian );
+        hamiltonian.Sparse_Hessian( state, hessian );
     }
 
     void Gradient_and_Energy( const state_t & state, vectorfield & gradient, scalar & energy )
     {
-        std::visit(
-            [&state, &gradient, &energy]( auto & h ) { energy = h.Gradient_and_Energy( state, gradient ); },
-            hamiltonian );
-    };
+        energy = hamiltonian.Gradient_and_Energy( state, gradient );
+    }
+
+    [[nodiscard]] std::string_view Name() const noexcept
+    {
+        return hamiltonian.Name();
+    }
 };
 
 } // namespace Spin

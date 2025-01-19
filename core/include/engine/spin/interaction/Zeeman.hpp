@@ -30,8 +30,10 @@ struct Zeeman
                   external_field_normal( std::move( external_field_normal ) ) {};
     };
 
-    // clang-tidy: ignore
-    typedef int IndexType;
+    struct IndexType
+    {
+        int ispin;
+    };
 
     using Index        = const IndexType *;
     using IndexStorage = Backend::optional<IndexType>;
@@ -77,7 +79,7 @@ struct Zeeman
                 const int ispin = icell * N + ibasis;
                 if( check_atom_type( geometry.atom_types[ispin] ) )
                 {
-                    Backend::get<IndexStorage>( indices[ispin] ) = ispin;
+                    Backend::get<IndexStorage>( indices[ispin] ) = IndexType{ ispin };
                 }
             };
         }
@@ -112,9 +114,9 @@ protected:
 template<>
 inline scalar Zeeman::Energy::operator()( const Index & index, quantity<const Vector3 *> state ) const
 {
-    if( is_contributing && index != nullptr && *index >= 0 )
+    if( is_contributing && index != nullptr && index->ispin >= 0 )
     {
-        const auto & ispin = *index;
+        const auto ispin = index->ispin;
         return -mu_s[ispin] * external_field_magnitude * external_field_normal.dot( state.spin[ispin] );
     }
     else
@@ -124,10 +126,9 @@ inline scalar Zeeman::Energy::operator()( const Index & index, quantity<const Ve
 template<>
 inline Vector3 Zeeman::Gradient::operator()( const Index & index, quantity<const Vector3 *> ) const
 {
-    if( is_contributing && index != nullptr && *index >= 0 )
+    if( is_contributing && index != nullptr && index->ispin >= 0 )
     {
-        const auto & ispin = *index;
-        return -mu_s[ispin] * external_field_magnitude * external_field_normal;
+        return -mu_s[index->ispin] * external_field_magnitude * external_field_normal;
     }
     else
         return Vector3::Zero();

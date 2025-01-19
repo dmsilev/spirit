@@ -53,7 +53,10 @@ struct Gaussian
         return !data.amplitude.empty();
     };
 
-    typedef int IndexType;
+    struct IndexType
+    {
+        int ispin;
+    };
 
     using Index        = const IndexType *;
     using IndexStorage = Backend::optional<IndexType>;
@@ -82,7 +85,7 @@ struct Gaussian
             for( int ibasis = 0; ibasis < geometry.n_cell_atoms; ++ibasis )
             {
                 const int ispin                              = icell * geometry.n_cell_atoms + ibasis;
-                Backend::get<IndexStorage>( indices[ispin] ) = ispin;
+                Backend::get<IndexStorage>( indices[ispin] ) = IndexType{ ispin };
             };
         }
     }
@@ -121,7 +124,7 @@ inline scalar Gaussian::Energy::operator()( const Index & index, quantity<const 
     if( !is_contributing || index == nullptr )
         return result;
 
-    const int ispin = *index;
+    const int ispin = index->ispin;
 
     for( unsigned int igauss = 0; igauss < n_gaussians; ++igauss )
     {
@@ -140,7 +143,7 @@ inline Vector3 Gaussian::Gradient::operator()( const Index & index, quantity<con
     if( !is_contributing || index == nullptr )
         return result;
 
-    const int ispin = *index;
+    const int ispin = index->ispin;
     // Calculate gradient
     for( unsigned int i = 0; i < n_gaussians; ++i )
     {
@@ -162,7 +165,7 @@ void Gaussian::Hessian::operator()( const Index & index, const StateType & state
     if( !is_contributing || index == nullptr )
         return;
 
-    const int ispin = *index;
+    const int ispin = index->ispin;
     // Calculate Hessian
     for( unsigned int igauss = 0; igauss < n_gaussians; ++igauss )
     {

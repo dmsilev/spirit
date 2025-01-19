@@ -154,7 +154,7 @@ std::unique_ptr<Engine::Spin::HamiltonianVariant> Hamiltonian_Heisenberg_from_Co
 
     auto hamiltonian = std::make_unique<Engine::Spin::HamiltonianVariant>( HamiltonianVariant::Heisenberg(
         std::move( geometry ), std::move( boundary_conditions ), zeeman, anisotropy, biaxial_anisotropy,
-        cubic_anisotropy, exchange, dmi, quadruplet, ddi ) );
+        cubic_anisotropy, exchange, dmi, quadruplet, ddi, Interaction::Gaussian::Data{} ) );
 
     assert( hamiltonian->Name() == "Heisenberg" );
     Log( Log_Level::Debug, Log_Sender::IO, fmt::format( "Hamiltonian_{}: built", hamiltonian->Name() ) );
@@ -190,9 +190,11 @@ std::unique_ptr<Engine::Spin::HamiltonianVariant> Hamiltonian_Gaussian_from_Conf
 
     Log( Log_Level::Parameter, Log_Sender::IO, parameter_log );
 
-    auto hamiltonian = std::make_unique<HamiltonianVariant>( HamiltonianVariant::Gaussian(
-        std::move( geometry ), std::move( boundary_conditions ),
-        Interaction::Gaussian::Data( amplitude, width, center ) ) );
+    auto hamiltonian = std::make_unique<HamiltonianVariant>( HamiltonianVariant::Heisenberg(
+        std::move( geometry ), std::move( boundary_conditions ), Interaction::Zeeman::Data{},
+        Interaction::Anisotropy::Data{}, Interaction::Biaxial_Anisotropy::Data{}, Interaction::Cubic_Anisotropy::Data{},
+        Interaction::Exchange::Data{}, Interaction::DMI::Data{}, Interaction::Quadruplet::Data{},
+        Interaction::DDI::Data{}, Interaction::Gaussian::Data( amplitude, width, center ) ) );
 
     assert( hamiltonian->Name() == "Gaussian" );
     Log( Log_Level::Debug, Log_Sender::IO, fmt::format( "Hamiltonian_{}: built", hamiltonian->Name() ) );
