@@ -176,4 +176,4 @@ catch( ... )
 
 } // namespace Data
 
-template class Data::Spin_System<Engine::Spin::HamiltonianVariant>;
+template class Data::Spin_System<Engine::Spin::Hamiltonian>;

@@ -81,7 +81,7 @@ void Method_LLG<solver>::Calculate_Force(
     for( std::size_t img = 0; img < this->systems.size(); ++img )
     {
         // Minus the gradient is the total Force here
-        this->systems[img]->hamiltonian->Gradient_and_Energy( *configurations[img], Gradient[img], current_energy );
+        current_energy = this->systems[img]->hamiltonian->Gradient_and_Energy( *configurations[img], Gradient[img] );
 
 #ifdef SPIRIT_ENABLE_PINNING
         Vectormath::set_c_a(

@@ -36,7 +36,7 @@ void Parameters_Method_MMF_to_Config(
     const std::string & config_file, const std::shared_ptr<Data::Parameters_Method_MMF> parameters );
 
 void Hamiltonian_to_Config(
-    const std::string & config_file, const std::shared_ptr<Engine::Spin::HamiltonianVariant> hamiltonian );
+    const std::string & config_file, const std::shared_ptr<Engine::Spin::Hamiltonian> hamiltonian );
 
 } // namespace IO
 

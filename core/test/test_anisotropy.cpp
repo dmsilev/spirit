@@ -192,7 +192,7 @@ TEST_CASE( "Cubic anisotropy", "[anisotropy]" )
         // Direct energy calculation and energy calculated from gradient should be equal
         auto gradients_a = vectorfield( state->nos );
         scalar energy_from_gradient{};
-        state->active_image->hamiltonian->Gradient_and_Energy( system_state, gradients_a, energy_from_gradient );
+        energy_from_gradient = state->active_image->hamiltonian->Gradient_and_Energy( system_state, gradients_a );
         scalar energy_direct = state->active_image->hamiltonian->Energy( system_state );
         REQUIRE_THAT( energy_from_gradient, within_digits( energy_direct, 12 ) );
 

@@ -36,6 +36,7 @@ struct InteractionWrapper
     template<typename AdaptorType>
     friend class StandaloneFactory;
 
+    constexpr InteractionWrapper() = default;
     explicit InteractionWrapper( typename InteractionType::Data && init_data ) : data( init_data ), cache() {};
     explicit InteractionWrapper( const typename InteractionType::Data & init_data ) : data( init_data ), cache() {};
 
@@ -80,7 +81,7 @@ public:
     {
         if constexpr( has_valid_check<Interaction>::value )
             if( !Interaction::valid_data( new_data ) )
-                return fmt::format( "the data passed to interaction \"{}\" is invalid", Interaction::name );
+                return { fmt::format( "the data passed to interaction \"{}\" is invalid", Interaction::name ) };
 
         data = std::move( new_data );
         return std::nullopt;
@@ -92,7 +93,7 @@ public:
         return Interaction::Sparse_Hessian_Size_per_Cell( data, cache );
     }
 
-    Data data;
+    Data data{};
     Cache cache = Cache();
 };
 

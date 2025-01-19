@@ -79,7 +79,7 @@ SPIRIT_HOSTDEVICE void clearIndexStorage( T & index )
 
 // Hamiltonian for (pure) spin systems
 template<typename state_type, typename InteractionAdaptorType, typename... InteractionTypes>
-class Hamiltonian
+struct Hamiltonian
 {
     static_assert( std::conjunction<std::is_same<state_type, typename InteractionTypes::state_t>...>::value );
 
@@ -124,7 +124,8 @@ private:
     using is_nonlocal = std::negation<Interaction::is_local<T>>;
 
 public:
-    using state_t = state_type;
+    using state_t     = state_type;
+    using AdaptorType = InteractionAdaptorType;
 
     using local_indices    = indexed<is_local>;
     using nonlocal_indices = indexed<is_nonlocal>;
@@ -146,6 +147,17 @@ public:
                   geometry, boundary_conditions, local_indices{}, nonlocal_indices{},
                   std::make_tuple(
                       Interaction::InteractionWrapper<InteractionTypes>( std::forward<DataTypes>( data ) )... ) ){};
+
+    Hamiltonian( Data::Geometry geometry, intfield boundary_conditions )
+            : geometry( std::make_shared<::Data::Geometry>( std::move( geometry ) ) ),
+              boundary_conditions( std::move( boundary_conditions ) ),
+              indices{},
+              index_storage{},
+              local{},
+              nonlocal{}
+    {
+        applyGeometry();
+    };
 
     // rule of five, because we use pointers to the geometry and the boundary_conditions in the cache
     // this choice should keep the interfaces a bit cleaner and allow adding more global dependencies
@@ -369,15 +381,16 @@ public:
     }
 
     template<typename T>
-    [[nodiscard]] auto data() const -> const typename T::Data &
+    [[nodiscard]] auto data() const -> const typename T::Data *
     {
         static_assert( hasInteraction<T>(), "The Hamiltonian doesn't contain an interaction of that type" );
 
         if constexpr( hasInteraction_Local<T>() )
-            return Backend::get<Interaction::InteractionWrapper<T>>( local ).data;
+            return &Backend::get<Interaction::InteractionWrapper<T>>( local ).data;
         else if constexpr( hasInteraction_NonLocal<T>() )
-            return Backend::get<Interaction::InteractionWrapper<T>>( nonlocal ).data;
-        // std::unreachable();
+            return &Backend::get<Interaction::InteractionWrapper<T>>( nonlocal ).data;
+        else
+            return nullptr;
     };
 
     template<typename T>
@@ -397,23 +410,30 @@ public:
         return error;
     };
 
-    template<typename T>
-    [[nodiscard]] auto cache() const -> const typename T::Cache &
+    template<typename T, typename... Args>
+    [[nodiscard]] auto set_data( Args &&... args ) -> std::enable_if_t<hasInteraction<T>(), std::optional<std::string>>
     {
-        static_assert( hasInteraction<T>(), "The Hamiltonian doesn't contain an interaction of that type" );
+        return set_data<T>( typename T::Data{ std::forward<Args>( args )... } );
+    }
 
+    template<typename T>
+    [[nodiscard]] auto cache() const -> const typename T::Cache *
+    {
         if constexpr( hasInteraction_Local<T>() )
-            return Backend::get<Interaction::InteractionWrapper<T>>( local ).cache;
+            return &Backend::get<Interaction::InteractionWrapper<T>>( local ).cache;
         else if constexpr( hasInteraction_NonLocal<T>() )
-            return Backend::get<Interaction::InteractionWrapper<T>>( nonlocal ).cache;
-        // std::unreachable();
+            return &Backend::get<Interaction::InteractionWrapper<T>>( nonlocal ).cache;
+        else
+            return nullptr;
     };
 
     template<class T>
     [[nodiscard]] bool is_contributing() const
     {
-        static_assert( hasInteraction<T>(), "The Hamiltonian doesn't contain an interaction of that type" );
-        return T::is_contributing( data<T>(), cache<T>() );
+        if constexpr( hasInteraction<T>() )
+            return T::is_contributing( *data<T>(), *cache<T>() );
+        else
+            return false;
     }
 
     [[nodiscard]] const auto & get_boundary_conditions() const
@@ -551,126 +571,6 @@ private:
     intfield boundary_conditions;
 
     IndexStorageVector index_storage;
-};
-
-// CRTP base class for the `HamiltonianVariant` type
-template<typename Derived, typename TypeTraits>
-class HamiltonianVariant : public TypeTraits
-{
-    using state_t     = typename TypeTraits::state_t;
-    using Variant     = typename TypeTraits::Variant;
-    using AdaptorType = typename TypeTraits::AdaptorType;
-
-public:
-    [[nodiscard]] scalar Energy( const state_t & state )
-    {
-        return hamiltonian.Energy( state );
-    }
-
-    void Energy_per_Spin( const state_t & state, scalarfield & energy_per_spin )
-    {
-        hamiltonian.Energy_per_Spin( state, energy_per_spin );
-    }
-
-    [[nodiscard]] scalar Energy_Single_Spin( const int ispin, const state_t & state )
-    {
-        return hamiltonian.Energy_Single_Spin( ispin, state );
-    }
-
-    void Energy_Contributions_per_Spin( const state_t & state, Data::vectorlabeled<scalarfield> & contributions )
-    {
-        hamiltonian.Energy_Contributions_per_Spin( state, contributions );
-    };
-
-    [[nodiscard]] Data::vectorlabeled<scalar> Energy_Contributions( const state_t & state )
-    {
-        return hamiltonian.Energy_Contributions( state );
-    };
-
-    [[nodiscard]] std::size_t active_count() const
-    {
-        return hamiltonian.active_count();
-    }
-
-    [[nodiscard]] auto active_interactions() -> std::vector<std::unique_ptr<AdaptorType>>
-    {
-        return hamiltonian.active_interactions();
-    };
-
-    [[nodiscard]] auto get_boundary_conditions() const -> const intfield &
-    {
-        return hamiltonian.get_boundary_conditions();
-    };
-
-    void set_boundary_conditions( const intfield & boundary_conditions )
-    {
-        hamiltonian.set_boundary_conditions( boundary_conditions );
-    };
-
-    [[nodiscard]] auto get_geometry() const -> const ::Data::Geometry &
-    {
-        return hamiltonian.get_geometry();
-    };
-
-    void set_geometry( const ::Data::Geometry & geometry )
-    {
-        hamiltonian.set_geometry( geometry );
-    };
-
-    void set_geometry( ::Data::Geometry && geometry )
-    {
-        hamiltonian.set_geometry( std::move( geometry ) );
-    };
-
-    template<class T>
-    [[nodiscard]] bool hasInteraction()
-    {
-        return std::decay_t<decltype( hamiltonian )>::template hasInteraction<T>();
-    };
-
-    template<class T>
-    [[nodiscard]] auto getInteraction() -> std::unique_ptr<AdaptorType>
-    {
-        return hamiltonian.template getInteraction<T>();
-    };
-
-    template<typename T>
-    [[nodiscard]] auto data() const -> const typename T::Data *
-    {
-        if constexpr( std::decay_t<decltype( hamiltonian )>::template hasInteraction<T>() )
-            return &hamiltonian.template data<T>();
-        else
-            return nullptr;
-    };
-
-    template<typename T>
-    [[nodiscard]] auto cache() const -> const typename T::Cache *
-    {
-        if constexpr( std::decay_t<decltype( hamiltonian )>::template hasInteraction<T>() )
-            return &hamiltonian.template cache<T>();
-        else
-            return nullptr;
-    };
-
-    template<typename T, typename... Args>
-    [[nodiscard]] auto set_data( Args &&... args ) -> std::optional<std::string>
-    {
-        if constexpr( std::decay_t<decltype( hamiltonian )>::template hasInteraction<T>() )
-            return hamiltonian.template set_data<T>( typename T::Data( std::forward<Args>( args )... ) );
-        else
-            return fmt::format( "Interaction \"{}\" cannot be set on Hamiltonian \"{}\" ", T::name, this->Name() );
-    };
-
-protected:
-    explicit constexpr HamiltonianVariant( Variant && hamiltonian ) noexcept
-            : hamiltonian( std::move( hamiltonian ) ) {};
-
-    [[nodiscard]] std::string_view Name() const noexcept
-    {
-        return static_cast<const Derived *>( this )->Name();
-    }
-
-    Variant hamiltonian;
 };
 
 } // namespace Common

@@ -221,7 +221,7 @@ namespace
 {
 
 void Hamiltonian_Heisenberg_to_Config(
-    const std::string & config_file, const std::shared_ptr<Engine::Spin::HamiltonianVariant> hamiltonian )
+    const std::string & config_file, const std::shared_ptr<Engine::Spin::Hamiltonian> hamiltonian )
 {
     std::string config = "";
 
@@ -402,7 +402,7 @@ void Hamiltonian_Heisenberg_to_Config(
 }
 
 void Hamiltonian_Gaussian_to_Config(
-    const std::string & config_file, const std::shared_ptr<Engine::Spin::HamiltonianVariant> hamiltonian )
+    const std::string & config_file, const std::shared_ptr<Engine::Spin::Hamiltonian> hamiltonian )
 {
     std::string config = "";
 
@@ -430,7 +430,7 @@ void Hamiltonian_Gaussian_to_Config(
 } // namespace
 
 void Hamiltonian_to_Config(
-    const std::string & config_file, const std::shared_ptr<Engine::Spin::HamiltonianVariant> hamiltonian )
+    const std::string & config_file, const std::shared_ptr<Engine::Spin::Hamiltonian> hamiltonian )
 {
     std::string config = "";
     config += "################### Hamiltonian ##################\n";

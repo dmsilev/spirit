@@ -128,7 +128,7 @@ TEST_CASE( "Ensure that Hamiltonian is really just an aggregator", "[aggregation
 
         scalar energy_combined_hamiltonian = 0;
         vectorfield gradient_combined_hamiltonian{};
-        hamiltonian->Gradient_and_Energy( spins, gradient_combined_hamiltonian, energy_combined_hamiltonian );
+        energy_combined_hamiltonian = hamiltonian->Gradient_and_Energy( spins, gradient_combined_hamiltonian );
 
         for( int i = 0; i < state->nos; i++ )
         {

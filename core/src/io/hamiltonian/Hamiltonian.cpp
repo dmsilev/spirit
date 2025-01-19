@@ -40,14 +40,18 @@ std::string Hamiltonian_Type_from_Config( const std::string & config_file_name, 
     return hamiltonian_type;
 }
 
-std::unique_ptr<Engine::Spin::HamiltonianVariant> Hamiltonian_Heisenberg_from_Config(
+#define log_error( expr )                                                                                              \
+    if( auto error = ( expr ); error.has_value() )                                                                     \
+        Log( Log_Level::Error, Log_Sender::IO, *error );
+
+std::unique_ptr<Engine::Spin::Hamiltonian> Hamiltonian_Heisenberg_from_Config(
     const std::string & config_file_name, Data::Geometry geometry, intfield boundary_conditions,
     const std::string_view hamiltonian_type )
 {
     Log( Log_Level::Debug, Log_Sender::IO, "Hamiltonian_Heisenberg: building" );
     // pull in the relevant namespaces and type we want to build
     namespace Interaction = Engine::Spin::Interaction;
-    using Engine::Spin::HamiltonianVariant;
+    using Engine::Spin::Hamiltonian;
 
     std::vector<std::string> parameter_log;
     parameter_log.emplace_back( "Hamiltonian Heisenberg:" );
@@ -124,50 +128,50 @@ std::unique_ptr<Engine::Spin::HamiltonianVariant> Hamiltonian_Heisenberg_from_Co
 
     Log( Log_Level::Parameter, Log_Sender::IO, parameter_log );
 
-    auto zeeman
-        = Interaction::Zeeman::Data( external_field_magnitude * Utility::Constants::mu_B, external_field_normal );
+    auto hamiltonian = std::make_unique<Hamiltonian>( std::move( geometry ), std::move( boundary_conditions ) );
 
-    auto anisotropy = Interaction::Anisotropy::Data( anisotropy_indices, anisotropy_magnitudes, anisotropy_normals );
+    log_error( hamiltonian->set_data<Interaction::Zeeman>(
+        external_field_magnitude * Utility::Constants::mu_B, external_field_normal ) );
 
-    auto biaxial_anisotropy = Interaction::Biaxial_Anisotropy::Data(
+    log_error( hamiltonian->set_data<Interaction::Anisotropy>(
+        anisotropy_indices, anisotropy_magnitudes, anisotropy_normals ) );
+
+    log_error( hamiltonian->set_data<Interaction::Biaxial_Anisotropy>(
         biaxial_anisotropy_indices, biaxial_anisotropy_polynomial_bases, biaxial_anisotropy_polynomial_site_p,
-        biaxial_anisotropy_polynomial_terms );
+        biaxial_anisotropy_polynomial_terms ) );
 
-    auto cubic_anisotropy
-        = Interaction::Cubic_Anisotropy::Data( cubic_anisotropy_indices, cubic_anisotropy_magnitudes );
+    log_error(
+        hamiltonian->set_data<Interaction::Cubic_Anisotropy>( cubic_anisotropy_indices, cubic_anisotropy_magnitudes ) );
 
     Interaction::Exchange::Data exchange;
     Interaction::DMI::Data dmi;
     if( hamiltonian_type == "heisenberg_neighbours" )
     {
-        exchange = Interaction::Exchange::Data( exchange_magnitudes );
-        dmi      = Interaction::DMI::Data( dmi_magnitudes, dm_chirality );
+        log_error( hamiltonian->set_data<Interaction::Exchange>( exchange_magnitudes ) );
+        log_error( hamiltonian->set_data<Interaction::DMI>( dmi_magnitudes, dm_chirality ) );
     }
     else
     {
-        exchange = Interaction::Exchange::Data( exchange_pairs, exchange_magnitudes );
-        dmi      = Interaction::DMI::Data( dmi_pairs, dmi_magnitudes, dmi_normals );
+        log_error( hamiltonian->set_data<Interaction::Exchange>( exchange_pairs, exchange_magnitudes ) );
+        log_error( hamiltonian->set_data<Interaction::DMI>( dmi_pairs, dmi_magnitudes, dmi_normals ) );
     }
 
-    auto quadruplet = Interaction::Quadruplet::Data( quadruplets, quadruplet_magnitudes );
-    auto ddi        = Interaction::DDI::Data( ddi_method, ddi_radius, ddi_pb_zero_padding, ddi_n_periodic_images );
-
-    auto hamiltonian = std::make_unique<Engine::Spin::HamiltonianVariant>( HamiltonianVariant::Heisenberg(
-        std::move( geometry ), std::move( boundary_conditions ), zeeman, anisotropy, biaxial_anisotropy,
-        cubic_anisotropy, exchange, dmi, quadruplet, ddi, Interaction::Gaussian::Data{} ) );
+    log_error( hamiltonian->set_data<Interaction::Quadruplet>( quadruplets, quadruplet_magnitudes ) );
+    log_error(
+        hamiltonian->set_data<Interaction::DDI>( ddi_method, ddi_radius, ddi_pb_zero_padding, ddi_n_periodic_images ) );
 
     assert( hamiltonian->Name() == "Heisenberg" );
     Log( Log_Level::Debug, Log_Sender::IO, fmt::format( "Hamiltonian_{}: built", hamiltonian->Name() ) );
     return hamiltonian;
 }
 
-std::unique_ptr<Engine::Spin::HamiltonianVariant> Hamiltonian_Gaussian_from_Config(
+std::unique_ptr<Engine::Spin::Hamiltonian> Hamiltonian_Gaussian_from_Config(
     const std::string & config_file_name, Data::Geometry geometry, intfield boundary_conditions )
 {
     Log( Log_Level::Debug, Log_Sender::IO, "Hamiltonian_Gaussian: building" );
     // pull in the relevant namespaces and type we want to build
     namespace Interaction = Engine::Spin::Interaction;
-    using Engine::Spin::HamiltonianVariant;
+    using Engine::Spin::Hamiltonian;
 
     std::vector<std::string> parameter_log;
     parameter_log.emplace_back( "Hamiltonian Gaussian:" );
@@ -190,11 +194,10 @@ std::unique_ptr<Engine::Spin::HamiltonianVariant> Hamiltonian_Gaussian_from_Conf
 
     Log( Log_Level::Parameter, Log_Sender::IO, parameter_log );
 
-    auto hamiltonian = std::make_unique<HamiltonianVariant>( HamiltonianVariant::Heisenberg(
-        std::move( geometry ), std::move( boundary_conditions ), Interaction::Zeeman::Data{},
-        Interaction::Anisotropy::Data{}, Interaction::Biaxial_Anisotropy::Data{}, Interaction::Cubic_Anisotropy::Data{},
-        Interaction::Exchange::Data{}, Interaction::DMI::Data{}, Interaction::Quadruplet::Data{},
-        Interaction::DDI::Data{}, Interaction::Gaussian::Data( amplitude, width, center ) ) );
+    auto hamiltonian = std::make_unique<Hamiltonian>( std::move( geometry ), std::move( boundary_conditions ) );
+
+    if( auto error = hamiltonian->set_data<Interaction::Gaussian>( amplitude, width, center ); error.has_value() )
+        Log( Log_Level::Error, Log_Sender::IO, *error );
 
     assert( hamiltonian->Name() == "Gaussian" );
     Log( Log_Level::Debug, Log_Sender::IO, fmt::format( "Hamiltonian_{}: built", hamiltonian->Name() ) );
@@ -204,7 +207,7 @@ std::unique_ptr<Engine::Spin::HamiltonianVariant> Hamiltonian_Gaussian_from_Conf
 } // namespace
 
 template<>
-std::unique_ptr<Engine::Spin::HamiltonianVariant>
+std::unique_ptr<Engine::Spin::Hamiltonian>
 Hamiltonian_from_Config( const std::string & config_file_name, Data::Geometry geometry, intfield boundary_conditions )
 {
     //------------------------------- Parser --------------------------------
@@ -213,7 +216,7 @@ Hamiltonian_from_Config( const std::string & config_file_name, Data::Geometry ge
     const std::string hamiltonian_type = Hamiltonian_Type_from_Config( config_file_name, "heisenberg_neighbours" );
 
     // Hamiltonian
-    std::unique_ptr<Engine::Spin::HamiltonianVariant> hamiltonian;
+    std::unique_ptr<Engine::Spin::Hamiltonian> hamiltonian;
     try
     {
         if( hamiltonian_type == "heisenberg_neighbours" || hamiltonian_type == "heisenberg_pairs" )

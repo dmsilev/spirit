@@ -108,11 +108,11 @@ void Method_MC<algorithm>::Iteration()
 }
 
 template<>
-void Method_MC<MC_Algorithm::None>::Step( StateType &, HamiltonianVariant & ) {};
+void Method_MC<MC_Algorithm::None>::Step( StateType &, Hamiltonian & ) {};
 
 // Simple metropolis step
 template<>
-void Method_MC<MC_Algorithm::Metropolis>::Step( StateType & state, HamiltonianVariant & hamiltonian )
+void Method_MC<MC_Algorithm::Metropolis>::Step( StateType & state, Hamiltonian & hamiltonian )
 {
     struct SharedData
     {
@@ -143,7 +143,7 @@ void Method_MC<MC_Algorithm::Metropolis>::Step( StateType & state, HamiltonianVa
 
 /* Directon Constrained Metropolis Monte Carlo Algorithm*/
 template<>
-void Method_MC<MC_Algorithm::Metropolis_MDC>::Step( StateType & state, HamiltonianVariant & hamiltonian )
+void Method_MC<MC_Algorithm::Metropolis_MDC>::Step( StateType & state, Hamiltonian & hamiltonian )
 {
     struct SharedData
     {
@@ -189,7 +189,7 @@ void Method_MC<MC_Algorithm::Metropolis_MDC>::Step( StateType & state, Hamiltoni
 // TODO:
 // Implement heat bath algorithm, see Y. Miyatake et al, J Phys C: Solid State Phys 19, 2539 (1986)
 // template<MC_Algorithm::HeatBath>
-// void Method_MC::Step( vectorfield & spins, HamiltonianVariant & hamiltonian )
+// void Method_MC::Step( vectorfield & spins, Hamiltonian & hamiltonian )
 // {
 // }
 

@@ -91,8 +91,8 @@ void Method_GNEB<solver>::Calculate_Force(
         auto & image = *configurations[img];
 
         // Calculate the Gradient and Energy of the image
-        this->chain->images[img]->hamiltonian->Gradient_and_Energy(
-            image, this->chain->images[img]->M.effective_field, energies[img] );
+        energies[img] = this->chain->images[img]->hamiltonian->Gradient_and_Energy(
+            image, this->chain->images[img]->M.effective_field );
 
         // Multiply gradient with -1 to get effective field and copy to F_gradient.
         // We do it the following way so that the effective field can be e.g. displayed,
