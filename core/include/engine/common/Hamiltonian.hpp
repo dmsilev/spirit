@@ -383,8 +383,6 @@ public:
     template<typename T>
     [[nodiscard]] auto data() const -> const typename T::Data *
     {
-        static_assert( hasInteraction<T>(), "The Hamiltonian doesn't contain an interaction of that type" );
-
         if constexpr( hasInteraction_Local<T>() )
             return &Backend::get<Interaction::InteractionWrapper<T>>( local ).data;
         else if constexpr( hasInteraction_NonLocal<T>() )
@@ -394,24 +392,28 @@ public:
     };
 
     template<typename T>
-    [[nodiscard]] auto
-    set_data( typename T::Data && data ) -> std::enable_if_t<hasInteraction<T>(), std::optional<std::string>>
+    [[nodiscard]] auto set_data( typename T::Data && data ) -> std::optional<std::string>
     {
         std::optional<std::string> error{};
 
         if constexpr( hasInteraction_Local<T>() )
+        {
             error = Backend::get<Interaction::InteractionWrapper<T>>( local ).set_data( std::move( data ) );
+            applyGeometry<T>();
+        }
         else if constexpr( hasInteraction_NonLocal<T>() )
+        {
             error = Backend::get<Interaction::InteractionWrapper<T>>( nonlocal ).set_data( std::move( data ) );
+            applyGeometry<T>();
+        }
         else
             error = fmt::format( "The Hamiltonian doesn't contain an interaction of type \"{}\"", T::name );
 
-        applyGeometry<T>();
         return error;
     };
 
     template<typename T, typename... Args>
-    [[nodiscard]] auto set_data( Args &&... args ) -> std::enable_if_t<hasInteraction<T>(), std::optional<std::string>>
+    [[nodiscard]] auto set_data( Args &&... args ) -> std::optional<std::string>
     {
         return set_data<T>( typename T::Data{ std::forward<Args>( args )... } );
     }
