@@ -176,6 +176,8 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
             scalar gamma_E = 0.0;
             float B_mag;
             float normal[3];
+            float Bx2,By2; 
+            float B_int;  //Square of transverse component of the internal dipole-dipole vector field
 
             if (this->parameters_mc->tunneling_use_tunneling)
             {    
@@ -186,6 +188,11 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
                 normal[2] = (float)ham->external_field_normal[2];
                 B_mag = (float)ham->external_field_magnitude / Constants::mu_B;
                 gamma_E = (normal[0]*normal[0] + normal[1]*normal[1])*B_mag*B_mag * this->parameters_mc->tunneling_gamma;
+
+                Bx2 = this->systems[0]->ddi_field[ispin][0]*this->systems[0]->ddi_field[ispin][0];
+                By2 = this->systems[0]->ddi_field[ispin][1]*this->systems[0]->ddi_field[ispin][1];
+                B_int = (Bx2+By2) / (Constants::mu_B*Constants::mu_B);
+                gamma_E += B_int*this->parameters_mc->tunneling_gamma;
            }
 
             // Metropolis criterion: reject the step if energy rose
