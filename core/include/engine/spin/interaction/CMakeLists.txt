@@ -1,0 +1,14 @@
+set(HEADER_SPIRIT_ENGINE_SPIN_INTERACTION
+    ${CMAKE_CURRENT_SOURCE_DIR}/Functor_Prototypes.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Gaussian.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Zeeman.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Anisotropy.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Cubic_Anisotropy.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Biaxial_Anisotropy.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Exchange.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/DMI.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/DDI.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Quadruplet.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+    PARENT_SCOPE
+)

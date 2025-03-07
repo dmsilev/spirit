@@ -2,7 +2,7 @@
 #ifndef SPIRIT_CORE_ENGINE_METHOD_HPP
 #define SPIRIT_CORE_ENGINE_METHOD_HPP
 
-#include "Spirit_Defines.h"
+#include <Spirit/Spirit_Defines.h>
 #include <data/Parameters_Method.hpp>
 #include <data/Spin_System_Chain.hpp>
 #include <utility/Logging.hpp>
@@ -48,18 +48,6 @@ public:
     // Get the number of milliseconds since the Method started iterating
     virtual std::int64_t getWallTime() final;
 
-    /*
-     * NOTE: This is a bad convergence criterion and is therefore currently being phased out
-     * Maximum of the absolutes of all components of the force - needs to be updated at each calculation
-     */
-    virtual scalar getForceMaxAbsComponent() final;
-
-    /*
-     * Maximum of the absolutes of all components of the force for all images the method uses
-     * The default is that this returns simply {getForceMaxAbsComponent()}
-     */
-    virtual std::vector<scalar> getForceMaxAbsComponent_All();
-
     // Maximum norm of the torque - needs to be updated at each calculation
     virtual scalar getTorqueMaxNorm() final;
 
@@ -69,11 +57,11 @@ public:
     // ------------------------------------------------------
 
     // Method name as string
-    virtual std::string Name();
+    virtual std::string_view Name();
 
     // Solver name as string
-    virtual std::string SolverName();
-    virtual std::string SolverFullName();
+    virtual std::string_view SolverName();
+    virtual std::string_view SolverFullName();
 
     // ------------------------------------------------------
 
@@ -115,18 +103,18 @@ public:
      *   This function should be overridden by specialized methods to ensure systems are
      *   safely locked during iterations.
      */
-    virtual void Lock();
+    virtual void lock() = 0;
     /*
      * Unlock systems to re-enable access
      *   This function should be overridden by specialized methods to ensure systems are
      *   correctly unlocked after iterations.
      */
-    virtual void Unlock();
+    virtual void unlock() = 0;
 
     //////////// Check for stopping criteria //////////////////////////////////////////
 
     // Check if iterations allowed
-    virtual bool Iterations_Allowed();
+    virtual bool Iterations_Allowed() = 0;
 
     // Check wether to continue iterating - stop file, convergence etc.
     virtual bool ContinueIterating();
@@ -189,14 +177,15 @@ protected:
 
     //////////// General /////////////////////////////////////////////////////////
 
-    // Systems the Solver will access
-    std::vector<std::shared_ptr<Data::Spin_System>> systems;
-
     // Method Parameters
     std::shared_ptr<Data::Parameters_Method> parameters;
 
     // Precision for the conversion of scalar to string
-    int print_precision;
+#ifdef CORE_SCALAR_TYPE_FLOAT
+    static constexpr int print_precision = 8;
+#else
+    static constexpr int print_precision = 12;
+#endif
 };
 
 } // namespace Engine

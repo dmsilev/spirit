@@ -3,17 +3,13 @@ System
 ====================
 """
 
-from spirit import spiritlib
+from spirit import parameters, spiritlib
+from spirit.scalar import scalar
 import ctypes
+from numpy import frombuffer
 
 ### Load Library
-_spirit = spiritlib.load_spirit_library()
-
-from spirit.scalar import scalar
-from spirit import parameters
-import numpy as np
-from numpy.ctypeslib import ndpointer 
-from numpy import frombuffer, ndarray
+from spirit.spiritlib import _spirit
 
 ### Get Chain index
 _Get_Index = _spirit.System_Get_Index
@@ -84,44 +80,6 @@ def get_effective_field(p_state, idx_image=-1, idx_chain=-1):
     array_view.shape = (nos, 3)
     return array_view
 
-### Get Pointer to dipole-dipole Field
-# NOTE: Changing the values of the array_view one can alter the value of the data of the state
-_Get_DDI_Field = _spirit.System_Get_DDI_Field
-_Get_DDI_Field.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
-_Get_DDI_Field.restype = ctypes.POINTER(scalar)
-
-
-def get_DDI_field(p_state, idx_image=-1, idx_chain=-1):
-    nos = get_nos(p_state, idx_image, idx_chain)
-    ArrayType = scalar * 3 * nos
-    Data = _Get_DDI_Field(
-        ctypes.c_void_p(p_state), ctypes.c_int(idx_image), ctypes.c_int(idx_chain)
-    )
-    array_pointer = ctypes.cast(Data, ctypes.POINTER(ArrayType))
-    array = frombuffer(array_pointer.contents, dtype=scalar)
-    array_view = array.view()
-    array_view.shape = (nos, 3)
-    return array_view
-
-### Set dipole-dipole Field
-# NOTE: This changes the values of the array_view inside the simulation
-
-_Set_DDI_Field = _spirit.System_Set_DDI_Field
-_Set_DDI_Field.argtypes = [
-    ctypes.c_void_p,
-    ctypes.c_int,
-    ctypes.c_int,
-    ctypes.c_int,
-    np.ctypeslib.ndpointer(dtype=np.float32,ndim=1,flags="C")
-    ]
-_Set_DDI_Field.restype = None
-
-def set_DDI_field(p_state, idx_image=-1, idx_chain=-1, n_atoms=0, ddi_fields=-1):
-    """Loads a dipole-dipole field array (from an external Ewald summation calculation) into Spirit"""
-
-    _Set_DDI_Field(ctypes.c_void_p(p_state), ctypes.c_int(idx_image), ctypes.c_int(idx_chain),ctypes.c_int(n_atoms),
-        ddi_fields.astype(np.float32).flatten())
-
 
 ### Get Pointer to an eigenmode
 # NOTE: Changing the values of the array_view one can alter the value of the data of the state
@@ -149,7 +107,7 @@ def get_eigenmode(p_state, idx_mode, idx_image=-1, idx_chain=-1):
 ### Get total Energy
 _Get_Energy = _spirit.System_Get_Energy
 _Get_Energy.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
-_Get_Energy.restype = ctypes.c_float
+_Get_Energy.restype = scalar
 
 
 def get_energy(p_state, idx_image=-1, idx_chain=-1):
@@ -165,7 +123,7 @@ def get_energy(p_state, idx_image=-1, idx_chain=-1):
 _Get_Eigenvalues = _spirit.System_Get_Eigenvalues
 _Get_Eigenvalues.argtypes = [
     ctypes.c_void_p,
-    ctypes.POINTER(ctypes.c_float),
+    ctypes.POINTER(scalar),
     ctypes.c_int,
     ctypes.c_int,
 ]
@@ -173,8 +131,8 @@ _Get_Eigenvalues.restype = None
 
 
 def get_eigenvalues(p_state, idx_image=-1, idx_chain=-1):
-    noe = parameters.ema.getNModes(p_state, idx_image, idx_chain)
-    eigenvalues = (noe * ctypes.c_float)()
+    n_modes = parameters.ema.get_n_modes(p_state, idx_image, idx_chain)
+    eigenvalues = (n_modes * scalar)()
     _Get_Eigenvalues(
         ctypes.c_void_p(p_state),
         eigenvalues,
@@ -190,7 +148,7 @@ def get_eigenvalues(p_state, idx_image=-1, idx_chain=-1):
 _Get_Energy_Array = _spirit.System_Get_Energy_Array
 _Get_Energy_Array.argtypes = [
     ctypes.c_void_p,
-    ctypes.POINTER(ctypes.c_float),
+    ctypes.POINTER(scalar),
     ctypes.c_bool,
     ctypes.c_int,
     ctypes.c_int,
@@ -227,7 +185,7 @@ def get_energy_contributions(
 
     contrib_names = str(energy_array_names[:].decode("utf-8")).split("|")
     n_contribs = len(contrib_names)
-    energies = (n_contribs * ctypes.c_float)()
+    energies = (n_contribs * scalar)()
 
     _Get_Energy_Array(
         ctypes.c_void_p(p_state),
@@ -238,6 +196,42 @@ def get_energy_contributions(
     )
 
     return dict(zip(contrib_names, energies))
+
+
+_Update_Energy = _spirit.System_Update_Energy
+_Update_Energy.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
+_Update_Energy.restype = None
+
+
+def update_energy(p_state, idx_image=-1, idx_chain=-1):
+    """TODO: document when this needs to be called."""
+    _Update_Energy(
+        ctypes.c_void_p(p_state), ctypes.c_int(idx_image), ctypes.c_int(idx_chain)
+    )
+
+
+_Update_Magnetization = _spirit.System_Update_Magnetization
+_Update_Magnetization.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
+_Update_Magnetization.restype = None
+
+
+def update_magnetization(p_state, idx_image=-1, idx_chain=-1):
+    """TODO: document when this needs to be called."""
+    _Update_Magnetization(
+        ctypes.c_void_p(p_state), ctypes.c_int(idx_image), ctypes.c_int(idx_chain)
+    )
+
+
+_Update_Effective_Field = _spirit.System_Update_Effective_Field
+_Update_Effective_Field.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
+_Update_Effective_Field.restype = None
+
+
+def update_effective_field(p_state, idx_image=-1, idx_chain=-1):
+    """TODO: document when this needs to be called."""
+    _Update_Effective_Field(
+        ctypes.c_void_p(p_state), ctypes.c_int(idx_image), ctypes.c_int(idx_chain)
+    )
 
 
 ### Get Chain number of images

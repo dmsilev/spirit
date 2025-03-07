@@ -1,9 +1,9 @@
 #pragma once
 #ifndef SPIRIT_CORE_SIMULATION_H
 #define SPIRIT_CORE_SIMULATION_H
-#include "DLL_Define_Export.h"
+#include "Spirit_Defines.h"
 
-#include <vector>
+#include "DLL_Define_Export.h"
 
 struct State;
 
@@ -53,21 +53,32 @@ Note that the VP and LBFGS Solvers are only meant for direct minimization and no
 // `Solver_VP_OSO`: Verlet-like velocity projection, exponential transform
 #define Solver_VP_OSO 7
 
+/*
+Definition of Monte Carlo Algorithms
+--------------------------------------------------------------------
+*/
+
+// `Metropolis`: Metropolis algorithm
+#define MC_Algorithm_Metropolis 0
+
+// `Metropolis_MDC`: Magnetization Direction Constrained Metropolis algorithm
+#define MC_Algorithm_Metropolis_MDC 1
+
 // A struct that can be passed as an additional argument to the `Simulation_XXX_Start` methods to gather some basic
 // information about the simulation run
 struct Simulation_Run_Info
 {
     int total_iterations = 0;
     int total_walltime   = 0;
-    float total_ips      = 0;
-    float max_torque     = 0;
+    scalar total_ips     = 0;
+    scalar max_torque    = 0;
 
-    int n_history_iteration    = 0;
-    int * history_iteration    = nullptr;
-    int n_history_max_torque   = 0;
-    float * history_max_torque = nullptr;
-    int n_history_energy       = 0;
-    float * history_energy     = nullptr;
+    int n_history_iteration     = 0;
+    int * history_iteration     = nullptr;
+    int n_history_max_torque    = 0;
+    scalar * history_max_torque = nullptr;
+    int n_history_energy        = 0;
+    scalar * history_energy     = nullptr;
 };
 
 PREFIX void free_run_info( Simulation_Run_Info info ) SUFFIX;
@@ -79,8 +90,8 @@ Start or stop a simulation
 
 // Monte Carlo
 PREFIX void Simulation_MC_Start(
-    State * state, int n_iterations = -1, int n_iterations_log = -1, bool singleshot = false,
-    Simulation_Run_Info * info = nullptr, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
+    State * state, int mc_algorithm = MC_Algorithm_Metropolis, int n_iterations = -1, int n_iterations_log = -1,
+    bool singleshot = false, Simulation_Run_Info * info = nullptr, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
 
 // Landau-Lifshitz-Gilbert dynamics and energy minimisation
 PREFIX void Simulation_LLG_Start(
@@ -130,36 +141,20 @@ Get information
 */
 
 /*
-Get maximum torque component.
-
-If a MC, LLG, MMF or EMA simulation is running this returns the max. torque on the current image.
-
-If a GNEB simulation is running this returns the max. torque on the current chain.
-*/
-PREFIX float Simulation_Get_MaxTorqueComponent( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
-
-/*
-Get maximum torque components on the images of a chain.
-
-Will only work if a GNEB simulation is running.
-*/
-PREFIX void Simulation_Get_Chain_MaxTorqueComponents( State * state, float * torques, int idx_chain = -1 ) SUFFIX;
-
-/*
 Get maximum torque norm.
 
 If a MC, LLG, MMF or EMA simulation is running this returns the max. torque on the current image.
 
 If a GNEB simulation is running this returns the max. torque on the current chain.
 */
-PREFIX float Simulation_Get_MaxTorqueNorm( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
+PREFIX scalar Simulation_Get_MaxTorqueNorm( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
 
 /*
 Get maximum torque norms on the images of a chain.
 
 Will only work if a GNEB simulation is running.
 */
-PREFIX void Simulation_Get_Chain_MaxTorqueNorms( State * state, float * torques, int idx_chain = -1 ) SUFFIX;
+PREFIX void Simulation_Get_Chain_MaxTorqueNorms( State * state, scalar * torques, int idx_chain = -1 ) SUFFIX;
 
 /*
 Returns the iterations per second (IPS).
@@ -168,7 +163,7 @@ If a MC, LLG, MMF or EMA simulation is running this returns the IPS on the curre
 
 If a GNEB simulation is running this returns the IPS on the current chain.
 */
-PREFIX float Simulation_Get_IterationsPerSecond( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
+PREFIX scalar Simulation_Get_IterationsPerSecond( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
 
 // Returns the number of iterations performed by the current simulation so far.
 PREFIX int Simulation_Get_Iteration( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
@@ -180,7 +175,7 @@ Get time passed by the simulation [ps]
 - if an LLG simulation is running returns the cumulatively summed time steps `dt`
 - otherwise returns 0
 */
-PREFIX float Simulation_Get_Time( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
+PREFIX scalar Simulation_Get_Time( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
 
 // Get number of miliseconds of wall time since the simulation was started
 PREFIX int Simulation_Get_Wall_Time( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;

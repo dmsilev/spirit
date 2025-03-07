@@ -2,10 +2,11 @@
 #ifndef SPIRIT_CORE_DATA_GEOMETRY_HPP
 #define SPIRIT_CORE_DATA_GEOMETRY_HPP
 
-#include "Spirit_Defines.h"
 #include <Spirit/Geometry.h>
+#include <Spirit/Spirit_Defines.h>
 #include <engine/Vectormath_Defines.hpp>
 
+#include <memory>
 #include <vector>
 
 namespace Data
@@ -79,6 +80,18 @@ struct Basis_Cell_Composition
 // Geometry contains all geometric information of a system
 class Geometry
 {
+    struct Cache
+    {
+        std::vector<triangle_t> _triangulation{};
+        std::vector<tetrahedron_t> _tetrahedra{};
+
+        // Temporaries to tell wether the triangulation or tetrahedra
+        // need to be updated when the corresponding function is called
+        int last_update_n_cell_step = 0;
+        intfield last_update_n_cells{};
+        std::array<int, 6> last_update_cell_ranges{};
+    };
+
 public:
     // ---------- Constructor
     //  Build a regular lattice from a defined basis cell and translations
@@ -90,10 +103,10 @@ public:
     // ---------- Convenience functions
     // Retrieve triangulation, if 2D
     const std::vector<triangle_t> &
-    triangulation( int n_cell_step = 1, std::array<int, 6> ranges = { 0, -1, 0, -1, 0, -1 } );
+    triangulation( int n_cell_step = 1, std::array<int, 6> ranges = { 0, -1, 0, -1, 0, -1 } ) const;
     // Retrieve tetrahedra, if 3D
     const std::vector<tetrahedron_t> &
-    tetrahedra( int n_cell_step = 1, std::array<int, 6> ranges = { 0, -1, 0, -1, 0, -1 } );
+    tetrahedra( int n_cell_step = 1, std::array<int, 6> ranges = { 0, -1, 0, -1, 0, -1 } ) const;
     // Introduce disorder into the atom types
     // void disorder(scalar mixing);
     static std::vector<Vector3> BravaisVectorsSC();
@@ -102,7 +115,7 @@ public:
     static std::vector<Vector3> BravaisVectorsHex2D60();
     static std::vector<Vector3> BravaisVectorsHex2D120();
     // Pinning
-    void Apply_Pinning( vectorfield & vf );
+    void Apply_Pinning( vectorfield & vf ) const;
 
     // ---------- Basic information set, which (in theory) defines everything
     // Basis vectors {a, b, c} of the unit cell
@@ -162,15 +175,28 @@ private:
     // Calculate and update the type lattice
     void calculateGeometryType();
 
-    //
-    std::vector<triangle_t> _triangulation;
-    std::vector<tetrahedron_t> _tetrahedra;
+    mutable Cache cache = Cache();
+};
 
-    // Temporaries to tell wether the triangulation or tetrahedra
-    // need to be updated when the corresponding function is called
-    int last_update_n_cell_step;
-    intfield last_update_n_cells;
-    std::array<int, 6> last_update_cell_ranges;
+// check if the number of sites described by the two geometries is the same.
+inline bool same_size( const Data::Geometry & lhs, const Data::Geometry & rhs ) noexcept
+{
+    if( lhs.nos != rhs.nos )
+        return false;
+
+    if( lhs.n_cell_atoms != rhs.n_cell_atoms )
+        return false;
+
+    if( lhs.n_cells.size() != rhs.n_cells.size() )
+        return false;
+
+    for( unsigned int i = 0; i < lhs.n_cells.size(); ++i )
+    {
+        if( lhs.n_cells[i] != rhs.n_cells[i] )
+            return false;
+    }
+
+    return true;
 };
 
 // TODO: find better place (?)

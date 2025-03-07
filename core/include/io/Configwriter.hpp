@@ -8,8 +8,7 @@
 #include <data/Parameters_Method_MMF.hpp>
 #include <data/Spin_System.hpp>
 #include <data/Spin_System_Chain.hpp>
-#include <engine/Hamiltonian_Gaussian.hpp>
-#include <engine/Hamiltonian_Heisenberg.hpp>
+#include <engine/spin/Hamiltonian.hpp>
 
 namespace IO
 {
@@ -22,7 +21,7 @@ void Folders_to_Config(
 
 void Log_Levels_to_Config( const std::string & config_file );
 
-void Geometry_to_Config( const std::string & config_file, const std::shared_ptr<Data::Geometry> geometry );
+void Geometry_to_Config( const std::string & config_file, const Data::Geometry & geometry );
 
 void Parameters_Method_LLG_to_Config(
     const std::string & config_file, const std::shared_ptr<Data::Parameters_Method_LLG> parameters );
@@ -37,15 +36,7 @@ void Parameters_Method_MMF_to_Config(
     const std::string & config_file, const std::shared_ptr<Data::Parameters_Method_MMF> parameters );
 
 void Hamiltonian_to_Config(
-    const std::string & config_file, const std::shared_ptr<Engine::Hamiltonian> hamiltonian,
-    const std::shared_ptr<Data::Geometry> geometry );
-
-void Hamiltonian_Heisenberg_to_Config(
-    const std::string & config_file, std::shared_ptr<Engine::Hamiltonian> hamiltonian,
-    const std::shared_ptr<Data::Geometry> geometry );
-
-void Hamiltonian_Gaussian_to_Config(
-    const std::string & config_file, const std::shared_ptr<Engine::Hamiltonian> hamiltonian );
+    const std::string & config_file, const std::shared_ptr<Engine::Spin::Hamiltonian> hamiltonian );
 
 } // namespace IO
 

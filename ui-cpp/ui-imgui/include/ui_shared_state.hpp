@@ -6,8 +6,9 @@
 
 #include <Spirit/Simulation.h>
 
+#include <algorithm>
 #include <array>
-#include <list>
+#include <deque>
 #include <string>
 
 namespace ui
@@ -32,7 +33,22 @@ struct UiSharedState
 
     void notify( const std::string & notification, float timeout = 3 )
     {
-        this->notifications.push_back( Notification{ notification, 0, timeout > 1 ? timeout : 1 } );
+        this->notifications.push_back( { notification, 0, timeout > 1 ? timeout : 1 } );
+    }
+
+    void expire_notifications( const float deltaTime = 0 )
+    {
+        // advance internal clock of each notification
+        std::for_each(
+            notifications.begin(), notifications.end(),
+            [deltaTime]( Notification & notification ) { notification.timer += deltaTime; } );
+        // erase from the front to minimize move operations (theoreticaly these should already be in order)
+        notifications.erase(
+            notifications.begin(),
+            std::remove_if(
+                notifications.rbegin(), notifications.rend(),
+                []( const Notification & notification ) { return notification.timer > notification.timeout; } )
+                .base() );
     }
 
     // Simulation
@@ -69,20 +85,20 @@ struct UiSharedState
     {
         std::string last_used = "";
 
-        float pos[3]{ 0, 0, 0 };
-        float border_rect[3]{ -1, -1, -1 };
-        float border_cyl = -1;
-        float border_sph = -1;
-        bool inverted    = false;
+        scalar pos[3]{ 0, 0, 0 };
+        scalar border_rect[3]{ -1, -1, -1 };
+        scalar border_cyl = -1;
+        scalar border_sph = -1;
+        bool inverted     = false;
 
-        float noise_temperature = 0;
+        scalar noise_temperature = 0;
     };
     Configurations configurations{};
 
     // Other
     int n_screenshots       = 0;
     int n_screenshots_chain = 0;
-    std::list<Notification> notifications;
+    std::deque<Notification> notifications;
 };
 
 } // namespace ui

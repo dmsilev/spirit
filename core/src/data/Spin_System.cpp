@@ -1,44 +1,43 @@
 #include <data/Spin_System.hpp>
 #include <engine/Neighbours.hpp>
 #include <engine/Vectormath.hpp>
+#include <engine/spin/Hamiltonian.hpp>
 #include <io/IO.hpp>
 
 #include <algorithm>
 #include <iostream>
+#include <memory>
 #include <numeric>
 #include <random>
 
 namespace Data
 {
 
-Spin_System::Spin_System(
-    std::unique_ptr<Engine::Hamiltonian> hamiltonian, std::shared_ptr<Geometry> geometry,
-    std::unique_ptr<Parameters_Method_LLG> llg_params, std::unique_ptr<Parameters_Method_MC> mc_params,
-    std::unique_ptr<Parameters_Method_EMA> ema_params, std::unique_ptr<Parameters_Method_MMF> mmf_params,
-    bool iteration_allowed )
-try : iteration_allowed( iteration_allowed ), singleshot_allowed( false ), hamiltonian( std::move( hamiltonian ) ),
-    geometry( geometry ), llg_parameters( std::move( llg_params ) ), mc_parameters( std::move( mc_params ) ),
-    ema_parameters( std::move( ema_params ) ), mmf_parameters( std::move( mmf_params ) )
+template<typename Hamiltonian>
+Spin_System<Hamiltonian>::Spin_System(
+    std::unique_ptr<Hamiltonian> hamiltonian, std::unique_ptr<Parameters_Method_LLG> llg_params,
+    std::unique_ptr<Parameters_Method_MC> mc_params, std::unique_ptr<Parameters_Method_EMA> ema_params,
+    std::unique_ptr<Parameters_Method_MMF> mmf_params, bool iteration_allowed )
+try : hamiltonian( std::move( hamiltonian ) ), llg_parameters( std::move( llg_params ) ),
+    mc_parameters( std::move( mc_params ) ), ema_parameters( std::move( ema_params ) ),
+    mmf_parameters( std::move( mmf_params ) ), iteration_allowed( iteration_allowed ), singleshot_allowed( false )
 {
     // Get Number of Spins
-    this->nos = this->geometry->nos;
+    this->nos = this->hamiltonian->get_geometry().nos;
 
     // Initialize Spins Array
-    this->spins = std::shared_ptr<vectorfield>( new vectorfield( nos ) );
+    this->state
+        = std::make_shared<typename Hamiltonian::state_t>( Engine::make_state<typename Hamiltonian::state_t>( nos ) );
 
     // Initialize Modes container
-    this->modes = std::vector<std::shared_ptr<vectorfield>>( this->ema_parameters->n_modes, NULL );
+    this->modes = std::vector<std::optional<vectorfield>>( this->ema_parameters->n_modes, std::nullopt );
 
     // Initialize Eigenvalues vector
     this->eigenvalues = std::vector<scalar>( this->modes.size(), 0 );
 
     // ...
-    this->E               = 0;
-    this->E_array         = std::vector<std::pair<std::string, scalar>>( 0 );
-    this->M               = Vector3{ 0, 0, 0 };
-    this->effective_field = vectorfield( this->nos );
-    this->ddi_field       = vectorfield( this->nos );
-
+    this->E = System_Energy{ 0, vectorlabeled<scalar>( 0 ), vectorlabeled<scalarfield>( 0 ) };
+    this->M = System_Magnetization{ Vector3{ 0, 0, 0 }, vectorfield( this->nos ) };
 }
 catch( ... )
 {
@@ -46,36 +45,19 @@ catch( ... )
 }
 
 // Copy Constructor
-Spin_System::Spin_System( Spin_System const & other )
+template<typename Hamiltonian>
+Spin_System<Hamiltonian>::Spin_System( Spin_System const & other )
 try
 {
     this->nos         = other.nos;
-    this->spins       = std::shared_ptr<vectorfield>( new vectorfield( *other.spins ) );
-    this->modes       = std::vector<std::shared_ptr<vectorfield>>( other.modes.size(), NULL );
+    this->state       = std::make_shared<typename Hamiltonian::state_t>( *other.state );
+    this->modes       = other.modes;
     this->eigenvalues = other.eigenvalues;
 
-    // copy the modes
-    for( int i = 0; i < other.modes.size(); i++ )
-        if( other.modes[i] != NULL )
-            this->modes[i] = std::shared_ptr<vectorfield>( new vectorfield( *other.modes[i] ) );
+    this->E = other.E;
+    this->M = other.M;
 
-    this->E               = other.E;
-    this->E_array         = other.E_array;
-    this->effective_field = other.effective_field;
-    this->ddi_field       = other.ddi_field;
-
-    this->geometry = std::make_shared<Data::Geometry>( *other.geometry );
-
-    if( other.hamiltonian->Name() == "Heisenberg" )
-    {
-        this->hamiltonian = std::make_shared<Engine::Hamiltonian_Heisenberg>(
-            static_cast<Engine::Hamiltonian_Heisenberg &>( *other.hamiltonian ) );
-    }
-    else if( other.hamiltonian->Name() == "Gaussian" )
-    {
-        this->hamiltonian = std::make_shared<Engine::Hamiltonian_Gaussian>(
-            static_cast<Engine::Hamiltonian_Gaussian &>( *other.hamiltonian ) );
-    }
+    this->hamiltonian = std::make_shared<Hamiltonian>( *other.hamiltonian );
 
     this->llg_parameters = std::make_shared<Data::Parameters_Method_LLG>( *other.llg_parameters );
     this->mc_parameters  = std::make_shared<Data::Parameters_Method_MC>( *other.mc_parameters );
@@ -90,38 +72,21 @@ catch( ... )
 }
 
 // Copy assignment operator
-Spin_System & Spin_System::operator=( Spin_System const & other )
+template<typename Hamiltonian>
+Spin_System<Hamiltonian> & Spin_System<Hamiltonian>::operator=( Spin_System<Hamiltonian> const & other )
 try
 {
     if( this != &other )
     {
         this->nos         = other.nos;
-        this->spins       = std::shared_ptr<vectorfield>( new vectorfield( *other.spins ) );
-        this->modes       = std::vector<std::shared_ptr<vectorfield>>( other.modes.size(), NULL );
+        this->state       = std::make_unique<typename Hamiltonian::state_t>( *other.state );
+        this->modes       = other.modes;
         this->eigenvalues = other.eigenvalues;
 
-        // copy the modes
-        for( int i = 0; i < other.modes.size(); i++ )
-            if( other.modes[i] != NULL )
-                this->modes[i] = std::shared_ptr<vectorfield>( new vectorfield( *other.modes[i] ) );
+        this->E = other.E;
+        this->M = other.M;
 
-        this->E               = other.E;
-        this->E_array         = other.E_array;
-        this->effective_field = other.effective_field;
-        this->ddi_field       = other.ddi_field;
-
-        this->geometry = std::make_shared<Data::Geometry>( *other.geometry );
-
-        if( other.hamiltonian->Name() == "Heisenberg" )
-        {
-            this->hamiltonian = std::make_shared<Engine::Hamiltonian_Heisenberg>(
-                *(Engine::Hamiltonian_Heisenberg *)( other.hamiltonian.get() ) );
-        }
-        else if( other.hamiltonian->Name() == "Gaussian" )
-        {
-            this->hamiltonian = std::make_shared<Engine::Hamiltonian_Gaussian>(
-                *(Engine::Hamiltonian_Gaussian *)( other.hamiltonian.get() ) );
-        }
+        this->hamiltonian = std::make_shared<Hamiltonian>( *other.hamiltonian );
 
         this->llg_parameters = std::make_shared<Data::Parameters_Method_LLG>( *other.llg_parameters );
         this->mc_parameters  = std::make_shared<Data::Parameters_Method_MC>( *other.mc_parameters );
@@ -139,44 +104,56 @@ catch( ... )
     return *this;
 }
 
-void Spin_System::UpdateEnergy()
+template<typename Hamiltonian>
+void Spin_System<Hamiltonian>::update_energy()
 try
 {
-    this->E_array = this->hamiltonian->Energy_Contributions( *this->spins );
-    scalar sum    = 0;
-    for( auto & E : E_array )
-        sum += E.second;
-    this->E = sum;
+    core_throw_if_nullptr( this->hamiltonian.get(), "hamiltonian" );
+
+    this->E.per_interaction = this->hamiltonian->Energy_Contributions( *this->state );
+    scalar sum              = 0;
+    for( auto & E_item : E.per_interaction )
+        sum += E_item.second;
+    this->E.total = sum;
 }
 catch( ... )
 {
-    spirit_rethrow( "Spin_System::UpdateEnergy failed" );
+    spirit_rethrow( "Spin_System::update_energy failed" );
 }
 
-void Spin_System::UpdateEffectiveField()
+template<typename Hamiltonian>
+void Spin_System<Hamiltonian>::update_effective_field()
 try
 {
-    this->hamiltonian->Gradient( *this->spins, this->effective_field );
-    Engine::Vectormath::scale( this->effective_field, -1 );
+    core_throw_if_nullptr( this->hamiltonian.get(), "hamiltonian" );
+
+    this->hamiltonian->Gradient( *this->state, this->M.effective_field );
+    Engine::Vectormath::scale( this->M.effective_field, -1 );
 }
 catch( ... )
 {
-    spirit_rethrow( "Spin_System::UpdateEffectiveField failed" );
+    spirit_rethrow( "Spin_System::update_effective_field failed" );
 }
 
-void Spin_System::UpdateDDIField()
+template<typename Hamiltonian>
+void Spin_System<Hamiltonian>::update_magnetization()
 try
 {
-    this->hamiltonian->Gradient_DDI( *this->spins, this->ddi_field );
-    Engine::Vectormath::scale( this->ddi_field, -1 );
+    using Engine::Field;
+
+    core_throw_if_nullptr( this->state.get(), "state" );
+    core_throw_if_nullptr( this->hamiltonian.get(), "hamiltonian" );
+
+    this->M.mean = Engine::Vectormath::Magnetization(
+        Engine::get<Field::Spin>( *this->state ), this->hamiltonian->get_geometry().mu_s );
 }
 catch( ... )
 {
-    spirit_rethrow( "Spin_System::UpdateEffectiveField failed" );
+    spirit_rethrow( "Spin_System::update_effective_field failed" );
 }
 
-
-void Spin_System::Lock() noexcept
+template<typename Hamiltonian>
+void Spin_System<Hamiltonian>::lock() noexcept
 try
 {
     this->ordered_lock.lock();
@@ -186,7 +163,8 @@ catch( ... )
     spirit_handle_exception_core( "Locking the Spin_System failed!" );
 }
 
-void Spin_System::Unlock() noexcept
+template<typename Hamiltonian>
+void Spin_System<Hamiltonian>::unlock() noexcept
 try
 {
     this->ordered_lock.unlock();
@@ -197,3 +175,5 @@ catch( ... )
 }
 
 } // namespace Data
+
+template class Data::Spin_System<Engine::Spin::Hamiltonian>;

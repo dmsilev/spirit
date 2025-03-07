@@ -273,8 +273,8 @@ set( INTERFACE_EXPORT_FUNCTIONS
     '_Simulation_SingleShot'
     '_Simulation_Stop'
     '_Simulation_Stop_All'
-    '_Simulation_Get_MaxTorqueComponent'
-    '_Simulation_Get_Chain_MaxTorqueComponents'
+    '_Simulation_Get_MaxTorqueNorm'
+    '_Simulation_Get_Chain_MaxTorqueNorms'
     '_Simulation_Get_IterationsPerSecond'
     '_Simulation_Get_Iteration'
     '_Simulation_Get_Time'
@@ -308,6 +308,9 @@ set( INTERFACE_EXPORT_FUNCTIONS
     '_System_Get_Energy_Array'
     '_System_Get_Eigenvalues'
     '_System_Print_Energy_Array'
+    '_System_Update_Energy'
+    '_System_Update_Magnetization'
+    '_System_Update_Effective_Field'
     '_System_Update_Data'
     '_System_Update_Eigenmodes'
     # Transition
@@ -356,7 +359,7 @@ set_target_properties( webui PROPERTIES OUTPUT_NAME "libSpirit" )
 ### We want it to be placed under ui-web/js/ s.t. it is directly part of the python core module/package
 set_target_properties( webui PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/ui-web/js/ )
 
-set_property( TARGET webui PROPERTY CXX_STANDARD 14 )
+set_property( TARGET webui PROPERTY CXX_STANDARD 17 )
 set_property( TARGET webui PROPERTY CXX_STANDARD_REQUIRED ON )
 set_property( TARGET webui PROPERTY CXX_EXTENSIONS OFF )
 

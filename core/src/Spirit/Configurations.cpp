@@ -1,20 +1,24 @@
-#include "Spirit_Defines.h"
 #include <Spirit/Configurations.h>
+#include <Spirit/Spirit_Defines.h>
 
 #include <data/State.hpp>
+#include <engine/StateType.hpp>
 #include <engine/Vectormath.hpp>
+#include <memory>
 #include <utility/Configurations.hpp>
 #include <utility/Constants.hpp>
 #include <utility/Exception.hpp>
 #include <utility/Logging.hpp>
 
 #include <fmt/format.h>
-
 #include <Eigen/Dense>
 
-std::function<bool( const Vector3 &, const Vector3 & )> get_filter(
-    const Vector3 & position, const float r_cut_rectangular[3], float r_cut_cylindrical, float r_cut_spherical,
-    bool inverted )
+using Engine::Field;
+using Engine::get;
+
+auto get_filter(
+    const Vector3 & position, const scalar r_cut_rectangular[3], scalar r_cut_cylindrical, scalar r_cut_spherical,
+    bool inverted ) -> std::function<bool( const Vector3 & )>
 {
     bool no_cut_rectangular_x = r_cut_rectangular[0] < 0;
     bool no_cut_rectangular_y = r_cut_rectangular[1] < 0;
@@ -22,12 +26,12 @@ std::function<bool( const Vector3 &, const Vector3 & )> get_filter(
     bool no_cut_cylindrical   = r_cut_cylindrical < 0;
     bool no_cut_spherical     = r_cut_spherical < 0;
 
-    std::function<bool( const Vector3 &, const Vector3 & )> filter;
+    std::function<bool( const Vector3 & )> filter;
     if( !inverted )
     {
         filter = [position, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, no_cut_rectangular_x,
                   no_cut_rectangular_y, no_cut_rectangular_z, no_cut_cylindrical,
-                  no_cut_spherical]( const Vector3 &, const Vector3 & positions )
+                  no_cut_spherical]( const Vector3 & positions )
         {
             Vector3 r_rectangular = positions - position;
             scalar r_cylindrical
@@ -44,7 +48,7 @@ std::function<bool( const Vector3 &, const Vector3 & )> get_filter(
     {
         filter = [position, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, no_cut_rectangular_x,
                   no_cut_rectangular_y, no_cut_rectangular_z, no_cut_cylindrical,
-                  no_cut_spherical]( const Vector3 & spin, const Vector3 & positions )
+                  no_cut_spherical]( const Vector3 & positions )
         {
             Vector3 r_rectangular = positions - position;
             scalar r_cylindrical
@@ -63,7 +67,7 @@ std::function<bool( const Vector3 &, const Vector3 & )> get_filter(
 }
 
 std::string filter_to_string(
-    const float position[3], const float r_cut_rectangular[3], float r_cut_cylindrical, float r_cut_spherical,
+    const scalar position[3], const scalar r_cut_rectangular[3], scalar r_cut_cylindrical, scalar r_cut_spherical,
     bool inverted )
 {
     std::string ret = "";
@@ -112,13 +116,11 @@ std::string filter_to_string(
 void Configuration_To_Clipboard( State * state, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    state->clipboard_spins = std::shared_ptr<vectorfield>( new vectorfield( *image->spins ) );
+    state->clipboard_spins = std::make_shared<vectorfield>( image->state->spin );
     Log( Utility::Log_Level::Info, Utility::Log_Sender::API, "Copied spin configuration to clipboard.", idx_image,
          idx_chain );
 }
@@ -128,28 +130,28 @@ catch( ... )
 }
 
 void Configuration_From_Clipboard(
-    State * state, const float position[3], const float r_cut_rectangular[3], float r_cut_cylindrical,
-    float r_cut_spherical, bool inverted, int idx_image, int idx_chain ) noexcept
+    State * state, const scalar position[3], const scalar r_cut_rectangular[3], scalar r_cut_cylindrical,
+    scalar r_cut_spherical, bool inverted, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+    throw_if_nullptr( position, "position" );
+    throw_if_nullptr( r_cut_rectangular, "r_cut_rectangular" );
 
+    const auto & geometry = image->hamiltonian->get_geometry();
     // Get relative position
     Vector3 _pos{ position[0], position[1], position[2] };
-    Vector3 vpos = image->geometry->center + _pos;
+    Vector3 vpos = geometry.center + _pos;
 
     // Create position filter
     auto filter = get_filter( vpos, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
 
     // Apply configuration
-    image->Lock();
-    Utility::Configurations::Insert( *image, *state->clipboard_spins, 0, filter );
-    image->geometry->Apply_Pinning( *image->spins );
-    image->Unlock();
+    image->lock();
+    Utility::Configurations::Insert( image->state->spin, geometry, *state->clipboard_spins, 0, filter );
+    geometry.Apply_Pinning( image->state->spin );
+    image->unlock();
 
     auto filterstring = filter_to_string( position, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
     Log( Utility::Log_Level::Info, Utility::Log_Sender::API, "Set spin configuration from clipboard. " + filterstring,
@@ -161,24 +163,25 @@ catch( ... )
 }
 
 bool Configuration_From_Clipboard_Shift(
-    State * state, const float shift[3], const float position[3], const float r_cut_rectangular[3],
-    float r_cut_cylindrical, float r_cut_spherical, bool inverted, int idx_image, int idx_chain ) noexcept
+    State * state, const scalar shift[3], const scalar position[3], const scalar r_cut_rectangular[3],
+    scalar r_cut_cylindrical, scalar r_cut_spherical, bool inverted, int idx_image, int idx_chain ) noexcept
 try
 {
     // Apply configuration
     if( state->clipboard_spins )
     {
-        std::shared_ptr<Data::Spin_System> image;
-        std::shared_ptr<Data::Spin_System_Chain> chain;
 
         // Fetch correct indices and pointers
-        from_indices( state, idx_image, idx_chain, image, chain );
+        auto [image, chain] = from_indices( state, idx_image, idx_chain );
+        throw_if_nullptr( position, "position" );
+        throw_if_nullptr( r_cut_rectangular, "r_cut_rectangular" );
 
+        const auto & geometry = image->hamiltonian->get_geometry();
         // Get relative position
         Vector3 vpos{ position[0], position[1], position[2] };
         Vector3 vshift{ shift[0], shift[1], shift[2] };
 
-        Vector3 decomposed = Engine::Vectormath::decompose( vshift, image->geometry->bravais_vectors );
+        Vector3 decomposed = Engine::Vectormath::decompose( vshift, geometry.bravais_vectors );
 
         int da = (int)std::round( decomposed[0] );
         int db = (int)std::round( decomposed[1] );
@@ -187,17 +190,16 @@ try
         if( da == 0 && db == 0 && dc == 0 )
             return false;
 
-        auto & geometry = *image->geometry;
-        int delta       = geometry.n_cell_atoms * da + geometry.n_cell_atoms * geometry.n_cells[0] * db
-                    + geometry.n_cell_atoms * geometry.n_cells[0] * geometry.n_cells[1] * dc;
+        const int delta = geometry.n_cell_atoms * da + geometry.n_cell_atoms * geometry.n_cells[0] * db
+                          + geometry.n_cell_atoms * geometry.n_cells[0] * geometry.n_cells[1] * dc;
 
         // Create position filter
         auto filter = get_filter( vpos, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
 
-        image->Lock();
-        Utility::Configurations::Insert( *image, *state->clipboard_spins, delta, filter );
-        image->geometry->Apply_Pinning( *image->spins );
-        image->Unlock();
+        image->lock();
+        Utility::Configurations::Insert( image->state->spin, geometry, *state->clipboard_spins, delta, filter );
+        geometry.Apply_Pinning( image->state->spin );
+        image->unlock();
 
         auto filterstring
             = filter_to_string( position, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
@@ -219,29 +221,30 @@ catch( ... )
 }
 
 void Configuration_Domain(
-    State * state, const float direction[3], const float position[3], const float r_cut_rectangular[3],
-    float r_cut_cylindrical, float r_cut_spherical, bool inverted, int idx_image, int idx_chain ) noexcept
+    State * state, const scalar direction[3], const scalar position[3], const scalar r_cut_rectangular[3],
+    scalar r_cut_cylindrical, scalar r_cut_spherical, bool inverted, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+    throw_if_nullptr( direction, "direction" );
+    throw_if_nullptr( position, "position" );
+    throw_if_nullptr( r_cut_rectangular, "r_cut_rectangular" );
 
+    const auto & geometry = image->hamiltonian->get_geometry();
     // Get relative position
     Vector3 _pos{ position[0], position[1], position[2] };
-    Vector3 vpos = image->geometry->center + _pos;
+    Vector3 vpos = geometry.center + _pos;
 
     // Create position filter
     auto filter = get_filter( vpos, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
 
     // Apply configuration
     Vector3 vdir{ direction[0], direction[1], direction[2] };
-    image->Lock();
-    Utility::Configurations::Domain( *image, vdir, filter );
-    image->geometry->Apply_Pinning( *image->spins );
-    image->Unlock();
+    image->lock();
+    Utility::Configurations::Domain( image->state->spin, geometry, vdir, filter );
+    geometry.Apply_Pinning( image->state->spin );
+    image->unlock();
 
     auto filterstring = filter_to_string( position, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
     Log( Utility::Log_Level::Info, Utility::Log_Sender::API,
@@ -254,11 +257,11 @@ catch( ... )
     spirit_handle_exception_api( idx_image, idx_chain );
 }
 
-// void Configuration_DomainWall( State *state, const float pos[3], float v[3], bool greater,
+// void Configuration_DomainWall( State *state, const scalar pos[3], scalar v[3], bool greater,
 //                                int idx_image, int idx_chain) noexcept
 // {
-//     std::shared_ptr<Data::Spin_System> image;
-//     std::shared_ptr<Data::Spin_System_Chain> chain;
+//
+//
 //     from_indices(state, idx_image, idx_chain, image, chain);
 
 //     // Create position filter
@@ -275,29 +278,29 @@ catch( ... )
 // }
 
 void Configuration_PlusZ(
-    State * state, const float position[3], const float r_cut_rectangular[3], float r_cut_cylindrical,
-    float r_cut_spherical, bool inverted, int idx_image, int idx_chain ) noexcept
+    State * state, const scalar position[3], const scalar r_cut_rectangular[3], scalar r_cut_cylindrical,
+    scalar r_cut_spherical, bool inverted, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+    throw_if_nullptr( position, "position" );
+    throw_if_nullptr( r_cut_rectangular, "r_cut_rectangular" );
 
+    const auto & geometry = image->hamiltonian->get_geometry();
     // Get relative position
     Vector3 _pos{ position[0], position[1], position[2] };
-    Vector3 vpos = image->geometry->center + _pos;
+    Vector3 vpos = geometry.center + _pos;
 
     // Create position filter
     auto filter = get_filter( vpos, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
 
     // Apply configuration
     Vector3 vdir{ 0, 0, 1 };
-    image->Lock();
-    Utility::Configurations::Domain( *image, vdir, filter );
-    image->geometry->Apply_Pinning( *image->spins );
-    image->Unlock();
+    image->lock();
+    Utility::Configurations::Domain( image->state->spin, geometry, vdir, filter );
+    geometry.Apply_Pinning( image->state->spin );
+    image->unlock();
 
     auto filterstring = filter_to_string( position, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
     Log( Utility::Log_Level::Info, Utility::Log_Sender::API, "Set PlusZ configuration. " + filterstring, idx_image,
@@ -309,29 +312,29 @@ catch( ... )
 }
 
 void Configuration_MinusZ(
-    State * state, const float position[3], const float r_cut_rectangular[3], float r_cut_cylindrical,
-    float r_cut_spherical, bool inverted, int idx_image, int idx_chain ) noexcept
+    State * state, const scalar position[3], const scalar r_cut_rectangular[3], scalar r_cut_cylindrical,
+    scalar r_cut_spherical, bool inverted, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+    throw_if_nullptr( position, "position" );
+    throw_if_nullptr( r_cut_rectangular, "r_cut_rectangular" );
 
+    const auto & geometry = image->hamiltonian->get_geometry();
     // Get relative position
     Vector3 _pos{ position[0], position[1], position[2] };
-    Vector3 vpos = image->geometry->center + _pos;
+    Vector3 vpos = geometry.center + _pos;
 
     // Create position filter
     auto filter = get_filter( vpos, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
 
     // Apply configuration
     Vector3 vdir{ 0, 0, -1 };
-    image->Lock();
-    Utility::Configurations::Domain( *image, vdir, filter );
-    image->geometry->Apply_Pinning( *image->spins );
-    image->Unlock();
+    image->lock();
+    Utility::Configurations::Domain( image->state->spin, geometry, vdir, filter );
+    geometry.Apply_Pinning( image->state->spin );
+    image->unlock();
 
     auto filterstring = filter_to_string( position, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
     Log( Utility::Log_Level::Info, Utility::Log_Sender::API, "Set MinusZ configuration. " + filterstring, idx_image,
@@ -343,28 +346,41 @@ catch( ... )
 }
 
 void Configuration_Random(
-    State * state, const float position[3], const float r_cut_rectangular[3], float r_cut_cylindrical,
-    float r_cut_spherical, bool inverted, bool external, int idx_image, int idx_chain ) noexcept
+    State * state, const scalar position[3], const scalar r_cut_rectangular[3], scalar r_cut_cylindrical,
+    scalar r_cut_spherical, bool inverted, bool external, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+    throw_if_nullptr( position, "position" );
+    throw_if_nullptr( r_cut_rectangular, "r_cut_rectangular" );
 
+    const auto & geometry = image->hamiltonian->get_geometry();
     // Get relative position
     Vector3 _pos{ position[0], position[1], position[2] };
-    Vector3 vpos = image->geometry->center + _pos;
+    Vector3 vpos = geometry.center + _pos;
 
     // Create position filter
     auto filter = get_filter( vpos, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
 
     // Apply configuration
-    image->Lock();
-    Utility::Configurations::Random( *image, filter, external );
-    image->geometry->Apply_Pinning( *image->spins );
-    image->Unlock();
+    image->lock();
+    {
+        std::optional<std::mt19937> external_prng;
+        std::mt19937 * prng = nullptr;
+        if( external )
+        {
+            external_prng.emplace( std::mt19937{ 123456789 } );
+            prng = &*external_prng;
+        }
+        else
+        {
+            prng = &image->llg_parameters->prng;
+        }
+        Utility::Configurations::Random_Sphere( image->state->spin, geometry, *prng, filter );
+    }
+    geometry.Apply_Pinning( image->state->spin );
+    image->unlock();
 
     auto filterstring = filter_to_string( position, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
     Log( Utility::Log_Level::Info, Utility::Log_Sender::API, "Set random configuration. " + filterstring, idx_image,
@@ -376,29 +392,29 @@ catch( ... )
 }
 
 void Configuration_Add_Noise_Temperature(
-    State * state, float temperature, const float position[3], const float r_cut_rectangular[3],
-    float r_cut_cylindrical, float r_cut_spherical, bool inverted, int idx_image, int idx_chain ) noexcept
+    State * state, scalar temperature, const scalar position[3], const scalar r_cut_rectangular[3],
+    scalar r_cut_cylindrical, scalar r_cut_spherical, bool inverted, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+    throw_if_nullptr( position, "position" );
+    throw_if_nullptr( r_cut_rectangular, "r_cut_rectangular" );
 
-    from_indices( state, idx_image, idx_chain, image, chain );
-
+    const auto & geometry = image->hamiltonian->get_geometry();
     // Get relative position
     Vector3 _pos{ position[0], position[1], position[2] };
-    Vector3 vpos = image->geometry->center + _pos;
+    Vector3 vpos = geometry.center + _pos;
 
     // Create position filter
     auto filter = get_filter( vpos, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
 
     // Apply configuration
-    image->Lock();
-    Utility::Configurations::Add_Noise_Temperature( *image, temperature, 0, filter );
-    image->geometry->Apply_Pinning( *image->spins );
-    image->Unlock();
+    image->lock();
+    std::mt19937 prng{ 123456789 };
+    Utility::Configurations::Add_Noise_Temperature_Sphere( image->state->spin, geometry, temperature, prng, filter );
+    geometry.Apply_Pinning( image->state->spin );
+    image->unlock();
 
     auto filterstring = filter_to_string( position, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
     Log( Utility::Log_Level::Info, Utility::Log_Sender::API,
@@ -412,12 +428,8 @@ catch( ... )
 void Configuration_Displace_Eigenmode( State * state, int idx_mode, int idx_image, int idx_chain ) noexcept
 try
 {
-    // Fetch correct indices and pointers for image and chain
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     if( idx_mode >= image->modes.size() )
         Log( Utility::Log_Level::Warning, Utility::Log_Sender::EMA,
@@ -428,7 +440,7 @@ try
              idx_image, idx_chain );
 
     // The eigenmode was potentially not calculated, yet
-    if( image->modes[idx_mode] == nullptr )
+    if( !image->modes[idx_mode].has_value() )
         Log( Utility::Log_Level::Warning, Utility::Log_Sender::EMA,
              fmt::format(
                  "Eigenmode number {} has not "
@@ -437,9 +449,9 @@ try
              idx_image, idx_chain );
     else
     {
-        image->Lock();
+        image->lock();
 
-        auto & spins = *image->spins;
+        auto & spins = image->state->spin;
         auto & mode  = *image->modes[idx_mode];
         int nos      = spins.size();
 
@@ -459,7 +471,7 @@ try
         // Rotate around axes by certain angles
         Engine::Vectormath::rotate( spins, axes, angles, spins );
 
-        image->Unlock();
+        image->unlock();
     }
 }
 catch( ... )
@@ -468,33 +480,35 @@ catch( ... )
 }
 
 void Configuration_Hopfion(
-    State * state, float r, int order, const float position[3], const float r_cut_rectangular[3],
-    float r_cut_cylindrical, float r_cut_spherical, bool inverted, const float normal[3], int idx_image,
+    State * state, scalar r, int order, const scalar position[3], const scalar r_cut_rectangular[3],
+    scalar r_cut_cylindrical, scalar r_cut_spherical, bool inverted, const scalar normal[3], int idx_image,
     int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+    throw_if_nullptr( position, "position" );
+    throw_if_nullptr( r_cut_rectangular, "r_cut_rectangular" );
+    throw_if_nullptr( normal, "normal" );
 
+    const auto & geometry = image->hamiltonian->get_geometry();
     // Get relative position
     Vector3 _pos{ position[0], position[1], position[2] };
-    Vector3 vpos = image->geometry->center + _pos;
+    Vector3 vpos = geometry.center + _pos;
 
     // Set cutoff radius
     if( r_cut_spherical < 0 )
-        r_cut_spherical = r * (float)Utility::Constants::Pi;
+        r_cut_spherical = r * Utility::Constants::Pi;
 
     // Create position filter
     auto filter = get_filter( vpos, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
 
     // Apply configuration
-    image->Lock();
-    Utility::Configurations::Hopfion( *image, vpos, r, order, { normal[0], normal[1], normal[2] }, filter );
-    image->geometry->Apply_Pinning( *image->spins );
-    image->Unlock();
+    image->lock();
+    Utility::Configurations::Hopfion(
+        image->state->spin, geometry, vpos, r, order, { normal[0], normal[1], normal[2] }, filter );
+    geometry.Apply_Pinning( image->state->spin );
+    image->unlock();
 
     auto filterstring = filter_to_string( position, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
     std::string parameterstring = fmt::format( "r={}", r );
@@ -509,20 +523,20 @@ catch( ... )
 }
 
 void Configuration_Skyrmion(
-    State * state, float r, float order, float phase, bool upDown, bool achiral, bool rl, const float position[3],
-    const float r_cut_rectangular[3], float r_cut_cylindrical, float r_cut_spherical, bool inverted, int idx_image,
+    State * state, scalar r, scalar order, scalar phase, bool upDown, bool achiral, bool rl, const scalar position[3],
+    const scalar r_cut_rectangular[3], scalar r_cut_cylindrical, scalar r_cut_spherical, bool inverted, int idx_image,
     int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+    throw_if_nullptr( position, "position" );
+    throw_if_nullptr( r_cut_rectangular, "r_cut_rectangular" );
 
+    const auto & geometry = image->hamiltonian->get_geometry();
     // Get relative position
     Vector3 _pos{ position[0], position[1], position[2] };
-    Vector3 vpos = image->geometry->center + _pos;
+    Vector3 vpos = geometry.center + _pos;
 
     // Set cutoff radius
     if( r_cut_cylindrical < 0 )
@@ -532,10 +546,11 @@ try
     auto filter = get_filter( vpos, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
 
     // Apply configuration
-    image->Lock();
-    Utility::Configurations::Skyrmion( *image, vpos, r, order, phase, upDown, achiral, rl, false, filter );
-    image->geometry->Apply_Pinning( *image->spins );
-    image->Unlock();
+    image->lock();
+    Utility::Configurations::Skyrmion(
+        image->state->spin, geometry, vpos, r, order, phase, upDown, achiral, rl, false, filter );
+    geometry.Apply_Pinning( image->state->spin );
+    image->unlock();
 
     auto filterstring = filter_to_string( position, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
     std::string parameterstring = fmt::format( "r={}", r );
@@ -558,20 +573,20 @@ catch( ... )
 }
 
 void Configuration_DW_Skyrmion(
-    State * state, float dw_radius, float dw_width, float order, float phase, bool upDown, bool achiral, bool rl,
-    const float position[3], const float r_cut_rectangular[3], float r_cut_cylindrical, float r_cut_spherical,
+    State * state, scalar dw_radius, scalar dw_width, scalar order, scalar phase, bool upDown, bool achiral, bool rl,
+    const scalar position[3], const scalar r_cut_rectangular[3], scalar r_cut_cylindrical, scalar r_cut_spherical,
     bool inverted, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+    throw_if_nullptr( position, "position" );
+    throw_if_nullptr( r_cut_rectangular, "r_cut_rectangular" );
 
+    const auto & geometry = image->hamiltonian->get_geometry();
     // Get relative position
     Vector3 _pos{ position[0], position[1], position[2] };
-    Vector3 vpos = image->geometry->center + _pos;
+    Vector3 vpos = geometry.center + _pos;
 
     // Set cutoff radius
     if( r_cut_cylindrical < 0 )
@@ -581,11 +596,11 @@ try
     auto filter = get_filter( vpos, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
 
     // Apply configuration
-    image->Lock();
+    image->lock();
     Utility::Configurations::DW_Skyrmion(
-        *image, vpos, dw_radius, dw_width, order, phase, upDown, achiral, rl, filter );
-    image->geometry->Apply_Pinning( *image->spins );
-    image->Unlock();
+        image->state->spin, geometry, vpos, dw_radius, dw_width, order, phase, upDown, achiral, rl, filter );
+    geometry.Apply_Pinning( image->state->spin );
+    image->unlock();
 
     auto filterstring = filter_to_string( position, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
     std::string parameterstring = fmt::format( "dw_radius={}", dw_radius );
@@ -610,20 +625,22 @@ catch( ... )
 }
 
 void Configuration_SpinSpiral(
-    State * state, const char * direction_type, float q[3], float axis[3], float theta, const float position[3],
-    const float r_cut_rectangular[3], float r_cut_cylindrical, float r_cut_spherical, bool inverted, int idx_image,
+    State * state, const char * direction_type, scalar q[3], scalar axis[3], scalar theta, const scalar position[3],
+    const scalar r_cut_rectangular[3], scalar r_cut_cylindrical, scalar r_cut_spherical, bool inverted, int idx_image,
     int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+    throw_if_nullptr( q, "q" );
+    throw_if_nullptr( axis, "axis" );
+    throw_if_nullptr( position, "position" );
+    throw_if_nullptr( r_cut_rectangular, "r_cut_rectangular" );
 
+    const auto & geometry = image->hamiltonian->get_geometry();
     // Get relative position
     Vector3 _pos{ position[0], position[1], position[2] };
-    Vector3 vpos = image->geometry->center + _pos;
+    Vector3 vpos = geometry.center + _pos;
 
     // Create position filter
     auto filter = get_filter( vpos, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
@@ -632,10 +649,10 @@ try
     std::string dir_type( direction_type );
     Vector3 vq{ q[0], q[1], q[2] };
     Vector3 vaxis{ axis[0], axis[1], axis[2] };
-    image->Lock();
-    Utility::Configurations::SpinSpiral( *image, dir_type, vq, vaxis, theta, filter );
-    image->geometry->Apply_Pinning( *image->spins );
-    image->Unlock();
+    image->lock();
+    Utility::Configurations::SpinSpiral( image->state->spin, geometry, dir_type, vq, vaxis, theta, filter );
+    geometry.Apply_Pinning( image->state->spin );
+    image->unlock();
 
     auto filterstring = filter_to_string( position, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
     std::string parameterstring = fmt::format(
@@ -651,20 +668,23 @@ catch( ... )
 }
 
 void Configuration_SpinSpiral_2q(
-    State * state, const char * direction_type, float q1[3], float q2[3], float axis[3], float theta,
-    const float position[3], const float r_cut_rectangular[3], float r_cut_cylindrical, float r_cut_spherical,
+    State * state, const char * direction_type, scalar q1[3], scalar q2[3], scalar axis[3], scalar theta,
+    const scalar position[3], const scalar r_cut_rectangular[3], scalar r_cut_cylindrical, scalar r_cut_spherical,
     bool inverted, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+    throw_if_nullptr( q1, "q1" );
+    throw_if_nullptr( q2, "q2" );
+    throw_if_nullptr( axis, "axis" );
+    throw_if_nullptr( position, "position" );
+    throw_if_nullptr( r_cut_rectangular, "r_cut_rectangular" );
 
+    const auto & geometry = image->hamiltonian->get_geometry();
     // Get relative position
     Vector3 _pos{ position[0], position[1], position[2] };
-    Vector3 vpos = image->geometry->center + _pos;
+    Vector3 vpos = geometry.center + _pos;
 
     // Create position filter
     auto filter = get_filter( vpos, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
@@ -674,9 +694,9 @@ try
     Vector3 vq1{ q1[0], q1[1], q1[2] };
     Vector3 vq2{ q2[0], q2[1], q2[2] };
     Vector3 vaxis{ axis[0], axis[1], axis[2] };
-    image->Lock();
-    Utility::Configurations::SpinSpiral( *image, dir_type, vq1, vq2, vaxis, theta, filter );
-    image->Unlock();
+    image->lock();
+    Utility::Configurations::SpinSpiral( image->state->spin, geometry, dir_type, vq1, vq2, vaxis, theta, filter );
+    image->unlock();
 
     auto filterstring = filter_to_string( position, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
 
@@ -694,27 +714,28 @@ catch( ... )
 
 // Pinning
 void Configuration_Set_Pinned(
-    State * state, bool pinned, const float position[3], const float r_cut_rectangular[3], float r_cut_cylindrical,
-    float r_cut_spherical, bool inverted, int idx_image, int idx_chain ) noexcept
+    State * state, bool pinned, const scalar position[3], const scalar r_cut_rectangular[3], scalar r_cut_cylindrical,
+    scalar r_cut_spherical, bool inverted, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+    throw_if_nullptr( position, "position" );
+    throw_if_nullptr( r_cut_rectangular, "r_cut_rectangular" );
 
     // Get relative position
     Vector3 _pos{ position[0], position[1], position[2] };
-    Vector3 vpos = image->geometry->center + _pos;
+    Vector3 vpos = image->hamiltonian->get_geometry().center + _pos;
 
     // Create position filter
     auto filter = get_filter( vpos, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
 
     // Apply configuration
-    image->Lock();
-    Utility::Configurations::Set_Pinned( *image, pinned, filter );
-    image->Unlock();
+    image->lock();
+    auto geometry = image->hamiltonian->get_geometry();
+    Utility::Configurations::Set_Pinned( geometry, image->state->spin, pinned, filter );
+    image->hamiltonian->set_geometry( geometry );
+    image->unlock();
 
     auto filterstring = filter_to_string( position, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
     Log( Utility::Log_Level::Info, Utility::Log_Sender::API, fmt::format( "Set pinned spins. {}", filterstring ),
@@ -727,27 +748,28 @@ catch( ... )
 
 // Defects
 void Configuration_Set_Atom_Type(
-    State * state, int atom_type, const float position[3], const float r_cut_rectangular[3], float r_cut_cylindrical,
-    float r_cut_spherical, bool inverted, int idx_image, int idx_chain ) noexcept
+    State * state, int atom_type, const scalar position[3], const scalar r_cut_rectangular[3], scalar r_cut_cylindrical,
+    scalar r_cut_spherical, bool inverted, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+    throw_if_nullptr( position, "position" );
+    throw_if_nullptr( r_cut_rectangular, "r_cut_rectangular" );
 
     // Get relative position
     Vector3 _pos{ position[0], position[1], position[2] };
-    Vector3 vpos = image->geometry->center + _pos;
+    Vector3 vpos = image->hamiltonian->get_geometry().center + _pos;
 
     // Create position filter
     auto filter = get_filter( vpos, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
 
     // Apply configuration
-    image->Lock();
-    Utility::Configurations::Set_Atom_Types( *image, atom_type, filter );
-    image->Unlock();
+    image->lock();
+    auto geometry = image->hamiltonian->get_geometry();
+    Utility::Configurations::Set_Atom_Types( geometry, atom_type, filter );
+    image->hamiltonian->set_geometry( geometry );
+    image->unlock();
 
     auto filterstring = filter_to_string( position, r_cut_rectangular, r_cut_cylindrical, r_cut_spherical, inverted );
     Log( Utility::Log_Level::Info, Utility::Log_Sender::API,

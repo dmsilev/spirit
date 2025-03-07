@@ -7,8 +7,12 @@
 #include <data/Spin_System_Chain.hpp>
 #include <data/State.hpp>
 #include <io/Filter_File_Handle.hpp>
+#include <io/HDF5_File.hpp>
 #include <io/IO.hpp>
 #include <io/OVF_File.hpp>
+#include <io/VTK_Geometry.hpp>
+#include <io/XML_File.hpp>
+#include <memory>
 #include <utility/Exception.hpp>
 #include <utility/Logging.hpp>
 #include <utility/Version.hpp>
@@ -36,15 +40,13 @@ std::string Get_Extension( const char * file )
 int IO_System_From_Config( State * state, const char * file, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     // Create System (and lock it)
-    std::shared_ptr<Data::Spin_System> system = IO::Spin_System_from_Config( std::string( file ) );
-    system->Lock();
+    std::shared_ptr<State::system_t> system = IO::Spin_System_from_Config( std::string( file ) );
+    system->lock();
 
     // Filter for unacceptable differences to other systems in the chain
     for( int i = 0; i < chain->noi; ++i )
@@ -58,7 +60,7 @@ try
     }
 
     // Set System
-    image->Lock();
+    image->lock();
     try
     {
         *image = *system;
@@ -67,11 +69,11 @@ try
     {
         spirit_handle_exception_api( idx_image, idx_chain );
     }
-    image->Unlock();
+    image->unlock();
 
     // Initial configuration
-    float defaultPos[3]  = { 0, 0, 0 };
-    float defaultRect[3] = { -1, -1, -1 };
+    scalar defaultPos[3]  = { 0, 0, 0 };
+    scalar defaultRect[3] = { -1, -1, -1 };
     Configuration_Random( state, defaultPos, defaultRect, -1, -1, false, false, idx_image, idx_chain );
 
     // Return success
@@ -91,14 +93,12 @@ void IO_Positions_Write(
     State * state, const char * filename, int format, const char * comment, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     // Write the data
-    image->Lock();
+    image->lock();
     try
     {
         if( Get_Extension( filename ) != ".ovf" )
@@ -110,8 +110,8 @@ try
                  idx_image, idx_chain );
 
         // Helper variables
-        auto & geometry = *image->geometry;
-        auto fileformat = (IO::VF_FileFormat)format;
+        const auto & geometry = image->hamiltonian->get_geometry();
+        auto fileformat       = (IO::VF_FileFormat)format;
 
         switch( fileformat )
         {
@@ -121,7 +121,7 @@ try
             case IO::VF_FileFormat::OVF_TEXT:
             case IO::VF_FileFormat::OVF_CSV:
             {
-                auto segment = IO::OVF_Segment( *image );
+                auto segment = IO::OVF_Segment( image->hamiltonian->get_geometry() );
 
                 std::string title   = fmt::format( "SPIRIT Version {}", Utility::version_full );
                 segment.title       = strdup( title.c_str() );
@@ -151,7 +151,7 @@ try
     {
         spirit_handle_exception_api( idx_image, idx_chain );
     }
-    image->Unlock();
+    image->unlock();
 }
 catch( ... )
 {
@@ -187,21 +187,19 @@ void IO_Image_Read(
     State * state, const char * filename, int idx_image_infile, int idx_image_inchain, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image_inchain, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image_inchain, idx_chain );
 
-    image->Lock();
+    image->lock();
 
     try
     {
         const std::string extension = Get_Extension( filename );
 
         // Helper variables
-        auto & spins    = *image->spins;
-        auto & geometry = *image->geometry;
+        auto & system_state = *image->state;
+        // TODO: eliminate this copy
+        auto geometry = image->hamiltonian->get_geometry();
 
         // Open
         auto file = IO::OVF_File( filename, true );
@@ -215,8 +213,9 @@ try
                      filename, file.latest_message() ),
                  idx_image_inchain, idx_chain );
 
-            IO::Read_NonOVF_Spin_Configuration( spins, geometry, image->nos, idx_image_infile, filename );
-            image->Unlock();
+            IO::Read_NonOVF_System_Configuration( system_state, geometry, image->nos, idx_image_infile, filename );
+            image->hamiltonian->set_geometry( geometry );
+            image->unlock();
             return;
         }
 
@@ -250,18 +249,19 @@ try
             segment.N = std::min( segment.N, image->nos );
         }
 
-        if( segment.valuedim != 3 )
+        if( segment.valuedim != IO::State::valuedim )
         {
             spirit_throw(
                 Utility::Exception_Classifier::Bad_File_Content, Utility::Log_Level::Error,
                 fmt::format(
-                    "Segment {}/{} in OVF file \"{}\" should have 3 columns, but only has {}. Will not read.",
-                    idx_image_infile + 1, file.n_segments, filename, segment.valuedim ) );
+                    "Segment {}/{} in OVF file \"{}\" should have {} columns, but only has {}. Will not read.",
+                    idx_image_infile + 1, file.n_segments, filename, IO::State::valuedim, segment.valuedim ) );
         }
 
         // Read data
-        file.read_segment_data( idx_image_infile, segment, spins[0].data() );
+        file.read_segment_data( idx_image_infile, segment, system_state.spin[0].data() );
 
+        auto & spins = system_state.spin;
         for( std::size_t ispin = 0; ispin < spins.size(); ++ispin )
         {
             if( spins[ispin].norm() < 1e-5 )
@@ -276,6 +276,10 @@ try
                 spins[ispin].normalize();
         }
 
+#ifdef SPIRIT_ENABLE_DEFECTS
+        image->hamiltonian->set_geometry( geometry );
+#endif
+
         Log( Utility::Log_Level::Info, Utility::Log_Sender::API, fmt::format( "Read image from file \"{}\"", filename ),
              idx_image_inchain, idx_chain );
     }
@@ -283,7 +287,7 @@ try
     {
         spirit_handle_exception_api( idx_image_inchain, idx_chain );
     }
-    image->Unlock();
+    image->unlock();
 }
 catch( ... )
 {
@@ -294,26 +298,18 @@ void IO_Image_Write(
     State * state, const char * filename, int format, const char * comment, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+
+    using Engine::Field;
+    using Engine::get;
 
     // Write the data
-    image->Lock();
+    image->lock();
 
     try
     {
-        if( Get_Extension( filename ) != ".ovf" )
-            Log( Utility::Log_Level::Warning, Utility::Log_Sender::API,
-                 fmt::format(
-                     "The file \"{}\" is written in OVF format but has different extension. "
-                     "It is recommend to use the appropriate \".ovf\" extension",
-                     filename ),
-                 idx_image, idx_chain );
-
-        auto fileformat = (IO::VF_FileFormat)format;
+        auto fileformat = static_cast<IO::VF_FileFormat>( format );
         switch( fileformat )
         {
             case IO::VF_FileFormat::OVF_BIN:
@@ -322,23 +318,64 @@ try
             case IO::VF_FileFormat::OVF_TEXT:
             case IO::VF_FileFormat::OVF_CSV:
             {
-                auto segment = IO::OVF_Segment( *image );
-                auto & spins = *image->spins;
+                if( Get_Extension( filename ) != ".ovf" )
+                    Log( Utility::Log_Level::Warning, Utility::Log_Sender::API,
+                         fmt::format(
+                             "The file \"{}\" is written in OVF format but has different extension. "
+                             "It is recommend to use the appropriate \".ovf\" extension",
+                             filename ),
+                         idx_image, idx_chain );
+
+                auto segment              = IO::OVF_Segment( image->hamiltonian->get_geometry() );
+                const auto & system_state = *image->state;
 
                 std::string title   = fmt::format( "SPIRIT Version {}", Utility::version_full );
                 segment.title       = strdup( title.c_str() );
                 segment.comment     = strdup( comment );
-                segment.valuedim    = 3;
-                segment.valuelabels = strdup( "spin_x spin_y spin_z" );
-                segment.valueunits  = strdup( "none none none" );
+                segment.valuedim    = IO::State::valuedim;
+                segment.valuelabels = strdup( IO::State::valuelabels.data() );
+                segment.valueunits  = strdup( IO::State::valueunits.data() );
 
                 // Open and write
-                IO::OVF_File( filename ).write_segment( segment, spins[0].data(), format );
+                const auto buffer = IO::State::Buffer( system_state );
+                IO::OVF_File( filename ).write_segment( segment, buffer.data(), format );
+                break;
+            }
+            case IO::VF_FileFormat::VTK_HDF:
+            {
+                if( Get_Extension( filename ) != ".vtkhdf" )
+                    Log( Utility::Log_Level::Warning, Utility::Log_Sender::API,
+                         fmt::format(
+                             "The file \"{}\" is written in VTKHDF format but has different extension. "
+                             "It is recommend to use the appropriate \".vtkhdf\" extension",
+                             filename ),
+                         idx_image, idx_chain );
 
-                Log( Utility::Log_Level::Info, Utility::Log_Sender::API,
-                     fmt::format( "Wrote spins to file \"{}\" in {} format", filename, str( fileformat ) ), idx_image,
-                     idx_chain );
+                IO::VTK::UnstructuredGrid vtk_geometry( image->hamiltonian->get_geometry() );
+                const auto & system_state = *image->state;
 
+                IO::HDF5::write_fields(
+                    filename, vtk_geometry,
+                    { IO::VTK::FieldDescriptor{ "spins", &system_state.spin } } );
+                break;
+            }
+            case IO::VF_FileFormat::VTK_XML_TEXT:
+            case IO::VF_FileFormat::VTK_XML_BIN:
+            {
+                if( Get_Extension( filename ) != ".vtu" )
+                    Log( Utility::Log_Level::Warning, Utility::Log_Sender::API,
+                         fmt::format(
+                             "The file \"{}\" is written in VTK (UnstructuredGrid) format but has different extension. "
+                             "It is recommend to use the appropriate \".vtu\" extension",
+                             filename ),
+                         idx_image, idx_chain );
+
+                IO::VTK::UnstructuredGrid vtk_geometry( image->hamiltonian->get_geometry() );
+                const auto & system_state = *image->state;
+
+                IO::XML::write_fields(
+                    filename, vtk_geometry, fileformat,
+                    { IO::VTK::FieldDescriptor{ "spins", &get<Field::Spin>( system_state ) } } );
                 break;
             }
             default:
@@ -348,12 +385,15 @@ try
                     fmt::format( "Invalid file format index {}", format ) );
             }
         }
+        Log( Utility::Log_Level::Info, Utility::Log_Sender::API,
+             fmt::format( "Wrote spins to file \"{}\" in {} format", filename, str( fileformat ) ), idx_image,
+             idx_chain );
     }
     catch( ... )
     {
         spirit_handle_exception_api( idx_image, idx_chain );
     }
-    image->Unlock();
+    image->unlock();
 }
 catch( ... )
 {
@@ -364,14 +404,12 @@ void IO_Image_Append(
     State * state, const char * filename, int format, const char * comment, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     // Write the data
-    image->Lock();
+    image->lock();
 
     try
     {
@@ -395,20 +433,34 @@ try
                         fmt::format( "Cannot append to non-OVF file \"{}\"", filename ) );
                 }
 
-                auto segment = IO::OVF_Segment( *image );
-                auto & spins = *image->spins;
+                auto segment              = IO::OVF_Segment( image->hamiltonian->get_geometry() );
+                const auto & system_state = *image->state;
 
                 std::string title   = fmt::format( "SPIRIT Version {}", Utility::version_full );
                 segment.title       = strdup( title.c_str() );
                 segment.comment     = strdup( comment );
-                segment.valuedim    = 3;
-                segment.valuelabels = strdup( "spin_x spin_y spin_z" );
-                segment.valueunits  = strdup( "none none none" );
+                segment.valuedim    = IO::State::valuedim;
+                segment.valuelabels = strdup( IO::State::valuelabels.data() );
+                segment.valueunits  = strdup( IO::State::valueunits.data() );
 
-                // Write
-                file.append_segment( segment, spins[0].data(), int( fileformat ) );
+                // Open and write
+                const auto buffer = IO::State::Buffer( system_state );
+                IO::OVF_File( filename ).write_segment( segment, buffer.data(), format );
 
                 break;
+            }
+            case IO::VF_FileFormat::VTK_HDF:
+            {
+                spirit_throw(
+                    Utility::Exception_Classifier::Not_Implemented, Utility::Log_Level::Error,
+                    "Append not implemented for VTKHDF format!" );
+            }
+            case IO::VF_FileFormat::VTK_XML_BIN:
+            case IO::VF_FileFormat::VTK_XML_TEXT:
+            {
+                spirit_throw(
+                    Utility::Exception_Classifier::Not_Implemented, Utility::Log_Level::Error,
+                    "Cannot write chain data: Append not implemented for VTK format!" );
             }
             default:
             {
@@ -425,7 +477,7 @@ try
     {
         spirit_handle_exception_api( idx_image, idx_chain );
     }
-    image->Unlock();
+    image->unlock();
 }
 catch( ... )
 {
@@ -441,13 +493,11 @@ void IO_Chain_Read(
     int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, insert_idx, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, insert_idx, idx_chain );
 
-    chain->Lock();
+    chain->lock();
     bool success = false;
 
     // Read the data
@@ -513,21 +563,22 @@ try
             // Add the images if you need that
             if( noi_to_add > 0 )
             {
-                chain->Unlock();
+                chain->unlock();
                 Chain_Image_to_Clipboard( state, noi - 1 );
                 Chain_Set_Length( state, noi + noi_to_add );
-                chain->Lock();
+                chain->lock();
             }
 
             // Read the images
             for( int i = insert_idx; i < noi_to_read; i++ )
             {
-                auto & spins    = *images[i]->spins;
-                auto & geometry = *images[i]->geometry;
-
+                auto & system_state = *images[i]->state;
                 // Segment header
                 auto segment = IO::OVF_Segment();
-
+#ifdef SPIRIT_ENABLE_DEFECTS
+                // TODO: eluminate this copy
+                auto geometry = images[i]->hamiltonian->get_geometry();
+#endif
                 // Read header
                 file.read_segment_header( start_image_infile, segment );
 
@@ -555,19 +606,20 @@ try
                     segment.N = std::min( segment.N, image->nos );
                 }
 
-                if( segment.valuedim != 3 )
+                if( segment.valuedim != IO::State::valuedim )
                 {
                     spirit_throw(
                         Utility::Exception_Classifier::Bad_File_Content, Utility::Log_Level::Error,
                         fmt::format(
-                            "Segment {}/{} in OVF file \"{}\" should have 3 columns, but only has {}. Will not read.",
-                            start_image_infile + 1, file.n_segments, filename, segment.valuedim ) );
+                            "Segment {}/{} in OVF file \"{}\" should have {} columns, but only has {}. Will not read.",
+                            start_image_infile + 1, file.n_segments, filename, IO::State::valuedim,
+                            segment.valuedim ) );
                 }
 
                 // Read data
+                auto & spins = system_state.spin;
                 file.read_segment_data( start_image_infile, segment, spins[0].data() );
-
-                for( int ispin = 0; ispin < spins.size(); ++ispin )
+                for( unsigned int ispin = 0; ispin < spins.size(); ++ispin )
                 {
                     if( spins[ispin].norm() < 1e-5 )
                     {
@@ -582,6 +634,9 @@ try
                 }
 
                 start_image_infile++;
+#ifdef SPIRIT_ENABLE_DEFECTS
+                images[i]->hamiltonian->set_geometry( geometry );
+#endif
             }
 
             success = true;
@@ -600,10 +655,10 @@ try
             // Add the images if you need that
             if( noi_to_add > 0 )
             {
-                chain->Unlock();
+                chain->unlock();
                 Chain_Image_to_Clipboard( state, noi - 1 );
                 Chain_Set_Length( state, noi + noi_to_add );
-                chain->Lock();
+                chain->lock();
             }
 
             // Read the images
@@ -611,9 +666,11 @@ try
             {
                 for( int i = insert_idx; i < noi_to_read; i++ )
                 {
-                    IO::Read_NonOVF_Spin_Configuration(
-                        *chain->images[i]->spins, *chain->images[i]->geometry, chain->images[i]->nos,
-                        start_image_infile, filename );
+                    // TODO: eliminate this copy
+                    auto geometry = chain->images[i]->hamiltonian->get_geometry();
+                    IO::Read_NonOVF_System_Configuration(
+                        *chain->images[i]->state, geometry, chain->images[i]->nos, start_image_infile, filename );
+                    chain->images[i]->hamiltonian->set_geometry( geometry );
                     start_image_infile++;
                 }
                 success = true;
@@ -625,7 +682,7 @@ try
         spirit_handle_exception_api( insert_idx, idx_chain );
     }
 
-    chain->Unlock();
+    chain->unlock();
 
     if( success )
     {
@@ -653,14 +710,11 @@ try
 {
     int idx_image = 0;
 
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     // Read the data
-    chain->Lock();
+    chain->lock();
     try
     {
         auto fileformat = (IO::VF_FileFormat)format;
@@ -678,28 +732,27 @@ try
                 // Open
                 auto file = IO::OVF_File( filename );
 
-                auto segment = IO::OVF_Segment( *image );
-                auto & spins = *image->spins;
+                auto segment              = IO::OVF_Segment( image->hamiltonian->get_geometry() );
+                const auto & system_state = *image->state;
 
                 std::string title       = fmt::format( "SPIRIT Version {}", Utility::version_full );
                 segment.title           = strdup( title.c_str() );
-                segment.valuedim        = 3;
-                segment.valuelabels     = strdup( "spin_x spin_y spin_z" );
-                segment.valueunits      = strdup( "none none none" );
                 std::string comment_str = "";
+                comment_str             = fmt::format( "Image {} of {}. {}", 1, chain->noi, comment );
+                segment.comment         = strdup( comment_str.c_str() );
+                segment.valuedim        = IO::State::valuedim;
+                segment.valuelabels     = strdup( IO::State::valuelabels.data() );
+                segment.valueunits      = strdup( IO::State::valueunits.data() );
 
-                comment_str     = fmt::format( "Image {} of {}. {}", 1, chain->noi, comment );
-                segment.comment = strdup( comment_str.c_str() );
-
-                // Write
-                file.write_segment( segment, spins[0].data(), int( fileformat ) );
+                // Open and write
+                const IO::State::Buffer buffer( system_state );
+                file.write_segment( segment, buffer.data(), format );
 
                 for( int i = 1; i < chain->noi; i++ )
                 {
                     comment_str     = fmt::format( "Image {} of {}. {}", i + 1, chain->noi, comment );
                     segment.comment = strdup( comment_str.c_str() );
-
-                    file.append_segment( segment, ( *images[i]->spins )[0].data(), int( fileformat ) );
+                    file.append_segment( segment, IO::State::Buffer( *images[i]->state ).data(), int( fileformat ) );
                 }
 
                 break;
@@ -720,7 +773,7 @@ try
     {
         spirit_handle_exception_api( idx_image, idx_chain );
     }
-    chain->Unlock();
+    chain->unlock();
 }
 catch( ... )
 {
@@ -732,14 +785,11 @@ try
 {
     int idx_image = 0;
 
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     // Read the data
-    chain->Lock();
+    chain->lock();
     try
     {
         auto fileformat = (IO::VF_FileFormat)format;
@@ -762,26 +812,26 @@ try
                         fmt::format( "Cannot append to non-OVF file \"{}\"", filename ) );
                 }
 
-                auto segment = IO::OVF_Segment( *image );
-                auto & spins = *image->spins;
+                auto segment        = IO::OVF_Segment( image->hamiltonian->get_geometry() );
+                auto & system_state = *image->state;
 
                 std::string title       = fmt::format( "SPIRIT Version {}", Utility::version_full );
                 segment.title           = strdup( title.c_str() );
-                segment.valuedim        = 3;
-                segment.valuelabels     = strdup( "spin_x spin_y spin_z" );
-                segment.valueunits      = strdup( "none none none" );
                 std::string comment_str = "";
 
-                comment_str     = fmt::format( "Image {} of {}. {}", 0, chain->noi, comment );
-                segment.comment = strdup( comment_str.c_str() );
+                comment_str         = fmt::format( "Image {} of {}. {}", 0, chain->noi, comment );
+                segment.comment     = strdup( comment_str.c_str() );
+                segment.valuedim    = IO::State::valuedim;
+                segment.valuelabels = strdup( IO::State::valuelabels.data() );
+                segment.valueunits  = strdup( IO::State::valueunits.data() );
 
                 // Write
                 for( int i = 0; i < chain->noi; i++ )
                 {
                     comment_str     = fmt::format( "Image {} of {}. {}", i, chain->noi, comment );
                     segment.comment = strdup( comment_str.c_str() );
-
-                    file.write_segment( segment, spins[0].data(), int( fileformat ) );
+                    const IO::State::Buffer buffer( system_state );
+                    file.write_segment( segment, buffer.data(), int( fileformat ) );
                 }
 
                 break;
@@ -801,7 +851,7 @@ try
     {
         spirit_handle_exception_api( idx_image, idx_chain );
     }
-    chain->Unlock();
+    chain->unlock();
 }
 catch( ... )
 {
@@ -816,14 +866,13 @@ catch( ... )
 void IO_Image_Write_Neighbours_Exchange( State * state, const char * file, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     // Write the data
-    IO::Write_Neighbours_Exchange( *image, std::string( file ) );
+    if( const auto * cache = image->hamiltonian->cache<Engine::Spin::Interaction::Exchange>(); cache != nullptr )
+        IO::Write_Neighbours_Exchange( *cache, std::string( file ) );
 }
 catch( ... )
 {
@@ -833,14 +882,13 @@ catch( ... )
 void IO_Image_Write_Neighbours_DMI( State * state, const char * file, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     // Write the data
-    IO::Write_Neighbours_DMI( *image, std::string( file ) );
+    if( const auto * cache = image->hamiltonian->cache<Engine::Spin::Interaction::DMI>(); cache != nullptr )
+        IO::Write_Neighbours_DMI( *cache, std::string( file ) );
 }
 catch( ... )
 {
@@ -852,30 +900,27 @@ void IO_Image_Write_Energy_per_Spin(
     State * state, const char * filename, int format, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     // Write the data
-    image->Lock();
+    image->lock();
 
     auto & system = *image;
-    auto & spins  = *image->spins;
+    auto & spins  = *image->state;
 
     // Gather the data
-    std::vector<std::pair<std::string, scalarfield>> contributions_spins( 0 );
-    system.UpdateEnergy();
-    system.hamiltonian->Energy_Contributions_per_Spin( spins, contributions_spins );
-    int dataperspin = 1 + contributions_spins.size();
+    system.update_energy();
+    system.hamiltonian->Energy_Contributions_per_Spin( spins, image->E.per_interaction_per_spin );
+    int dataperspin = 1 + image->E.per_interaction_per_spin.size();
     int datasize    = dataperspin * system.nos;
     scalarfield data( datasize, 0 );
     for( int ispin = 0; ispin < system.nos; ++ispin )
     {
         scalar E_spin = 0;
         int j         = 1;
-        for( auto & contribution : contributions_spins )
+        for( auto & contribution : image->E.per_interaction_per_spin )
         {
             E_spin += contribution.second[ispin];
             data[ispin * dataperspin + j] = contribution.second[ispin];
@@ -903,19 +948,19 @@ try
             case IO::VF_FileFormat::OVF_TEXT:
             case IO::VF_FileFormat::OVF_CSV:
             {
-                auto segment = IO::OVF_Segment( *image );
+                auto segment = IO::OVF_Segment( image->hamiltonian->get_geometry() );
 
                 std::string title   = fmt::format( "SPIRIT Version {}", Utility::version_full );
                 segment.title       = strdup( title.c_str() );
-                std::string comment = fmt::format( "Energy per spin. Total={}meV", system.E );
-                for( auto & contribution : system.E_array )
+                std::string comment = fmt::format( "Energy per spin. Total={}meV", system.E.total );
+                for( auto & contribution : system.E.per_interaction )
                     comment += fmt::format( ", {}={}meV", contribution.first, contribution.second );
                 segment.comment  = strdup( comment.c_str() );
-                segment.valuedim = 1 + system.E_array.size();
+                segment.valuedim = 1 + system.E.per_interaction.size();
 
                 std::string valuelabels = "Total";
                 std::string valueunits  = "meV";
-                for( auto & pair : system.E_array )
+                for( auto & pair : system.E.per_interaction )
                 {
                     valuelabels += fmt::format( " {}", pair.first );
                     valueunits += " meV";
@@ -946,7 +991,7 @@ try
         spirit_handle_exception_api( idx_image, idx_chain );
     }
 
-    image->Unlock();
+    image->unlock();
 }
 catch( ... )
 {
@@ -957,14 +1002,12 @@ catch( ... )
 void IO_Image_Write_Energy( State * state, const char * file, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     // Write the data
-    IO::Write_Image_Energy( *image, std::string( file ) );
+    IO::Write_Image_Energy( image->E, image->hamiltonian->get_geometry(), std::string( file ) );
 }
 catch( ... )
 {
@@ -977,11 +1020,8 @@ try
 {
     int idx_image = -1;
 
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     // Write the data
     IO::Write_Chain_Energies( *chain, idx_chain, std::string( file ) );
@@ -997,11 +1037,8 @@ try
 {
     int idx_image = -1;
 
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     // Write the data
     IO::Write_Chain_Energies_Interpolated( *chain, std::string( file ) );
@@ -1018,19 +1055,17 @@ catch( ... )
 void IO_Eigenmodes_Read( State * state, const char * filename, int idx_image_inchain, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image_inchain, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image_inchain, idx_chain );
 
     // Read the data
-    image->Lock();
+    image->lock();
     try
     {
         const std::string extension = Get_Extension( filename );
 
-        auto & spins = *image->spins;
+        auto & system_state = *image->state;
 
         // Open
         auto file = IO::OVF_File( filename, true );
@@ -1082,8 +1117,8 @@ try
         for( int idx = 0; idx < n_eigenmodes; idx++ )
         {
             // If the mode buffer is created by resizing then it needs to be allocated
-            if( image->modes[idx] == NULL )
-                image->modes[idx] = std::shared_ptr<vectorfield>( new vectorfield( spins.size(), Vector3{ 1, 0, 0 } ) );
+            if( !image->modes[idx].has_value() )
+                image->modes[idx].emplace( vectorfield( system_state.spin.size(), Vector3{ 1, 0, 0 } ) );
 
             // Read header
             file.read_segment_header( idx + 1, segment );
@@ -1141,7 +1176,7 @@ try
     {
         spirit_handle_exception_api( idx_image_inchain, idx_chain );
     }
-    image->Unlock();
+    image->unlock();
 }
 catch( ... )
 {
@@ -1152,14 +1187,12 @@ void IO_Eigenmodes_Write(
     State * state, const char * filename, int format, const char * comment, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     // Write the data
-    image->Lock();
+    image->lock();
     try
     {
         if( Get_Extension( filename ) != ".ovf" )
@@ -1179,14 +1212,14 @@ try
             case IO::VF_FileFormat::OVF_TEXT:
             case IO::VF_FileFormat::OVF_CSV:
             {
-                auto segment      = IO::OVF_Segment( *image );
+                auto segment      = IO::OVF_Segment( image->hamiltonian->get_geometry() );
                 std::string title = fmt::format( "SPIRIT Version {}", Utility::version_full );
                 segment.title     = strdup( title.c_str() );
 
                 // Determine number of modes
                 int n_modes = 0;
                 for( int i = 0; i < image->modes.size(); i++ )
-                    if( image->modes[i] != nullptr )
+                    if( image->modes[i].has_value() )
                         ++n_modes;
 
                 // Open
@@ -1214,7 +1247,7 @@ try
                 file.write_segment( segment, image->eigenvalues.data(), format );
 
                 /////// Eigenmodes
-                segment             = IO::OVF_Segment( *image );
+                segment             = IO::OVF_Segment( image->hamiltonian->get_geometry() );
                 segment.valuedim    = 3;
                 segment.valuelabels = strdup( "mode_x mode_y mode_z" );
                 segment.valueunits  = strdup( "none none none" );
@@ -1247,7 +1280,7 @@ try
     {
         spirit_handle_exception_api( idx_image, idx_chain );
     }
-    image->Unlock();
+    image->unlock();
 }
 catch( ... )
 {

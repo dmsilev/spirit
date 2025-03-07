@@ -1,10 +1,13 @@
 #include "DebugWidget.hpp"
 
 ///// TODO: Find a way around this...
+#include <utility/Formatters_Logging.hpp>
 #include <utility/Logging.hpp>
 using Utility::Log_Level;
 using Utility::Log_Sender;
 ///////////////////////////////////
+
+#include <fmt/format.h>
 
 DebugWidget::DebugWidget( std::shared_ptr<State> state )
 {
@@ -20,8 +23,7 @@ DebugWidget::DebugWidget( std::shared_ptr<State> state )
 
     // Connect Signals
     connect(
-        this->comboBox_ShowLevel,
-        static_cast<void ( QComboBox::* )( const QString & )>( &QComboBox::currentIndexChanged ), this,
+        this->comboBox_ShowLevel, static_cast<void ( QComboBox::* )( int )>( &QComboBox::currentIndexChanged ), this,
         &DebugWidget::LoadFromLog );
     connect( this->pushButton_All, &QPushButton::clicked, this, &DebugWidget::AllPressed );
     connect( this->checkBox_IO, &QCheckBox::stateChanged, this, &DebugWidget::LoadFromLog );
@@ -64,7 +66,7 @@ void DebugWidget::UpdateFromLog()
                 || ( this->checkBox_GNEB->isChecked() && ( entries[i].sender == Log_Sender::GNEB ) )
                 || ( this->checkBox_MMF->isChecked() && ( entries[i].sender == Log_Sender::MMF ) ) )
             {
-                this->plainTextEdit->appendPlainText( QString::fromLatin1( LogEntryToString( entries[i] ).c_str() ) );
+                this->plainTextEdit->appendPlainText( QString::fromLatin1( fmt::format( "{}", entries[i] ).c_str() ) );
             }
         }
     }

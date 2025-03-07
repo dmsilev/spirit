@@ -18,16 +18,18 @@ set( SPIRIT_BUILD_FOR_CXX     ON   CACHE BOOL "Build the static library for C++ 
 set( SPIRIT_ENABLE_PINNING    OFF  CACHE BOOL "Enable pinning individual or rows of spins." )
 set( SPIRIT_ENABLE_DEFECTS    ON  CACHE BOOL "Enable defects and disorder in the lattice." )
 ### Options for Spirit
-set( SPIRIT_BUILD_TEST        ON   CACHE BOOL "Build unit tests for the Spirit library." )
+set( SPIRIT_BUILD_TEST        OFF  CACHE BOOL "Build unit tests for the Spirit library." )
 set( SPIRIT_TEST_COVERAGE     OFF  CACHE BOOL "Build in debug mode with special flags for coverage checks." )
 set( SPIRIT_USE_CUDA          OFF  CACHE BOOL "Use CUDA to speed up certain parts of the code." )
+set( SPIRIT_USE_STDPAR        OFF  CACHE BOOL "Use parallel STL to speed up certain parts of the code." )
 set( SPIRIT_USE_OPENMP        OFF  CACHE BOOL "Use OpenMP to speed up certain parts of the code." )
 set( SPIRIT_USE_THREADS       OFF  CACHE BOOL "Use std threads to speed up certain parts of the code." )
 set( SPIRIT_USE_FFTW          ON   CACHE BOOL "If available, use the FFTW library instead of kissFFT." )
+set( SPIRIT_USE_HDF5          OFF  CACHE BOOL "Enable HDF5 library for data export and import." )
 ### Set the scalar type used in the Spirit library
 set( SPIRIT_SCALAR_TYPE "double" CACHE STRING "The scalar type to be used in the Spirit library." )
-### Set the compute capability for CUDA compilation
-set( SPIRIT_CUDA_ARCH   "sm_60"  CACHE STRING "The CUDA compute architecture to use in case of a CUDA build." )
+### Set the compute capability for CUDA compilation (note: specify without prefix "sm_")
+set( SPIRIT_CUDA_ARCH   "60"  CACHE STRING "The CUDA compute architecture to use in case of a CUDA build." )
 ####################################################################
 ### CMake Verbosity
 option( SPIRIT_PRINT_SOURCES    "Print Headers and Sources from Cmake."                          OFF )
@@ -66,10 +68,12 @@ endif()
 set( CMAKE_DISABLE_IN_SOURCE_BUILD ON )
 ### Position independent code
 set( CMAKE_POSITION_INDEPENDENT_CODE ON )
-### We need at least C++14
-set( CMAKE_CXX_STANDARD 14 )
+### We need at least C++17
+set( CMAKE_CXX_STANDARD 17 )
 ### Set the cmake subdirectory
 list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake" )
+### Write a compilation database (compile-commands.json)
+set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 ####################################################################
 
 
@@ -81,6 +85,8 @@ list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake" )
 if( SPIRIT_USE_CUDA )
     ### Deactivate OpenMP
     set( SPIRIT_USE_OPENMP OFF )
+    ### Deactivate OpenMP
+    set( SPIRIT_USE_STDPAR OFF )
     ### Set cuda toolkit path
     if( NOT CUDA_TOOLKIT_ROOT_DIR )
         if( APPLE OR UNIX )
@@ -202,20 +208,29 @@ if( SPIRIT_SKIP_HTST )
 endif()
 ###
 if( SPIRIT_BUILD_FOR_JS )
-    set( SPIRIT_BUILD_FOR_CXX OFF )
-    set( SPIRIT_USE_CUDA      OFF )
-    set( SPIRIT_USE_OPENMP    OFF )
-    set( SPIRIT_UI_CXX_USE_QT OFF )
-    set( SPIRIT_UI_USE_IMGUI  ON  )
+    set( SPIRIT_BUILD_FOR_CXX OFF   )
+    set( SPIRIT_USE_CUDA      OFF   )
+    set( SPIRIT_USE_STDPAR    OFF   )
+    set( SPIRIT_USE_OPENMP    OFF   )
+    set( SPIRIT_UI_CXX_USE_QT OFF   )
+    set( SPIRIT_SCALAR_TYPE   float )
 
     if( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten" )
         message( WARNING "You set SPIRIT_BUILD_FOR_JS to ON but your are not using emscripten. That might not work" )
     endif()
+    ### Need to use pthread if emscripten is used
+    set( CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -pthread" )
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread" )
+    set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread" )
+    set( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread" )
 endif()
-### Need to use pthread if emscripten is used
-if( SPIRIT_BUILD_FOR_JS AND SPIRIT_UI_USE_IMGUI )
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -s USE_PTHREADS=1 -s USE_PTHREADS=1 -s WASM=1" )
-endif()
+####################################################################
+
+
+
+######### Add include folder for libfmt ############################
+set( libfmt_INCLUDE_DIRS
+    ${CMAKE_CURRENT_LIST_DIR}/thirdparty/fmt/include )
 ####################################################################
 
 
@@ -226,7 +241,7 @@ set( qhull_INCLUDE_DIRS
     ${CMAKE_CURRENT_LIST_DIR}/thirdparty/qhull/src
     ${CMAKE_CURRENT_LIST_DIR}/thirdparty/qhull/src/libqhullcpp )
 if( CMAKE_BUILD_TYPE MATCHES "[dD]ebug" )
-    set( qhull_LIBS qhullcpp_d qhullstatic_rd)
+    set( qhull_LIBS qhullcpp_d qhullstatic_rd )
 else()
     set( qhull_LIBS qhullcpp qhullstatic_r )
 endif()
@@ -236,9 +251,9 @@ add_subdirectory( core )
 if( SPIRIT_BUILD_FOR_JS )
     if( SPIRIT_UI_USE_IMGUI )
         add_definitions( -DSPIRIT_UI_USE_IMGUI )
+        add_subdirectory( ui-cpp )
     endif()
     add_subdirectory( VFRendering )
-    add_subdirectory( ui-cpp )
     add_subdirectory( ui-web )
 ### CXX UI
 elseif( SPIRIT_BUILD_FOR_CXX )
@@ -270,14 +285,13 @@ endif()
 install( FILES ${CMAKE_CURRENT_LIST_DIR}/LICENSE.txt DESTINATION ./ COMPONENT spirit_licenses )
 
 install( FILES ${CMAKE_CURRENT_LIST_DIR}/thirdparty/qhull/COPYING.txt DESTINATION licenses RENAME qhull.txt COMPONENT spirit_licenses )
+install( FILES ${CMAKE_CURRENT_LIST_DIR}/thirdparty/fmt/LICENSE.rst   DESTINATION licenses RENAME fmt.rst   COMPONENT spirit_licenses )
 
-install( FILES ${CMAKE_CURRENT_LIST_DIR}/core/thirdparty/cub/LICENSE.TXT   DESTINATION licenses RENAME cub.txt       COMPONENT spirit_licenses )
 install( FILES ${CMAKE_CURRENT_LIST_DIR}/core/thirdparty/Eigen/COPYING.BSD DESTINATION licenses RENAME eigen.txt     COMPONENT spirit_licenses )
-install( FILES ${CMAKE_CURRENT_LIST_DIR}/core/thirdparty/fmt/LICENSE.rst   DESTINATION licenses RENAME fmt.rst       COMPONENT spirit_licenses )
 install( FILES ${CMAKE_CURRENT_LIST_DIR}/core/thirdparty/kiss_fft/COPYING  DESTINATION licenses RENAME kiss_fft.txt  COMPONENT spirit_licenses )
 install( FILES ${CMAKE_CURRENT_LIST_DIR}/core/thirdparty/ovf/README.md     DESTINATION licenses RENAME ovf.md        COMPONENT spirit_licenses )
 install( FILES ${CMAKE_CURRENT_LIST_DIR}/core/thirdparty/spectra/LICENSE   DESTINATION licenses RENAME spectra.txt   COMPONENT spirit_licenses )
-install( FILES ${CMAKE_CURRENT_LIST_DIR}/core/thirdparty/termcolor/LICENSE DESTINATION licenses RENAME termcolor.txt COMPONENT spirit_licenses )
+install( FILES ${CMAKE_CURRENT_LIST_DIR}/core/thirdparty/tinyxml2/LICENSE  DESTINATION licenses RENAME tinyxml2.txt  COMPONENT spirit_licenses )
 
 install( FILES ${CMAKE_CURRENT_LIST_DIR}/ui-cpp/thirdparty/Lyra/LICENSE.txt DESTINATION licenses RENAME lyra.txt COMPONENT spirit_licenses )
 

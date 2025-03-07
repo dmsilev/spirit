@@ -2,8 +2,8 @@
 #ifndef SPIRIT_CORE_DATA_SPIN_SYSTEM_CHAIN_HPP
 #define SPIRIT_CORE_DATA_SPIN_SYSTEM_CHAIN_HPP
 
-#include "Spirit_Defines.h"
 #include <Spirit/Parameters_GNEB.h>
+#include <Spirit/Spirit_Defines.h>
 #include <data/Parameters_Method_GNEB.hpp>
 #include <data/Spin_System.hpp>
 
@@ -18,13 +18,14 @@ enum class GNEB_Image_Type
     Stationary = GNEB_IMAGE_STATIONARY
 };
 
+template<typename system_t>
 struct HTST_Info
 {
     bool sparse = false;
 
     // Relevant images
-    std::shared_ptr<Spin_System> minimum;
-    std::shared_ptr<Spin_System> saddle_point;
+    std::shared_ptr<system_t> minimum;
+    std::shared_ptr<system_t> saddle_point;
 
     // Eigenmodes
     int n_eigenmodes_keep          = 0;
@@ -47,20 +48,23 @@ struct HTST_Info
     scalar prefactor            = 0;
 };
 
+template<typename Hamiltonian>
 class Spin_System_Chain
 {
+    using system_t = Spin_System<Hamiltonian>;
+
 public:
     // Constructor
     Spin_System_Chain(
-        std::vector<std::shared_ptr<Spin_System>> images, std::shared_ptr<Data::Parameters_Method_GNEB> gneb_parameters,
+        std::vector<std::shared_ptr<system_t>> images, std::shared_ptr<Data::Parameters_Method_GNEB> gneb_parameters,
         bool iteration_allowed = false );
 
     // For multithreading
-    void Lock() noexcept;
-    void Unlock() noexcept;
+    void lock() noexcept;
+    void unlock() noexcept;
 
     int noi; // Number of Images
-    std::vector<std::shared_ptr<Spin_System>> images;
+    std::vector<std::shared_ptr<system_t>> images;
     int idx_active_image;
 
     // Parameters for GNEB Iterations
@@ -84,7 +88,7 @@ public:
     std::vector<std::vector<scalar>> E_array_interpolated;
 
     // If a prefactor calculation is performed on the chain, we keep the results
-    HTST_Info htst_info;
+    HTST_Info<system_t> htst_info;
 
 private:
     // FIFO mutex for thread-safety

@@ -2,11 +2,13 @@
 #include <Spirit/Quantities.h>
 
 #include <data/State.hpp>
-#include <engine/Eigenmodes.hpp>
 #include <engine/Manifoldmath.hpp>
+#include <engine/StateType.hpp>
 #include <engine/Vectormath.hpp>
+#include <engine/spin/Eigenmodes.hpp>
 #include <utility/Constants.hpp>
 #include <utility/Exception.hpp>
+#include <utility/Formatters_Eigen.hpp>
 #include <utility/Logging.hpp>
 
 #include <fmt/format.h>
@@ -14,71 +16,70 @@
 
 namespace C = Utility::Constants;
 
-void Quantity_Get_Average_Spin( State * state, float s[3], int idx_image, int idx_chain )
+using Engine::Field;
+using Engine::get;
+
+void Quantity_Get_Average_Spin( State * state, scalar s[3], int idx_image, int idx_chain )
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+    throw_if_nullptr( s, "s" );
 
-    // image->Lock(); // Mutex locks in these functions may cause problems with the performance of UIs
+    // image->lock(); // Mutex locks in these functions may cause problems with the performance of UIs
 
-    auto mean = Engine::Vectormath::mean( *image->spins );
+    auto mean = Engine::Vectormath::mean( image->state->spin );
 
     for( int i = 0; i < 3; ++i )
-        s[i] = (float)mean[i];
+        s[i] = mean[i];
 }
 catch( ... )
 {
     spirit_handle_exception_api( idx_image, idx_chain );
 }
 
-void Quantity_Get_Magnetization( State * state, float m[3], int idx_image, int idx_chain )
+void Quantity_Get_Magnetization( State * state, scalar m[3], int idx_image, int idx_chain )
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+    throw_if_nullptr( m, "m" );
 
-    // image->Lock(); // Mutex locks in these functions may cause problems with the performance of UIs
+    // image->lock(); // Mutex locks in these functions may cause problems with the performance of UIs
 
-    auto mag = Engine::Vectormath::Magnetization( *image->spins, image->geometry->mu_s );
-    image->M = Vector3{ mag[0], mag[1], mag[2] };
+    const auto mag = Engine::Vectormath::Magnetization( image->state->spin, image->hamiltonian->get_geometry().mu_s );
+    image->M.mean  = mag;
 
-    // image->Unlock();
+    // image->unlock();
 
     for( int i = 0; i < 3; ++i )
-        m[i] = (float)mag[i];
+        m[i] = mag[i];
 }
 catch( ... )
 {
     spirit_handle_exception_api( idx_image, idx_chain );
 }
 
-float Quantity_Get_Topological_Charge( State * state, int idx_image, int idx_chain )
+scalar Quantity_Get_Topological_Charge( State * state, int idx_image, int idx_chain )
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    // image->Lock(); // Mutex locks in these functions may cause problems with the performance of UIs
+    // image->lock(); // Mutex locks in these functions may cause problems with the performance of UIs
 
     scalar charge      = 0;
     int dimensionality = Geometry_Get_Dimensionality( state, idx_image, idx_chain );
     if( dimensionality == 2 )
         charge = Engine::Vectormath::TopologicalCharge(
-            *image->spins, *image->geometry, image->hamiltonian->boundary_conditions );
+            image->state->spin, image->hamiltonian->get_geometry(), image->hamiltonian->get_boundary_conditions() );
 
-    // image->Unlock();
+    // image->unlock();
 
-    return (float)charge;
+    return charge;
 }
 catch( ... )
 {
@@ -87,18 +88,15 @@ catch( ... )
 }
 
 int Quantity_Get_Topological_Charge_Density(
-    State * state, float * charge_density_ptr, int * triangle_indices_ptr, int idx_image, int idx_chain )
+    State * state, scalar * charge_density_ptr, int * triangle_indices_ptr, int idx_image, int idx_chain )
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    // image->Lock(); // Mutex locks in these functions may cause problems with the performance of UIs
+    // image->lock(); // Mutex locks in these functions may cause problems with the performance of UIs
 
-    scalar charge      = 0;
     int dimensionality = Geometry_Get_Dimensionality( state, idx_image, idx_chain );
     scalarfield charge_density( 0 );
     std::vector<int> triangle_indices( 0 );
@@ -106,8 +104,8 @@ try
     if( dimensionality == 2 )
     {
         Engine::Vectormath::TopologicalChargeDensity(
-            *image->spins, *image->geometry, image->hamiltonian->boundary_conditions, charge_density,
-            triangle_indices );
+            image->state->spin, image->hamiltonian->get_geometry(), image->hamiltonian->get_boundary_conditions(),
+            charge_density, triangle_indices );
     }
 
     if( charge_density_ptr != nullptr && triangle_indices_ptr != nullptr )
@@ -121,7 +119,7 @@ try
         }
     }
 
-    // image->Unlock();
+    // image->unlock();
 
     return charge_density.size(); // return the number of triangles
 }
@@ -181,8 +179,8 @@ void check_modes(
     scalar mode_grad_angle_2N
         = std::abs( evec_lowest_2N.dot( grad_tangent_2N ) / evec_lowest_2N.norm() / grad_tangent_2N.norm() );
     // Do some more checks to ensure the mode fulfills our requirements
-    bool bad_image_norm = 1e-8 < std::abs( image_norm - std::sqrt( (scalar)nos ) ); // image norm should be sqrt(nos)
-    bool bad_grad_norm  = 1e-8 > grad_norm;                // gradient should not be a zero vector
+    bool bad_image_norm        = 1e-8 < std::abs( image_norm - std::sqrt( nos ) ); // image norm should be sqrt(nos)
+    bool bad_grad_norm         = 1e-8 > grad_norm;         // gradient should not be a zero vector
     bool bad_grad_tangent_norm = 1e-8 > grad_tangent_norm; // gradient should not be a zero vector in tangent space
     bool bad_mode_norm         = 1e-8 > mode_norm;         // mode should not be a zero vector
     /////////
@@ -227,35 +225,40 @@ void check_modes(
 }
 
 void Quantity_Get_Grad_Force_MinimumMode(
-    State * state, float * f_grad, float * eval, float * mode, float * forces, int idx_image, int idx_chain )
+    State * state, scalar * f_grad, scalar * eval, scalar * mode, scalar * forces, int idx_image, int idx_chain )
+try
 {
     using namespace Engine;
     using namespace Utility;
 
-    std::shared_ptr<Data::Spin_System> system;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-    from_indices( state, idx_image, idx_chain, system, chain );
+    auto [system, chain] = from_indices( state, idx_image, idx_chain );
+
+    throw_if_nullptr( f_grad, "f_grad" );
+    throw_if_nullptr( eval, "eval" );
+    throw_if_nullptr( mode, "mode" );
+    throw_if_nullptr( forces, "forces" );
 
     // Copy std::vector<Eigen::Vector3> into one single Eigen::VectorX
-    const int nos = system->nos;
-    auto & image  = *system->spins;
+    const unsigned int nos = system->nos;
+    auto & image           = *system->state;
+    const auto & geometry  = system->hamiltonian->get_geometry();
 
     vectorfield grad( nos, { 0, 0, 0 } );
     vectorfield minimum_mode( nos, { 0, 0, 0 } );
     MatrixX hess( 3 * nos, 3 * nos );
     vectorfield force( nos, { 0, 0, 0 } );
-    // std::vector<float> forces(3*nos);
+    // std::vector<scalar> forces(3*nos);
 
     // The gradient force (unprojected)
     system->hamiltonian->Gradient( image, grad );
-    Vectormath::set_c_a( 1, grad, grad, system->geometry->mask_unpinned );
+    Vectormath::set_c_a( 1, grad, grad, geometry.mask_unpinned );
 
     // Output
-    for( unsigned int _i = 0; _i < nos; ++_i )
+    for( unsigned int i = 0; i < nos; ++i )
     {
         for( int dim = 0; dim < 3; ++dim )
         {
-            f_grad[3 * _i + dim] = (float)-grad[_i][dim];
+            f_grad[3 * i + dim] = -grad[i][dim];
         }
     }
 
@@ -268,12 +271,12 @@ void Quantity_Get_Grad_Force_MinimumMode(
     int mode_positive = 0;
     mode_positive     = std::max( 0, std::min( n_modes - 1, mode_positive ) );
 
-    Eigen::Ref<VectorX> image_3N = Eigen::Map<VectorX>( image[0].data(), 3 * nos );
+    Eigen::Ref<VectorX> image_3N = Eigen::Map<VectorX>( image.spin[0].data(), 3 * nos );
     Eigen::Ref<VectorX> grad_3N  = Eigen::Map<VectorX>( grad[0].data(), 3 * nos );
 
     // The gradient (unprojected)
     system->hamiltonian->Gradient( image, grad );
-    Vectormath::set_c_a( 1, grad, grad, system->geometry->mask_unpinned );
+    Vectormath::set_c_a( 1, grad, grad, geometry.mask_unpinned );
 
     // The Hessian (unprojected)
     system->hamiltonian->Hessian( image, hess );
@@ -283,7 +286,7 @@ void Quantity_Get_Grad_Force_MinimumMode(
     {
         for( int j = 0; j < nos; ++j )
         {
-            if( ( !system->geometry->mask_unpinned[i] ) || ( !system->geometry->mask_unpinned[j] ) )
+            if( ( !geometry.mask_unpinned[i] ) || ( !geometry.mask_unpinned[j] ) )
             {
                 hess.block<3, 3>( 3 * i, 3 * j ).setZero();
             }
@@ -299,8 +302,8 @@ void Quantity_Get_Grad_Force_MinimumMode(
     MatrixX basis_3Nx2N   = MatrixX::Zero( 3 * nos, 2 * nos );
     VectorX eigenvalues;
     MatrixX eigenvectors;
-    bool successful = Eigenmodes::Hessian_Partial_Spectrum(
-        system->mmf_parameters, image, grad, hess, n_modes, basis_3Nx2N, hessian_final, eigenvalues, eigenvectors );
+    bool successful = Engine::Spin::Eigenmodes::Hessian_Partial_Spectrum(
+        geometry, image.spin, grad, hess, n_modes, basis_3Nx2N, hessian_final, eigenvalues, eigenvectors );
 
     if( successful )
     {
@@ -328,7 +331,7 @@ void Quantity_Get_Grad_Force_MinimumMode(
         scalar mode_grad_angle  = std::abs( mode_grad / ( mode_3N.norm() * grad_3N.norm() ) );
 
         // Make sure there is nothing wrong
-        check_modes( image, grad, basis_3Nx2N, eigenvalues, eigenvectors, minimum_mode );
+        check_modes( image.spin, grad, basis_3Nx2N, eigenvalues, eigenvectors, minimum_mode );
 
         // If the lowest eigenvalue is negative, we follow the minimum mode
         if( eigenvalues[0] < -1e-6 && mode_grad_angle > 1e-8 ) // -1e-6)// || switched2)
@@ -342,7 +345,7 @@ void Quantity_Get_Grad_Force_MinimumMode(
             Manifoldmath::invert_parallel( grad, minimum_mode );
 
             // Copy out the forces
-            Vectormath::set_c_a( -1, grad, force, system->geometry->mask_unpinned );
+            Vectormath::set_c_a( -1, grad, force, geometry.mask_unpinned );
         }
         // Otherwise we follow some chosen mode, as long as it is not orthogonal to the gradient
         else if( mode_grad_angle > 1e-8 )
@@ -355,27 +358,27 @@ void Quantity_Get_Grad_Force_MinimumMode(
             int sign = ( scalar( 0 ) < mode_grad ) - ( mode_grad < scalar( 0 ) );
 
             // Calculate the force
-            // Vectormath::set_c_a(mode_grad, minimum_mode, force, system->geometry->mask_unpinned);
-            Vectormath::set_c_a( sign, minimum_mode, force, system->geometry->mask_unpinned );
+            // Vectormath::set_c_a(mode_grad, minimum_mode, force, geometry.mask_unpinned);
+            Vectormath::set_c_a( sign, minimum_mode, force, geometry.mask_unpinned );
 
             // // Copy out the forces
-            // Vectormath::set_c_a(1, grad, force, system->geometry->mask_unpinned);
+            // Vectormath::set_c_a(1, grad, force, geometry.mask_unpinned);
         }
         else
         {
             if( std::abs( eigenvalues[0] ) > 1e-8 )
                 std::cerr << fmt::format(
                     "bad region:        {:<20}   angle = {:15.10f}   lambda*F = {:15.10f}", eigenvalues.transpose(),
-                    std::acos( std::min( mode_grad_angle, scalar( 1.0 ) ) ) * 180.0 / C::Pi, std::abs( mode_grad ) )
+                    std::acos( std::min( mode_grad_angle, scalar( 1 ) ) ) * 180.0 / C::Pi, std::abs( mode_grad ) )
                           << std::endl;
             else
                 std::cerr << fmt::format(
                     "zero region:       {:<20}   angle = {:15.10f}   lambda*F = {:15.10f}", eigenvalues.transpose(),
-                    std::acos( std::min( mode_grad_angle, scalar( 1.0 ) ) ) * 180.0 / C::Pi, std::abs( mode_grad ) )
+                    std::acos( std::min( mode_grad_angle, scalar( 1 ) ) ) * 180.0 / C::Pi, std::abs( mode_grad ) )
                           << std::endl;
 
             // Copy out the forces
-            Vectormath::set_c_a( 1, grad, force, system->geometry->mask_unpinned );
+            Vectormath::set_c_a( 1, grad, force, geometry.mask_unpinned );
         }
     }
     else
@@ -393,8 +396,12 @@ void Quantity_Get_Grad_Force_MinimumMode(
         for( int dim = 0; dim < 3; ++dim )
         {
             // gradient[3*_i+dim] = -grad[3*_i+dim];
-            forces[3 * _i + dim] = (float)force[_i][dim];
-            mode[3 * _i + dim]   = (float)minimum_mode[_i][dim];
+            forces[3 * _i + dim] = force[_i][dim];
+            mode[3 * _i + dim]   = minimum_mode[_i][dim];
         }
     }
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
 }

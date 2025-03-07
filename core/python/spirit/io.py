@@ -11,11 +11,10 @@ If it cannot be identified as OVF, it will be tried to be read as three plain te
 Note also, IO is still being re-written and only OVF will be supported as output format.
 """
 
-from spirit import spiritlib
 import ctypes
 
 ### Load Library
-_spirit = spiritlib.load_spirit_library()
+from spirit.spiritlib import _spirit
 
 ### Output file formats
 FILEFORMAT_OVF_BIN = 0
@@ -32,6 +31,15 @@ FILEFORMAT_OVF_TEXT = 3
 
 FILEFORMAT_OVF_CSV = 4
 """OVF text format with comma-separated columns"""
+
+FILEFORMAT_VTK_HDF = 90
+"""VTK compatible format with hdf5 storage"""
+
+FILEFORMAT_VTK_XML_BIN = 91
+"""VTK compatible format with binary XML storage"""
+
+FILEFORMAT_VTK_XML_TEXT = 92
+"""VTK compatible format with XML text storage"""
 
 _N_Images_In_File = _spirit.IO_N_Images_In_File
 _N_Images_In_File.argtypes = [

@@ -2,7 +2,7 @@
 #ifndef SPIRIT_CORE_UTILITY_TIMING_HPP
 #define SPIRIT_CORE_UTILITY_TIMING_HPP
 
-#include "Spirit_Defines.h"
+#include <Spirit/Spirit_Defines.h>
 
 #include <chrono>
 #include <string>
@@ -11,9 +11,6 @@ namespace Utility
 {
 namespace Timing
 {
-
-std::string TimePointToString( std::chrono::system_clock::time_point t );
-std::string TimePointToString_Pretty( std::chrono::system_clock::time_point t );
 
 // Returns the current time like: 2012-05-06_21:47:59
 std::string CurrentDateTime();

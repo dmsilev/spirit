@@ -1,7 +1,10 @@
 ﻿#include <engine/Neighbours.hpp>
 #include <engine/Vectormath.hpp>
+#include <io/Configparser.hpp>
+#include <io/Dataparser.hpp>
 #include <io/Filter_File_Handle.hpp>
 #include <io/IO.hpp>
+#include <io/hamiltonian/Hamiltonian.hpp>
 #include <utility/Constants.hpp>
 #include <utility/Exception.hpp>
 #include <utility/Logging.hpp>
@@ -117,7 +120,7 @@ try
     block.emplace_back( fmt::format( "    positions save final    = {}", save_positions_final ) );
     block.emplace_back( fmt::format( "    neighbours save initial = {}", save_neighbours_initial ) );
     block.emplace_back( fmt::format( "    neighbours save final   = {}", save_neighbours_final ) );
-    Log.SendBlock( Log_Level::Parameter, Log_Sender::IO, block );
+    Log( Log_Level::Parameter, Log_Sender::IO, block );
 
     // Update the Log
     if( !force_quiet )
@@ -151,13 +154,15 @@ catch( ... )
         fmt::format( "Unable to read logging parameters from config file \"{}\"", config_file_name ) );
 } // End Log_from_Config
 
-std::unique_ptr<Data::Spin_System> Spin_System_from_Config( const std::string & config_file_name )
+std::unique_ptr<::State::system_t> Spin_System_from_Config( const std::string & config_file_name )
 try
 {
     Log( Log_Level::Info, Log_Sender::IO, "-------------- Initialising Spin System ------------" );
 
     // Geometry
     auto geometry = Geometry_from_Config( config_file_name );
+    // Boundary conditions
+    auto boundary_conditions = Boundary_Conditions_from_Config( config_file_name );
     // LLG Parameters
     auto llg_params = Parameters_Method_LLG_from_Config( config_file_name );
     // MC Parameters
@@ -167,11 +172,12 @@ try
     // MMF Parameters
     auto mmf_params = Parameters_Method_MMF_from_Config( config_file_name );
     // Hamiltonian
-    auto hamiltonian = Hamiltonian_from_Config( config_file_name, geometry );
+    auto hamiltonian = Hamiltonian_from_Config<::State::hamiltonian_t>(
+        config_file_name, std::move( geometry ), std::move( boundary_conditions ) );
     // Spin System
-    auto system = std::make_unique<Data::Spin_System>(
-        std::move( hamiltonian ), std::move( geometry ), std::move( llg_params ), std::move( mc_params ),
-        std::move( ema_params ), std::move( mmf_params ), false );
+    auto system = std::make_unique<::State::system_t>(
+        std::move( hamiltonian ), std::move( llg_params ), std::move( mc_params ), std::move( ema_params ),
+        std::move( mmf_params ), false );
 
     Log( Log_Level::Info, Log_Sender::IO, "-------------- Spin System Initialised -------------" );
 
@@ -268,8 +274,7 @@ catch( ... )
     spirit_rethrow( fmt::format( "Unable to parse bravais vectors from config file \"{}\"", config_file_name ) );
 } // End Basis_from_Config
 
-std::shared_ptr<Data::Geometry> Geometry_from_Config( const std::string & config_file_name )
-try
+Data::Geometry Geometry_from_Config( const std::string & config_file_name )
 {
     //-------------- Insert default values here -----------------------------
     // Basis from separate file?
@@ -284,9 +289,7 @@ try
     std::vector<Vector3> cell_atoms = { Vector3{ 0, 0, 0 } };
     std::size_t n_cell_atoms        = cell_atoms.size();
     // Basis cell composition information (atom types, magnetic moments, ...)
-    std::random_device random;
-    int rng_seed = random();
-    Data::Basis_Cell_Composition cell_composition{ false, rng_seed, { 0 }, { 0 }, { 1 }, {} };
+    Data::Basis_Cell_Composition cell_composition{ false, { 0 }, { 0 }, { 1 }, {} };
     // Lattice Constant [Angstrom]
     scalar lattice_constant = 1;
     // Number of translations nT for each basis direction
@@ -299,279 +302,313 @@ try
     // Utility 1D array to build vectors and use Vectormath
     Vector3 build_array = { 0, 0, 0 };
 
-    //------------------------------- Parser --------------------------------
-    Log( Log_Level::Debug, Log_Sender::IO, "Geometry: building" );
-    if( !config_file_name.empty() )
+    try
     {
-        try
+        //------------------------------- Parser --------------------------------
+        Log( Log_Level::Debug, Log_Sender::IO, "Geometry: building" );
+        if( !config_file_name.empty() )
         {
-            IO::Filter_File_Handle config_file_handle( config_file_name );
-
-            // Lattice constant
-            config_file_handle.Read_Single( lattice_constant, "lattice_constant" );
-
-            // Get the bravais lattice type and vectors
-            Bravais_Vectors_from_Config(
-                config_file_name, bravais_vectors, bravais_lattice_type, bravais_lattice_type_str );
-
-            // Read number of basis cells
-            config_file_handle.Read_3Vector( n_cells, "n_basis_cells" );
-
-            // Basis
-            if( config_file_handle.Find( "basis_file" ) )
+            try
             {
-                config_file_handle >> basis_file;
-            }
-            else if( config_file_handle.Find( "basis" ) )
-            {
-                basis_file = config_file_name;
-            }
+                IO::Filter_File_Handle config_file_handle( config_file_name );
 
-            if( !basis_file.empty() )
-            {
-                Basis_from_File( basis_file, cell_composition, cell_atoms, n_cell_atoms );
-            }
-        }
-        catch( ... )
-        {
-            spirit_handle_exception_core( fmt::format(
-                "Failed to read Geometry parameters from file \"{}\". Leaving values at default.", config_file_name ) );
-        }
+                // Lattice constant
+                config_file_handle.Read_Single( lattice_constant, "lattice_constant" );
 
-        try
-        {
-            IO::Filter_File_Handle config_file_handle( config_file_name );
+                // Get the bravais lattice type and vectors
+                Bravais_Vectors_from_Config(
+                    config_file_name, bravais_vectors, bravais_lattice_type, bravais_lattice_type_str );
 
-            // Spin moment
-            if( !config_file_handle.Find( "atom_types" ) )
-            {
-                if( config_file_handle.Find( "mu_s" ) )
+                // Read number of basis cells
+                config_file_handle.Read_3Vector( n_cells, "n_basis_cells" );
+
+                // Basis
+                if( config_file_handle.Find( "basis_file" ) )
                 {
-                    for( std::size_t iatom = 0; iatom < n_cell_atoms; ++iatom )
+                    config_file_handle >> basis_file;
+                }
+                else if( config_file_handle.Find( "basis" ) )
+                {
+                    basis_file = config_file_name;
+                }
+
+                if( !basis_file.empty() )
+                {
+                    Basis_from_File( basis_file, cell_composition, cell_atoms, n_cell_atoms );
+                }
+            }
+            catch( ... )
+            {
+                spirit_handle_exception_core( fmt::format(
+                    "Failed to read Geometry parameters from file \"{}\". Leaving values at default.",
+                    config_file_name ) );
+            }
+
+            try
+            {
+                IO::Filter_File_Handle config_file_handle( config_file_name );
+
+                // Spin moment
+                if( !config_file_handle.Find( "atom_types" ) )
+                {
+                    if( config_file_handle.Find( "mu_s" ) )
                     {
-                        if( !( config_file_handle >> cell_composition.mu_s[iatom] ) )
+                        for( std::size_t iatom = 0; iatom < n_cell_atoms; ++iatom )
                         {
-                            Log( Log_Level::Warning, Log_Sender::IO,
-                                 fmt::format(
-                                     "Not enough values specified after 'mu_s'. Expected {}. Using "
-                                     "mu_s[{}]=mu_s[0]={}",
-                                     n_cell_atoms, iatom, cell_composition.mu_s[0] ) );
-                            cell_composition.mu_s[iatom] = cell_composition.mu_s[0];
+                            if( !( config_file_handle >> cell_composition.mu_s[iatom] ) )
+                            {
+                                Log( Log_Level::Warning, Log_Sender::IO,
+                                     fmt::format(
+                                         "Not enough values specified after 'mu_s'. Expected {}. Using "
+                                         "mu_s[{}]=mu_s[0]={}",
+                                         n_cell_atoms, iatom, cell_composition.mu_s[0] ) );
+                                cell_composition.mu_s[iatom] = cell_composition.mu_s[0];
+                            }
                         }
                     }
+                    else
+                        Log( Log_Level::Warning, Log_Sender::IO,
+                             fmt::format( "Keyword 'mu_s' not found. Using Default: {}", cell_composition.mu_s[0] ) );
                 }
-                else
-                    Log( Log_Level::Error, Log_Sender::IO,
-                         fmt::format( "Keyword 'mu_s' not found. Using Default: {}", cell_composition.mu_s[0] ) );
+                // else
+                // {
+                //     cell_composition.mu_s = std::vector<scalar>(n_atom_types, 1);
+                //     if( config_file_handle.Find("mu_s") )
+                //     {
+                //         for (int itype = 0; itype < n_atom_types; ++itype)
+                //         {
+                //             config_file_handle >> cell_composition.mu_s[itype];
+                //             // config_file_handle.GetLine();
+                //             // config_file_handle >> cell_composition.iatom[itype];
+                //             // config_file_handle >> cell_composition.atom_type[itype];
+                //             // config_file_handle >> cell_composition.concentration[itype];
+                //         }
+                //     }
+                //     else Log(Log_Level::Error, Log_Sender::IO, fmt::format("Keyword 'mu_s' not found. Using Default:
+                //     {}", cell_composition.mu_s[0]));
+                // }
             }
-            // else
-            // {
-            //     cell_composition.mu_s = std::vector<scalar>(n_atom_types, 1);
-            //     if( config_file_handle.Find("mu_s") )
-            //     {
-            //         for (int itype = 0; itype < n_atom_types; ++itype)
-            //         {
-            //             config_file_handle >> cell_composition.mu_s[itype];
-            //             // config_file_handle.GetLine();
-            //             // config_file_handle >> cell_composition.iatom[itype];
-            //             // config_file_handle >> cell_composition.atom_type[itype];
-            //             // config_file_handle >> cell_composition.concentration[itype];
-            //         }
-            //     }
-            //     else Log(Log_Level::Error, Log_Sender::IO, fmt::format("Keyword 'mu_s' not found. Using Default:
-            //     {}", cell_composition.mu_s[0]));
-            // }
-        }
-        catch( ... )
-        {
-            spirit_handle_exception_core(
-                fmt::format( "Unable to read mu_s from config file \"{}\"", config_file_name ) );
-        }
+            catch( ... )
+            {
+                spirit_handle_exception_core(
+                    fmt::format( "Unable to read mu_s from config file \"{}\"", config_file_name ) );
+            }
 
-// Defects
+            // Defects
 #ifdef SPIRIT_ENABLE_DEFECTS
-        try
-        {
-            IO::Filter_File_Handle config_file_handle( config_file_name );
-
-            int n_defects = 0;
-
-            std::string defects_file = "";
-            if( config_file_handle.Find( "n_defects" ) )
-                defects_file = config_file_name;
-            else if( config_file_handle.Find( "defects_from_file" ) )
-                config_file_handle >> defects_file;
-
-            if( !defects_file.empty() )
+            try
             {
-                // The file name should be valid so we try to read it
-                Defects_from_File( defects_file, n_defects, defect_sites, defect_types );
-            }
+                IO::Filter_File_Handle config_file_handle( config_file_name );
 
-            // Disorder
-            config_file_handle.Read_Single(cell_composition.rng_seed, "lattice_rng_seed" );
-            if( config_file_handle.Find( "atom_types" ) )
-            {
-                config_file_handle >> n_atom_types;
-                cell_composition.disordered = true;
-                cell_composition.iatom.resize( n_atom_types );
-                cell_composition.atom_type.resize( n_atom_types );
-                cell_composition.mu_s.resize( n_atom_types );
-                cell_composition.concentration.resize( n_atom_types );
-                for( int itype = 0; itype < n_atom_types; ++itype )
+                int n_defects = 0;
+
+                std::string defects_file = "";
+                if( config_file_handle.Find( "n_defects" ) )
+                    defects_file = config_file_name;
+                else if( config_file_handle.Find( "defects_from_file" ) )
+                    config_file_handle >> defects_file;
+
+                if( !defects_file.empty() )
                 {
-                    config_file_handle.GetLine();
-                    config_file_handle >> cell_composition.iatom[itype];
-                    config_file_handle >> cell_composition.atom_type[itype];
-                    config_file_handle >> cell_composition.mu_s[itype];
-                    config_file_handle >> cell_composition.concentration[itype];
-                    // if ( !(config_file_handle >> mu_s[itype]) )
-                    // {
-                    //     Log(Log_Level::Warning, Log_Sender::IO,
-                    //         fmt::format("Not enough values specified after 'mu_s'. Expected {}. Using
-                    //         mu_s[{}]=mu_s[0]={}", n_cell_atoms, iatom, mu_s[0]));
-                    //     mu_s[iatom] = mu_s[0];
-                    // }
+                    // The file name should be valid so we try to read it
+                    Defects_from_File( defects_file, n_defects, defect_sites, defect_types );
                 }
-                Log( Log_Level::Warning, Log_Sender::IO,
-                     fmt::format(
-                         "{} atom types, iatom={} atom type={} concentration={}", n_atom_types,
-                         cell_composition.iatom[0], cell_composition.atom_type[0],
-                         cell_composition.concentration[0] ) );
+
+                // Disorder
+                if( config_file_handle.Find( "atom_types" ) )
+                {
+                    config_file_handle >> n_atom_types;
+                    cell_composition.disordered = true;
+                    cell_composition.iatom.resize( n_atom_types );
+                    cell_composition.atom_type.resize( n_atom_types );
+                    cell_composition.mu_s.resize( n_atom_types );
+                    cell_composition.concentration.resize( n_atom_types );
+                    for( int itype = 0; itype < n_atom_types; ++itype )
+                    {
+                        config_file_handle.GetLine();
+                        config_file_handle >> cell_composition.iatom[itype];
+                        config_file_handle >> cell_composition.atom_type[itype];
+                        config_file_handle >> cell_composition.mu_s[itype];
+                        config_file_handle >> cell_composition.concentration[itype];
+                        // if ( !(config_file_handle >> mu_s[itype]) )
+                        // {
+                        //     Log(Log_Level::Warning, Log_Sender::IO,
+                        //         fmt::format("Not enough values specified after 'mu_s'. Expected {}. Using
+                        //         mu_s[{}]=mu_s[0]={}", n_cell_atoms, iatom, mu_s[0]));
+                        //     mu_s[iatom] = mu_s[0];
+                        // }
+                    }
+                    Log( Log_Level::Warning, Log_Sender::IO,
+                         fmt::format(
+                             "{} atom types, iatom={} atom type={} concentration={}", n_atom_types,
+                             cell_composition.iatom[0], cell_composition.atom_type[0],
+                             cell_composition.concentration[0] ) );
+                }
             }
-        }
-        catch( ... )
-        {
-            spirit_handle_exception_core( fmt::format(
-                "Failed to read defect parameters from file \"{}\". Leaving values at default.", config_file_name ) );
-        }
+            catch( ... )
+            {
+                spirit_handle_exception_core( fmt::format(
+                    "Failed to read defect parameters from file \"{}\". Leaving values at default.",
+                    config_file_name ) );
+            }
 #else
-        Log( Log_Level::Parameter, Log_Sender::IO, "Disorder is disabled" );
+            Log( Log_Level::Parameter, Log_Sender::IO, "Disorder is disabled" );
 #endif
 
-    } // end if file=""
-    else
-        Log( Log_Level::Parameter, Log_Sender::IO, "Geometry: Using default configuration!" );
+        } // end if file=""
+        else
+            Log( Log_Level::Parameter, Log_Sender::IO, "Geometry: Using default configuration!" );
 
-    // Pinning configuration
-    auto pinning = Pinning_from_Config( config_file_name, cell_atoms.size() );
+        // Pinning configuration
+        auto pinning = Pinning_from_Config( config_file_name, cell_atoms.size() );
 
-    // Log the parameters
-    std::vector<std::string> parameter_log;
-    parameter_log.emplace_back( "Geometry:" );
-    parameter_log.emplace_back( fmt::format( "    lattice constant = {} Angstrom", lattice_constant ) );
-    parameter_log.emplace_back( fmt::format( "    Bravais lattice type: {}", bravais_lattice_type_str ) );
-    Log.SendBlock(
-        Log_Level::Debug, Log_Sender::IO,
+        // Log the parameters
+        std::vector<std::string> parameter_log;
+        parameter_log.emplace_back( "Geometry:" );
+        parameter_log.emplace_back( fmt::format( "    lattice constant = {} Angstrom", lattice_constant ) );
+        parameter_log.emplace_back( fmt::format( "    Bravais lattice type: {}", bravais_lattice_type_str ) );
+        Log( Log_Level::Debug, Log_Sender::IO,
+             {
+                 "    Bravais vectors in units of lattice constant",
+                 fmt::format( "        a = {}", bravais_vectors[0].transpose() / lattice_constant ),
+                 fmt::format( "        b = {}", bravais_vectors[1].transpose() / lattice_constant ),
+                 fmt::format( "        c = {}", bravais_vectors[2].transpose() / lattice_constant ),
+             } );
+        parameter_log.emplace_back( "    Bravais vectors" );
+        parameter_log.emplace_back( fmt::format( "        a = {}", bravais_vectors[0].transpose() ) );
+        parameter_log.emplace_back( fmt::format( "        b = {}", bravais_vectors[1].transpose() ) );
+        parameter_log.emplace_back( fmt::format( "        c = {}", bravais_vectors[2].transpose() ) );
+        parameter_log.emplace_back( fmt::format( "    basis cell: {} atom(s)", n_cell_atoms ) );
+        parameter_log.emplace_back( "    relative positions (first 10):" );
+        for( std::size_t iatom = 0; iatom < n_cell_atoms && iatom < 10; ++iatom )
+            parameter_log.emplace_back( fmt::format(
+                "        atom {} at ({}), mu_s={}", iatom, cell_atoms[iatom].transpose(),
+                cell_composition.mu_s[iatom] ) );
+
+        parameter_log.emplace_back( "    absolute atom positions (first 10):" );
+        for( std::size_t iatom = 0; iatom < n_cell_atoms && iatom < 10; ++iatom )
         {
-            "    Bravais vectors in units of lattice constant",
-            fmt::format( "        a = {}", bravais_vectors[0].transpose() / lattice_constant ),
-            fmt::format( "        b = {}", bravais_vectors[1].transpose() / lattice_constant ),
-            fmt::format( "        c = {}", bravais_vectors[2].transpose() / lattice_constant ),
-        } );
-    parameter_log.emplace_back( "    Bravais vectors" );
-    parameter_log.emplace_back( fmt::format( "        a = {}", bravais_vectors[0].transpose() ) );
-    parameter_log.emplace_back( fmt::format( "        b = {}", bravais_vectors[1].transpose() ) );
-    parameter_log.emplace_back( fmt::format( "        c = {}", bravais_vectors[2].transpose() ) );
-    parameter_log.emplace_back( fmt::format( "    basis cell: {} atom(s)", n_cell_atoms ) );
-    parameter_log.emplace_back( "    relative positions (first 10):" );
-    for( std::size_t iatom = 0; iatom < n_cell_atoms && iatom < 10; ++iatom )
-        parameter_log.emplace_back( fmt::format(
-            "        atom {} at ({}), mu_s={}", iatom, cell_atoms[iatom].transpose(), cell_composition.mu_s[iatom] ) );
+            Vector3 cell_atom
+                = lattice_constant
+                  * ( bravais_vectors[0] * cell_atoms[iatom][0] + bravais_vectors[1] * cell_atoms[iatom][1]
+                      + bravais_vectors[2] * cell_atoms[iatom][2] );
+            parameter_log.emplace_back( fmt::format( "        atom {} at ({})", iatom, cell_atom.transpose() ) );
+        }
 
-    parameter_log.emplace_back( "    absolute atom positions (first 10):" );
-    for( std::size_t iatom = 0; iatom < n_cell_atoms && iatom < 10; ++iatom )
-    {
-        Vector3 cell_atom = lattice_constant
-                            * ( bravais_vectors[0] * cell_atoms[iatom][0] + bravais_vectors[1] * cell_atoms[iatom][1]
-                                + bravais_vectors[2] * cell_atoms[iatom][2] );
-        parameter_log.emplace_back( fmt::format( "        atom {} at ({})", iatom, cell_atom.transpose() ) );
-    }
-
-    if( cell_composition.disordered )
-        parameter_log.emplace_back( "    note: the lattice has some disorder!" );
+        if( cell_composition.disordered )
+            parameter_log.emplace_back( "    note: the lattice has some disorder!" );
 
 #ifdef SPIRIT_ENABLE_PINNING
-    // Log pinning
-    auto n_pinned_cell_sites = pinning.sites.size();
-    if( n_pinned_cell_sites == 0 && pinning.na_left == 0 && pinning.na_right == 0 && pinning.nb_left == 0
-        && pinning.nb_right == 0 && pinning.nc_left == 0 && pinning.nc_right == 0 )
-    {
-        parameter_log.emplace_back( "    no pinned spins" );
-    }
-    else
-    {
-        parameter_log.emplace_back( "    pinning of boundary cells:" );
-        parameter_log.emplace_back(
-            fmt::format( "        n_a: left={}, right={}", pinning.na_left, pinning.na_right ) );
-        parameter_log.emplace_back(
-            fmt::format( "        n_b: left={}, right={}", pinning.nb_left, pinning.nb_right ) );
-        parameter_log.emplace_back(
-            fmt::format( "        n_c: left={}, right={}", pinning.nc_left, pinning.nc_right ) );
-
-        parameter_log.emplace_back( "        pinned to (showing first 10 sites):" );
-        for( std::size_t i = 0; i < std::min( pinning.pinned_cell.size(), static_cast<std::size_t>( 10 ) ); ++i )
+        // Log pinning
+        auto n_pinned_cell_sites = pinning.sites.size();
+        if( n_pinned_cell_sites == 0 && pinning.na_left == 0 && pinning.na_right == 0 && pinning.nb_left == 0
+            && pinning.nb_right == 0 && pinning.nc_left == 0 && pinning.nc_right == 0 )
         {
-            parameter_log.emplace_back(
-                fmt::format( "          cell atom[{}] = ({})", i, pinning.pinned_cell[i].transpose() ) );
+            parameter_log.emplace_back( "    no pinned spins" );
         }
-        if( n_pinned_cell_sites == 0 )
-            parameter_log.emplace_back( "    no individually pinned sites" );
+        else
+        {
+            parameter_log.emplace_back( "    pinning of boundary cells:" );
+            parameter_log.emplace_back(
+                fmt::format( "        n_a: left={}, right={}", pinning.na_left, pinning.na_right ) );
+            parameter_log.emplace_back(
+                fmt::format( "        n_b: left={}, right={}", pinning.nb_left, pinning.nb_right ) );
+            parameter_log.emplace_back(
+                fmt::format( "        n_c: left={}, right={}", pinning.nc_left, pinning.nc_right ) );
+
+            parameter_log.emplace_back( "        pinned to (showing first 10 sites):" );
+            for( std::size_t i = 0; i < std::min( pinning.pinned_cell.size(), static_cast<std::size_t>( 10 ) ); ++i )
+            {
+                parameter_log.emplace_back(
+                    fmt::format( "          cell atom[{}] = ({})", i, pinning.pinned_cell[i].transpose() ) );
+            }
+            if( n_pinned_cell_sites == 0 )
+                parameter_log.emplace_back( "    no individually pinned sites" );
+            else
+            {
+                parameter_log.emplace_back(
+                    fmt::format( "    {} individually pinned sites. Showing the first 10:", n_pinned_cell_sites ) );
+                for( std::size_t i = 0; i < std::min( pinning.sites.size(), static_cast<std::size_t>( 10 ) ); ++i )
+                {
+                    parameter_log.emplace_back( fmt::format(
+                        "        pinned site[{}]: {} at ({} {} {}) = ({})", i, pinning.sites[i].i,
+                        pinning.sites[i].translations[0], pinning.sites[i].translations[1],
+                        pinning.sites[i].translations[2], pinning.spins[i].transpose() ) );
+                }
+            }
+        }
+#endif
+
+        // Defects
+#ifdef SPIRIT_ENABLE_DEFECTS
+        if( defect_sites.empty() )
+            parameter_log.emplace_back( "    no defects" );
         else
         {
             parameter_log.emplace_back(
-                fmt::format( "    {} individually pinned sites. Showing the first 10:", n_pinned_cell_sites ) );
-            for( std::size_t i = 0; i < std::min( pinning.sites.size(), static_cast<std::size_t>( 10 ) ); ++i )
+                fmt::format( "    {} defects (showing first 10 sites):", defect_sites.size() ) );
+            for( std::size_t i = 0; i < std::min( defect_sites.size(), static_cast<std::size_t>( 10 ) ); ++i )
             {
                 parameter_log.emplace_back( fmt::format(
-                    "        pinned site[{}]: {} at ({} {} {}) = ({})", i, pinning.sites[i].i,
-                    pinning.sites[i].translations[0], pinning.sites[i].translations[1],
-                    pinning.sites[i].translations[2], pinning.spins[i].transpose() ) );
+                    "        defect[{}]: translations=({} {} {}), type=", i, defect_sites[i].translations[0],
+                    defect_sites[i].translations[1], defect_sites[i].translations[2], defect_types[i] ) );
             }
         }
-    }
 #endif
 
-// Defects
-#ifdef SPIRIT_ENABLE_DEFECTS
-    if( defect_sites.empty() )
-        parameter_log.emplace_back( "    no defects" );
-    else
+        // Log parameters
+        parameter_log.emplace_back( "    lattice: n_basis_cells" );
+        parameter_log.emplace_back( fmt::format( "        na = {}", n_cells[0] ) );
+        parameter_log.emplace_back( fmt::format( "        nb = {}", n_cells[1] ) );
+        parameter_log.emplace_back( fmt::format( "        nc = {}", n_cells[2] ) );
+
+        // Return geometry
+        auto geometry = Data::Geometry(
+            bravais_vectors, n_cells, cell_atoms, cell_composition, lattice_constant, pinning,
+            Data::Defects{ defect_sites, defect_types } );
+
+        parameter_log.emplace_back( fmt::format( "    {} spins", geometry.nos ) );
+        parameter_log.emplace_back( fmt::format( "    the geometry is {}-dimensional", geometry.dimensionality ) );
+
+        Log( Log_Level::Parameter, Log_Sender::IO, parameter_log );
+
+        Log( Log_Level::Debug, Log_Sender::IO, "Geometry: built" );
+        return geometry;
+    }
+    catch( ... )
     {
-        parameter_log.emplace_back( fmt::format( "    {} defects (showing first 10 sites):", defect_sites.size() ) );
-        for( std::size_t i = 0; i < std::min( defect_sites.size(), static_cast<std::size_t>( 10 ) ); ++i )
-        {
-            parameter_log.emplace_back( fmt::format(
-                "        defect[{}]: translations=({} {} {}), type=", i, defect_sites[i].translations[0],
-                defect_sites[i].translations[1], defect_sites[i].translations[2], defect_types[i] ) );
-        }
+        spirit_rethrow( fmt::format( "Unable to parse geometry from config file \"{}\"", config_file_name ) );
+        return Data::Geometry(
+            bravais_vectors, n_cells, cell_atoms, cell_composition, lattice_constant, Data::Pinning(),
+            Data::Defects{ defect_sites, defect_types } );
     }
-#endif
+} // End Geometry from Config
 
-    // Log parameters
-    parameter_log.emplace_back( "    lattice: n_basis_cells" );
-    parameter_log.emplace_back( fmt::format( "        na = {}", n_cells[0] ) );
-    parameter_log.emplace_back( fmt::format( "        nb = {}", n_cells[1] ) );
-    parameter_log.emplace_back( fmt::format( "        nc = {}", n_cells[2] ) );
+intfield Boundary_Conditions_from_Config( const std::string & config_file_name )
+try
+{
+    // Boundary conditions (a, b, c)
+    std::vector<int> boundary_conditions_i = { 0, 0, 0 };
+    intfield boundary_conditions           = { false, false, false };
 
-    // Return geometry
-    auto geometry = std::make_shared<Data::Geometry>(
-        bravais_vectors, n_cells, cell_atoms, cell_composition, lattice_constant, pinning,
-        Data::Defects{ defect_sites, defect_types } );
+    if( !config_file_name.empty() )
+    {
+        IO::Filter_File_Handle config_file_handle( config_file_name );
 
-    parameter_log.emplace_back( fmt::format( "    {} spins", geometry->nos ) );
-    parameter_log.emplace_back( fmt::format( "    the geometry is {}-dimensional", geometry->dimensionality ) );
+        // Boundary conditions
+        config_file_handle.Read_3Vector( boundary_conditions_i, "boundary_conditions" );
+        boundary_conditions[0] = static_cast<int>( boundary_conditions_i[0] != 0 );
+        boundary_conditions[1] = static_cast<int>( boundary_conditions_i[1] != 0 );
+        boundary_conditions[2] = static_cast<int>( boundary_conditions_i[2] != 0 );
+    }
 
-    Log.SendBlock( Log_Level::Parameter, Log_Sender::IO, parameter_log );
-
-    Log( Log_Level::Debug, Log_Sender::IO, "Geometry: built" );
-    return geometry;
+    return boundary_conditions;
 }
 catch( ... )
 {
-    spirit_rethrow( fmt::format( "Unable to parse geometry from config file \"{}\"", config_file_name ) );
-    return nullptr;
-} // End Geometry from Config
+    spirit_rethrow( fmt::format( "Unable to parse boundary conditions from config file \"{}\"", config_file_name ) );
+    return { 0, 0, 0 };
+} // End boundary_conditions from Config
 
 Data::Pinning Pinning_from_Config( const std::string & config_file_name, std::size_t n_cell_atoms )
 {
@@ -820,7 +857,7 @@ std::unique_ptr<Data::Parameters_Method_LLG> Parameters_Method_LLG_from_Config( 
         fmt::format( "    {:<30} = {}", "output_configuration_archive", parameters->output_configuration_archive ) );
     parameter_log.emplace_back(
         fmt::format( "    {:<30} = {}", "output_configuration_filetype", (int)parameters->output_vf_filetype ) );
-    Log.SendBlock( Log_Level::Parameter, Log_Sender::IO, parameter_log );
+    Log( Log_Level::Parameter, Log_Sender::IO, parameter_log );
 
     Log( Log_Level::Debug, Log_Sender::IO, "Parameters LLG: built" );
     return parameters;
@@ -904,7 +941,7 @@ std::unique_ptr<Data::Parameters_Method_EMA> Parameters_Method_EMA_from_Config( 
     parameter_log.emplace_back( fmt::format( "    {:<17} = {}", "output_initial", parameters->output_initial ) );
     parameter_log.emplace_back( fmt::format( "    {:<17} = {}", "output_any", parameters->output_any ) );
     parameter_log.emplace_back( fmt::format( "    {:<17} = \"{}\"", "output_folder", parameters->output_folder ) );
-    Log.SendBlock( Log_Level::Parameter, Log_Sender::IO, parameter_log );
+    Log( Log_Level::Parameter, Log_Sender::IO, parameter_log );
 
     Log( Log_Level::Debug, Log_Sender::IO, "Parameters EMA: built" );
     return parameters;
@@ -962,11 +999,6 @@ std::unique_ptr<Data::Parameters_Method_MC> Parameters_Method_MC_from_Config( co
             config_file_handle.Read_Single( parameters->n_iterations_amortize, "mc_n_iterations_amortize" );
             config_file_handle.Read_Single( parameters->temperature, "mc_temperature" );
             config_file_handle.Read_Single( parameters->acceptance_ratio_target, "mc_acceptance_ratio" );
-            config_file_handle.Read_Single( parameters->metropolis_spin_flip, "mc_spin_flip" ); 
-            config_file_handle.Read_Single( parameters->tunneling_use_tunneling, "mc_use_tunneling" ); 
-            config_file_handle.Read_Single( parameters->tunneling_gamma, "mc_tunneling_gamma" ); 
-            
-                          
         }
         catch( ... )
         {
@@ -984,9 +1016,6 @@ std::unique_ptr<Data::Parameters_Method_MC> Parameters_Method_MC_from_Config( co
     parameter_log.emplace_back( fmt::format( "    {:<17} = {}", "temperature", parameters->temperature ) );
     parameter_log.emplace_back(
         fmt::format( "    {:<17} = {}", "acceptance_ratio", parameters->acceptance_ratio_target ) );
-    parameter_log.emplace_back( fmt::format( "    {:<17} = {}", "mc_spin_flip", parameters->metropolis_spin_flip ) );
-    parameter_log.emplace_back( fmt::format( "    {:<17} = {}", "mc_use_tunneling", parameters->tunneling_use_tunneling ) );
-    parameter_log.emplace_back( fmt::format( "    {:<17} = {}", "mc_tunneling_gamma", parameters->tunneling_gamma ) );
     parameter_log.emplace_back( fmt::format( "    {:<17} = {}", "maximum walltime", str_max_walltime ) );
     parameter_log.emplace_back( fmt::format( "    {:<17} = {}", "n_iterations", parameters->n_iterations ) );
     parameter_log.emplace_back( fmt::format( "    {:<17} = {}", "n_iterations_log", parameters->n_iterations_log ) );
@@ -1012,7 +1041,7 @@ std::unique_ptr<Data::Parameters_Method_MC> Parameters_Method_MC_from_Config( co
         fmt::format( "    {:<30} = {}", "output_configuration_archive", parameters->output_configuration_archive ) );
     parameter_log.emplace_back(
         fmt::format( "    {:<30} = {}", "output_configuration_filetype", (int)parameters->output_vf_filetype ) );
-    Log.SendBlock( Log_Level::Parameter, Log_Sender::IO, parameter_log );
+    Log( Log_Level::Parameter, Log_Sender::IO, parameter_log );
 
     Log( Log_Level::Debug, Log_Sender::IO, "Parameters MC: built" );
     return parameters;
@@ -1108,7 +1137,7 @@ std::unique_ptr<Data::Parameters_Method_GNEB> Parameters_Method_GNEB_from_Config
     parameter_log.emplace_back( fmt::format( "    {:<18} = {}", "output_chain_step", parameters->output_chain_step ) );
     parameter_log.emplace_back(
         fmt::format( "    {:<18} = {}", "output_chain_filetype", (int)parameters->output_vf_filetype ) );
-    Log.SendBlock( Log_Level::Parameter, Log_Sender::IO, parameter_log );
+    Log( Log_Level::Parameter, Log_Sender::IO, parameter_log );
 
     Log( Log_Level::Debug, Log_Sender::IO, "Parameters GNEB: built" );
     return parameters;
@@ -1197,520 +1226,10 @@ std::unique_ptr<Data::Parameters_Method_MMF> Parameters_Method_MMF_from_Config( 
         fmt::format( "    {:<30} = {}", "output_configuration_archive", parameters->output_configuration_archive ) );
     parameter_log.emplace_back(
         fmt::format( "    {:<30} = {}", "output_configuration_filetype", (int)parameters->output_vf_filetype ) );
-    Log.SendBlock( Log_Level::Parameter, Log_Sender::IO, parameter_log );
+    Log( Log_Level::Parameter, Log_Sender::IO, parameter_log );
 
     Log( Log_Level::Debug, Log_Sender::IO, "Parameters MMF: built" );
     return parameters;
-}
-
-std::unique_ptr<Engine::Hamiltonian>
-Hamiltonian_from_Config( const std::string & config_file_name, std::shared_ptr<Data::Geometry> geometry )
-{
-    //-------------- Insert default values here -----------------------------
-    // The type of hamiltonian we will use
-    std::string hamiltonian_type = "heisenberg_neighbours";
-
-    //------------------------------- Parser --------------------------------
-    Log( Log_Level::Debug, Log_Sender::IO, "Hamiltonian: building" );
-
-    // Hamiltonian type
-    if( !config_file_name.empty() )
-    {
-        try
-        {
-            Log( Log_Level::Debug, Log_Sender::IO, "Hamiltonian: deciding type" );
-            IO::Filter_File_Handle config_file_handle( config_file_name );
-
-            // What hamiltonian do we use?
-            config_file_handle.Read_Single( hamiltonian_type, "hamiltonian" );
-        }
-        catch( ... )
-        {
-            spirit_handle_exception_core( fmt::format(
-                "Unable to read Hamiltonian type from config file  \"{}\". Using default.", config_file_name ) );
-            hamiltonian_type = "heisenberg_neighbours";
-        }
-    }
-    else
-        Log( Log_Level::Parameter, Log_Sender::IO, "Hamiltonian: Using default Hamiltonian: " + hamiltonian_type );
-
-    // Hamiltonian
-    std::unique_ptr<Engine::Hamiltonian> hamiltonian;
-    try
-    {
-        if( hamiltonian_type == "heisenberg_neighbours" || hamiltonian_type == "heisenberg_pairs" )
-        {
-            hamiltonian = Hamiltonian_Heisenberg_from_Config( config_file_name, geometry, hamiltonian_type );
-        }
-        else if( hamiltonian_type == "gaussian" )
-        {
-            hamiltonian = std::move( Hamiltonian_Gaussian_from_Config( config_file_name, geometry ) );
-        }
-        else
-        {
-            spirit_throw(
-                Utility::Exception_Classifier::System_not_Initialized, Log_Level::Severe,
-                fmt::format( "Hamiltonian: Invalid type \"{}\"", hamiltonian_type ) );
-        }
-    }
-    catch( ... )
-    {
-        spirit_handle_exception_core(
-            fmt::format( "Unable to initialize Hamiltonian from config file \"{}\"", config_file_name ) );
-    }
-
-    // Return
-    Log( Log_Level::Debug, Log_Sender::IO, "Hamiltonian: built hamiltonian of type: " + hamiltonian_type );
-    return hamiltonian;
-}
-
-std::unique_ptr<Engine::Hamiltonian_Heisenberg> Hamiltonian_Heisenberg_from_Config(
-    const std::string & config_file_name, std::shared_ptr<Data::Geometry> geometry,
-    const std::string & hamiltonian_type )
-{
-    //-------------- Insert default values here -----------------------------
-    // Boundary conditions (a, b, c)
-    std::vector<int> boundary_conditions_i = { 0, 0, 0 };
-    intfield boundary_conditions           = { false, false, false };
-
-    // External Magnetic Field
-    scalar B         = 0;
-    Vector3 B_normal = { 0.0, 0.0, 1.0 };
-
-    // Anisotropy
-    std::string anisotropy_file = "";
-    scalar K                    = 0;
-    scalar K4                   = 0;
-    Vector3 K_normal            = { 0.0, 0.0, 1.0 };
-    bool anisotropy_from_file   = false;
-    intfield anisotropy_index( geometry->n_cell_atoms );
-    scalarfield anisotropy_magnitude( geometry->n_cell_atoms, 0.0 );
-    vectorfield anisotropy_normal( geometry->n_cell_atoms, K_normal );
-    intfield cubic_anisotropy_index( geometry->n_cell_atoms );
-    scalarfield cubic_anisotropy_magnitude( geometry->n_cell_atoms, 0.0 );
-
-    // ------------ Pair Interactions ------------
-    int n_pairs                        = 0;
-    std::string interaction_pairs_file = "";
-    pairfield exchange_pairs( 0 );
-    scalarfield exchange_magnitudes( 0 );
-    pairfield dmi_pairs( 0 );
-    scalarfield dmi_magnitudes( 0 );
-    vectorfield dmi_normals( 0 );
-
-    // Number of shells in which we calculate neighbours
-    std::size_t n_shells_exchange = exchange_magnitudes.size();
-    // DM constant
-    std::size_t n_shells_dmi = dmi_magnitudes.size();
-    int dm_chirality         = 1;
-
-    std::string ddi_method_str     = "none";
-    auto ddi_method                = Engine::DDI_Method::None;
-    intfield ddi_n_periodic_images = { 4, 4, 4 };
-    scalar ddi_radius              = 0.0;
-    bool ddi_pb_zero_padding       = true;
-
-    // ------------ Quadruplet Interactions ------------
-    int n_quadruplets            = 0;
-    std::string quadruplets_file = "";
-    quadrupletfield quadruplets( 0 );
-    scalarfield quadruplet_magnitudes( 0 );
-
-    //------------------------------- Parser --------------------------------
-    Log( Log_Level::Debug, Log_Sender::IO, "Hamiltonian_Heisenberg: building" );
-    // Iteration variables
-    if( !config_file_name.empty() )
-    {
-        try
-        {
-            IO::Filter_File_Handle config_file_handle( config_file_name );
-
-            // Boundary conditions
-            config_file_handle.Read_3Vector( boundary_conditions_i, "boundary_conditions" );
-            boundary_conditions[0] = static_cast<int>( boundary_conditions_i[0] != 0 );
-            boundary_conditions[1] = static_cast<int>( boundary_conditions_i[1] != 0 );
-            boundary_conditions[2] = static_cast<int>( boundary_conditions_i[2] != 0 );
-        }
-        catch( ... )
-        {
-            spirit_handle_exception_core(
-                fmt::format( "Unable to read boundary conditions from config file \"{}\"", config_file_name ) );
-        }
-
-        try
-        {
-            IO::Filter_File_Handle config_file_handle( config_file_name );
-
-            // Read parameters from config if available
-            config_file_handle.Read_Single( B, "external_field_magnitude" );
-            config_file_handle.Read_Vector3( B_normal, "external_field_normal" );
-            B_normal.normalize();
-            if( B_normal.norm() < 1e-8 )
-            {
-                B_normal = { 0, 0, 1 };
-                Log( Log_Level::Warning, Log_Sender::IO,
-                     "Input for 'external_field_normal' had norm zero and has been set to (0,0,1)" );
-            }
-        }
-        catch( ... )
-        {
-            spirit_handle_exception_core(
-                fmt::format( "Unable to read external field from config file \"{}\"", config_file_name ) );
-        }
-
-        try
-        {
-            IO::Filter_File_Handle config_file_handle( config_file_name );
-
-            // Anisotropy
-            if( config_file_handle.Find( "n_anisotropy" ) )
-                anisotropy_file = config_file_name;
-            else if( config_file_handle.Find( "anisotropy_file" ) )
-                config_file_handle >> anisotropy_file;
-
-            if( !anisotropy_file.empty() )
-            {
-                // The file name should be valid so we try to read it
-                Anisotropy_from_File(
-                    anisotropy_file, geometry, n_pairs, anisotropy_index, anisotropy_magnitude, anisotropy_normal,
-                    cubic_anisotropy_index, cubic_anisotropy_magnitude );
-
-                anisotropy_from_file = true;
-                if( !anisotropy_index.empty() )
-                {
-                    K        = anisotropy_magnitude[0];
-                    K_normal = anisotropy_normal[0];
-                }
-                else
-                {
-                    K        = 0;
-                    K_normal = { 0, 0, 0 };
-                }
-                if( !cubic_anisotropy_index.empty() )
-                    K4 = cubic_anisotropy_magnitude[0];
-                else
-                    K4 = 0;
-            }
-            else
-            {
-                // Read parameters from config
-                config_file_handle.Read_Single( K, "anisotropy_magnitude" );
-                config_file_handle.Read_Vector3( K_normal, "anisotropy_normal" );
-                K_normal.normalize();
-
-                config_file_handle.Read_Single( K4, "cubic_anisotropy_magnitude" );
-
-                if( K != 0 )
-                {
-                    // Fill the arrays
-                    for( std::size_t i = 0; i < anisotropy_index.size(); ++i )
-                    {
-                        anisotropy_index[i]     = static_cast<int>( i );
-                        anisotropy_magnitude[i] = K;
-                        anisotropy_normal[i]    = K_normal;
-                    }
-                }
-                else
-                {
-                    anisotropy_index     = intfield( 0 );
-                    anisotropy_magnitude = scalarfield( 0 );
-                    anisotropy_normal    = vectorfield( 0 );
-                }
-                if( K4 != 0 )
-                {
-                    // Fill the arrays
-                    for( std::size_t i = 0; i < cubic_anisotropy_index.size(); ++i )
-                    {
-                        cubic_anisotropy_index[i]     = static_cast<int>( i );
-                        cubic_anisotropy_magnitude[i] = K4;
-                    }
-                }
-                else
-                {
-                    cubic_anisotropy_index     = intfield( 0 );
-                    cubic_anisotropy_magnitude = scalarfield( 0 );
-                }
-            }
-        }
-        catch( ... )
-        {
-            spirit_handle_exception_core(
-                fmt::format( "Unable to read anisotropy from config file \"{}\"", config_file_name ) );
-        }
-
-        if( hamiltonian_type == "heisenberg_pairs" )
-        {
-            try
-            {
-                IO::Filter_File_Handle config_file_handle( config_file_name );
-
-                // Interaction Pairs
-                if( config_file_handle.Find( "n_interaction_pairs" ) )
-                    interaction_pairs_file = config_file_name;
-                else if( config_file_handle.Find( "interaction_pairs_file" ) )
-                    config_file_handle >> interaction_pairs_file;
-
-                if( !interaction_pairs_file.empty() )
-                {
-                    // The file name should be valid so we try to read it
-                    Pairs_from_File(
-                        interaction_pairs_file, geometry, n_pairs, exchange_pairs, exchange_magnitudes, dmi_pairs,
-                        dmi_magnitudes, dmi_normals );
-                }
-                // else
-                //{
-                //	Log(Log_Level::Warning, Log_Sender::IO, "Hamiltonian_Heisenberg: Default Interaction pairs have not
-                // been implemented yet."); 	throw Exception::System_not_Initialized;
-                //	// Not implemented!
-                //}
-            }
-            catch( ... )
-            {
-                spirit_handle_exception_core(
-                    fmt::format( "Unable to read interaction pairs from config file \"{}\"", config_file_name ) );
-            }
-        }
-        else
-        {
-            try
-            {
-                IO::Filter_File_Handle config_file_handle( config_file_name );
-
-                config_file_handle.Read_Single( n_shells_exchange, "n_shells_exchange" );
-                if( exchange_magnitudes.size() != n_shells_exchange )
-                    exchange_magnitudes = scalarfield( n_shells_exchange );
-                if( n_shells_exchange > 0 )
-                {
-                    if( config_file_handle.Find( "jij" ) )
-                    {
-                        for( std::size_t ishell = 0; ishell < n_shells_exchange; ++ishell )
-                            config_file_handle >> exchange_magnitudes[ishell];
-                    }
-                    else
-                        Log( Log_Level::Warning, Log_Sender::IO,
-                             fmt::format(
-                                 "Hamiltonian_Heisenberg: Keyword 'jij' not found. Using Default: {}",
-                                 exchange_magnitudes[0] ) );
-                }
-            }
-            catch( ... )
-            {
-                spirit_handle_exception_core(
-                    fmt::format( "Failed to read exchange parameters from config file \"{}\"", config_file_name ) );
-            }
-
-            try
-            {
-                IO::Filter_File_Handle config_file_handle( config_file_name );
-
-                config_file_handle.Read_Single( n_shells_dmi, "n_shells_dmi" );
-                if( dmi_magnitudes.size() != n_shells_dmi )
-                    dmi_magnitudes = scalarfield( n_shells_dmi );
-                if( n_shells_dmi > 0 )
-                {
-                    if( config_file_handle.Find( "dij" ) )
-                    {
-                        for( int ishell = 0; ishell < n_shells_dmi; ++ishell )
-                            config_file_handle >> dmi_magnitudes[ishell];
-                    }
-                    else
-                        Log( Log_Level::Warning, Log_Sender::IO,
-                             fmt::format(
-                                 "Hamiltonian_Heisenberg: Keyword 'dij' not found. Using Default: {}",
-                                 dmi_magnitudes[0] ) );
-                }
-                config_file_handle.Read_Single( dm_chirality, "dm_chirality" );
-            }
-            catch( ... )
-            {
-                spirit_handle_exception_core(
-                    fmt::format( "Failed to read DMI parameters from config file \"{}\"", config_file_name ) );
-            }
-        }
-
-        try
-        {
-            IO::Filter_File_Handle config_file_handle( config_file_name );
-
-            // DDI method
-            config_file_handle.Read_String( ddi_method_str, "ddi_method" );
-            if( ddi_method_str == "none" )
-                ddi_method = Engine::DDI_Method::None;
-            else if( ddi_method_str == "fft" )
-                ddi_method = Engine::DDI_Method::FFT;
-            else if( ddi_method_str == "fmm" )
-                ddi_method = Engine::DDI_Method::FMM;
-            else if( ddi_method_str == "cutoff" )
-                ddi_method = Engine::DDI_Method::Cutoff;
-            else
-            {
-                Log( Log_Level::Warning, Log_Sender::IO,
-                     fmt::format(
-                         "Hamiltonian_Heisenberg: Keyword 'ddi_method' got passed invalid method \"{}\". Setting to "
-                         "\"none\".",
-                         ddi_method_str ) );
-                ddi_method_str = "none";
-            }
-
-            // Number of periodical images
-            config_file_handle.Read_3Vector( ddi_n_periodic_images, "ddi_n_periodic_images" );
-            config_file_handle.Read_Single( ddi_pb_zero_padding, "ddi_pb_zero_padding" );
-
-            // Dipole-dipole cutoff radius
-            config_file_handle.Read_Single( ddi_radius, "ddi_radius" );
-        }
-        catch( ... )
-        {
-            spirit_handle_exception_core(
-                fmt::format( "Unable to read DDI radius from config file \"{}\"", config_file_name ) );
-        }
-
-        try
-        {
-            IO::Filter_File_Handle config_file_handle( config_file_name );
-
-            // Interaction Quadruplets
-            if( config_file_handle.Find( "n_interaction_quadruplets" ) )
-                quadruplets_file = config_file_name;
-            else if( config_file_handle.Find( "interaction_quadruplets_file" ) )
-                config_file_handle >> quadruplets_file;
-
-            if( quadruplets_file.length() > 0 )
-            {
-                // The file name should be valid so we try to read it
-                Quadruplets_from_File( quadruplets_file, geometry, n_quadruplets, quadruplets, quadruplet_magnitudes );
-            }
-        }
-        catch( ... )
-        {
-            spirit_handle_exception_core(
-                fmt::format( "Unable to read interaction quadruplets from config file \"{}\"", config_file_name ) );
-        }
-    }
-    else
-        Log( Log_Level::Parameter, Log_Sender::IO, "Hamiltonian_Heisenberg: Using default configuration!" );
-
-    // Return
-    std::vector<std::string> parameter_log;
-    parameter_log.emplace_back( "Hamiltonian Heisenberg:" );
-    parameter_log.emplace_back( fmt::format(
-        "    {:<21} = {} {} {}", "boundary conditions", boundary_conditions[0], boundary_conditions[1],
-        boundary_conditions[2] ) );
-    parameter_log.emplace_back( fmt::format( "    {:<21} = {}", "external field", B ) );
-    parameter_log.emplace_back( fmt::format( "    {:<21} = {}", "field_normal", B_normal.transpose() ) );
-    if( anisotropy_from_file )
-        parameter_log.emplace_back( fmt::format( "    K from file \"{}\"", anisotropy_file ) );
-    parameter_log.emplace_back( fmt::format( "    {:<21} = {}", "anisotropy[0]", K ) );
-    parameter_log.emplace_back( fmt::format( "    {:<21} = {}", "anisotropy_normal[0]", K_normal.transpose() ) );
-    parameter_log.emplace_back( fmt::format( "    {:<21} = {}", "cubic_anisotropy_magnitude[0]", K4 ) );
-    if( hamiltonian_type == "heisenberg_neighbours" )
-    {
-        parameter_log.emplace_back( fmt::format( "    {:<21} = {}", "n_shells_exchange", n_shells_exchange ) );
-        if( n_shells_exchange > 0 )
-            parameter_log.emplace_back( fmt::format( "    {:<21} = {}", "J_ij[0]", exchange_magnitudes[0] ) );
-        parameter_log.emplace_back( fmt::format( "    {:<21} = {}", "n_shells_dmi", n_shells_dmi ) );
-        if( n_shells_dmi > 0 )
-            parameter_log.emplace_back( fmt::format( "    {:<21} = {}", "D_ij[0]", dmi_magnitudes[0] ) );
-        parameter_log.emplace_back( fmt::format( "    {:<21} = {}", "DM chirality", dm_chirality ) );
-    }
-    parameter_log.emplace_back( fmt::format( "    {:<21} = {}", "ddi_method", ddi_method_str ) );
-    parameter_log.emplace_back( fmt::format(
-        "    {:<21} = ({} {} {})", "ddi_n_periodic_images", ddi_n_periodic_images[0], ddi_n_periodic_images[1],
-        ddi_n_periodic_images[2] ) );
-    parameter_log.emplace_back( fmt::format( "    {:<21} = {}", "ddi_radius", ddi_radius ) );
-    parameter_log.emplace_back( fmt::format( "    {:<21} = {}", "ddi_pb_zero_padding", ddi_pb_zero_padding ) );
-    Log.SendBlock( Log_Level::Parameter, Log_Sender::IO, parameter_log );
-
-    std::unique_ptr<Engine::Hamiltonian_Heisenberg> hamiltonian;
-
-    if( hamiltonian_type == "heisenberg_neighbours" )
-    {
-        hamiltonian = std::make_unique<Engine::Hamiltonian_Heisenberg>(
-            B, B_normal, anisotropy_index, anisotropy_magnitude, anisotropy_normal, cubic_anisotropy_index,
-            cubic_anisotropy_magnitude, exchange_magnitudes, dmi_magnitudes, dm_chirality, ddi_method,
-            ddi_n_periodic_images, ddi_pb_zero_padding, ddi_radius, quadruplets, quadruplet_magnitudes, geometry,
-            boundary_conditions );
-    }
-    else
-    {
-        hamiltonian = std::make_unique<Engine::Hamiltonian_Heisenberg>(
-            B, B_normal, anisotropy_index, anisotropy_magnitude, anisotropy_normal, cubic_anisotropy_index,
-            cubic_anisotropy_magnitude, exchange_pairs, exchange_magnitudes, dmi_pairs, dmi_magnitudes, dmi_normals,
-            ddi_method, ddi_n_periodic_images, ddi_pb_zero_padding, ddi_radius, quadruplets, quadruplet_magnitudes,
-            geometry, boundary_conditions );
-    }
-    Log( Log_Level::Debug, Log_Sender::IO, "Hamiltonian_Heisenberg: built" );
-    return hamiltonian;
-} // end Hamiltonian_Heisenberg_From_Config
-
-std::unique_ptr<Engine::Hamiltonian_Gaussian>
-Hamiltonian_Gaussian_from_Config( const std::string & config_file_name, std::shared_ptr<Data::Geometry> geometry )
-{
-    //-------------- Insert default values here -----------------------------
-    // Number of Gaussians
-    std::size_t n_gaussians = 1;
-    // Amplitudes
-    std::vector<scalar> amplitude = { 1 };
-    // Widths
-    std::vector<scalar> width = { 1 };
-    // Centers
-    std::vector<Vector3> center = { Vector3{ 0, 0, 1 } };
-
-    //------------------------------- Parser --------------------------------
-    Log( Log_Level::Debug, Log_Sender::IO, "Hamiltonian_Gaussian: building" );
-
-    if( !config_file_name.empty() )
-    {
-        try
-        {
-            IO::Filter_File_Handle config_file_handle( config_file_name );
-
-            // N
-            config_file_handle.Read_Single( n_gaussians, "n_gaussians" );
-
-            // Allocate arrays
-            amplitude = std::vector<scalar>( n_gaussians, 1.0 );
-            width     = std::vector<scalar>( n_gaussians, 1.0 );
-            center    = std::vector<Vector3>( n_gaussians, Vector3{ 0, 0, 1 } );
-            // Read arrays
-            if( config_file_handle.Find( "gaussians" ) )
-            {
-                for( std::size_t i = 0; i < n_gaussians; ++i )
-                {
-                    config_file_handle.GetLine();
-                    config_file_handle >> amplitude[i];
-                    config_file_handle >> width[i];
-                    for( std::uint8_t j = 0; j < 3; ++j )
-                    {
-                        config_file_handle >> center[i][j];
-                    }
-                    center[i].normalize();
-                }
-            }
-            else
-                Log( Log_Level::Error, Log_Sender::IO,
-                     "Hamiltonian_Gaussian: Keyword 'gaussians' not found. Using Default: {0, 0, 1}" );
-        }
-        catch( ... )
-        {
-            spirit_handle_exception_core( fmt::format(
-                "Unable to read Hamiltonian_Gaussian parameters from config file  \"{}\"", config_file_name ) );
-        }
-    }
-    else
-        Log( Log_Level::Parameter, Log_Sender::IO, "Hamiltonian_Gaussian: Using default configuration!" );
-
-    // Return
-    std::vector<std::string> parameter_log;
-    parameter_log.emplace_back( "Hamiltonian Gaussian:" );
-    parameter_log.emplace_back( fmt::format( "    {0:<12} = {1}", "n_gaussians", n_gaussians ) );
-    parameter_log.emplace_back( fmt::format( "    {0:<12} = {1}", "amplitude[0]", amplitude[0] ) );
-    parameter_log.emplace_back( fmt::format( "    {0:<12} = {1}", "width[0]", width[0] ) );
-    parameter_log.emplace_back( fmt::format( "    {0:<12} = {1}", "center[0]", center[0].transpose() ) );
-    Log.SendBlock( Log_Level::Parameter, Log_Sender::IO, parameter_log );
-    auto hamiltonian = std::make_unique<Engine::Hamiltonian_Gaussian>( amplitude, width, center );
-    Log( Log_Level::Debug, Log_Sender::IO, "Hamiltonian_Gaussian: built" );
-    return hamiltonian;
 }
 
 } // namespace IO

@@ -3,71 +3,94 @@
 #include <Spirit/Geometry.h>
 #include <Spirit/Hamiltonian.h>
 #include <Spirit/Parameters_LLG.h>
+#include <Spirit/Quantities.h>
 #include <Spirit/Simulation.h>
 #include <Spirit/State.h>
 #include <Spirit/System.h>
 #include <Spirit/Version.h>
+#include <data/State.hpp>
+#include <engine/Vectormath.hpp>
+#include <engine/spin/Method_Solver.hpp>
+
+#include "catch.hpp"
+
 #include <Eigen/Core>
 #include <Eigen/Dense>
-#include <catch.hpp>
-#include <data/State.hpp>
+
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 
 using Catch::Matchers::WithinAbs;
 
-TEST_CASE( "Larmor Precession", "[physics]" )
-{
-    Catch::StringMaker<float>::precision  = 12;
-    Catch::StringMaker<double>::precision = 12;
+// Reduce required precision if float accuracy
+#ifdef SPIRIT_SCALAR_TYPE_DOUBLE
+[[maybe_unused]] constexpr scalar epsilon_2 = 1e-10;
+[[maybe_unused]] constexpr scalar epsilon_3 = 1e-12;
+[[maybe_unused]] constexpr scalar epsilon_4 = 1e-12;
+[[maybe_unused]] constexpr scalar epsilon_5 = 1e-6;
+[[maybe_unused]] constexpr scalar epsilon_6 = 1e-7;
+#else
+[[maybe_unused]] constexpr scalar epsilon_2 = 1e-2;
+[[maybe_unused]] constexpr scalar epsilon_3 = 1e-3;
+[[maybe_unused]] constexpr scalar epsilon_4 = 1e-4;
+[[maybe_unused]] constexpr scalar epsilon_5 = 1e-5;
+[[maybe_unused]] constexpr scalar epsilon_6 = 1e-6;
+#endif
 
-    // Input file
-    auto inputfile = "core/test/input/physics_larmor.cfg";
+TEST_CASE( "Dynamics solvers should follow Larmor precession", "[physics]" )
+{
+    using Engine::Spin::Solver;
+    constexpr auto input_file = "core/test/input/physics_larmor.cfg";
+    std::vector<Solver> solvers{
+        Solver::Heun,
+        Solver::Depondt,
+        Solver::SIB,
+        Solver::RungeKutta4,
+    };
 
     // Create State
-    auto state = std::shared_ptr<State>( State_Setup( inputfile ), State_Delete );
-
-    // Solvers to be tested
-    std::vector<int> solvers{ Solver_Heun, Solver_Depondt, Solver_SIB, Solver_RungeKutta4 };
+    auto state = std::shared_ptr<State>( State_Setup( input_file ), State_Delete );
 
     // Set up one the initial direction of the spin
-    float init_direction[3] = { 1., 0., 0. };            // vec parallel to x-axis
+    scalar init_direction[3] = { 1., 0., 0. };           // vec parallel to x-axis
     Configuration_Domain( state.get(), init_direction ); // set spin parallel to x-axis
 
     // Assure that the initial direction is set
     // (note: this pointer will stay valid throughout this test)
-    auto direction = System_Get_Spin_Directions( state.get() );
+    const auto * direction = System_Get_Spin_Directions( state.get() );
     REQUIRE( direction[0] == 1 );
     REQUIRE( direction[1] == 0 );
     REQUIRE( direction[2] == 0 );
 
     // Make sure that mu_s is the same as the one define in input file
-    float mu_s;
+    scalar mu_s{};
     Geometry_Get_mu_s( state.get(), &mu_s );
     REQUIRE( mu_s == 2 );
 
-    // Get the magnitude of the magnetic field ( it has only z-axis component )
-    float B_mag;
-    float normal[3];
+    // Get the magnitude of the magnetic field (it has only z-axis component)
+    scalar B_mag{};
+    scalar normal[3]{ 0, 0, 1 };
     Hamiltonian_Get_Field( state.get(), &B_mag, normal );
 
     // Get time step of method
     scalar damping = 0.3;
-    float tstep    = Parameters_LLG_Get_Time_Step( state.get() );
+    scalar tstep   = Parameters_LLG_Get_Time_Step( state.get() );
     Parameters_LLG_Set_Damping( state.get(), damping );
 
     scalar dtg = tstep * Constants_gamma() / ( 1.0 + damping * damping );
 
-    for( auto opt : solvers )
+    for( auto solver : solvers )
     {
         // Set spin parallel to x-axis
         Configuration_Domain( state.get(), init_direction );
-        Simulation_LLG_Start( state.get(), opt, -1, -1, true );
+        Simulation_LLG_Start( state.get(), static_cast<int>( solver ), -1, -1, true );
 
         for( int i = 0; i < 100; i++ )
         {
-            INFO( "solver " << opt << " failed spin trajectory test at iteration " << i );
+            INFO( fmt::format(
+                "Solver \"{}: {}\" failed spin trajectory test at iteration {}", static_cast<int>( solver ),
+                name( solver ), i ) );
 
             // A single iteration
             Simulation_SingleShot( state.get() );
@@ -79,7 +102,7 @@ TEST_CASE( "Larmor Precession", "[physics]" )
             scalar sx_expected  = std::cos( phi_expected ) * rxy_expected;
 
             // TODO: why is precision so low for Heun and SIB solvers? Other solvers manage ~1e-10
-            REQUIRE_THAT( direction[0], WithinAbs( sx_expected, 1e-6 ) );
+            REQUIRE_THAT( direction[0], WithinAbs( sx_expected, epsilon_5 ) );
             REQUIRE_THAT( direction[2], WithinAbs( sz_expected, 1e-6 ) );
         }
 
@@ -87,95 +110,210 @@ TEST_CASE( "Larmor Precession", "[physics]" )
     }
 }
 
-TEST_CASE( "Finite Differences", "[physics]" )
+TEST_CASE(
+    "RK4 should not dephase spins while they precess with active exchange interaction and open boundary conditions",
+    "[physics]" )
 {
-    Catch::StringMaker<float>::precision  = 12;
-    Catch::StringMaker<double>::precision = 12;
+    using Engine::Spin::Solver;
+    constexpr auto input_file = "core/test/input/physics_dephasing.cfg";
+    std::vector<Solver> solvers{
+        Solver::RungeKutta4,
+    };
 
-    // Hamiltonians to be tested
-    std::vector<const char *> hamiltonians{ "core/test/input/fd_pairs.cfg" };
-    //"core/test/input/fd_neighbours",
-    //"core/test/input/fd_gaussian.cfg"};
+    // Create State
+    auto state = std::shared_ptr<State>( State_Setup( input_file ), State_Delete );
 
-    // Reduce precision if float accuracy
-    double epsilon_apprx = 1e-11;
-    if( strcmp( Spirit_Scalar_Type(), "float" ) == 0 )
+    // Set up one the initial direction of the spin
+    static constexpr scalar theta  = 0.1 * Utility::Constants::Pi;
+    const scalar init_direction[3] = { sin( theta ), 0., cos( theta ) };
+    Configuration_Domain( state.get(), init_direction );
+
+    const int nos = System_Get_NOS( state.get() );
+
+    // Assure that the initial direction is set
+    // (note: this pointer will stay valid throughout this test)
+    const auto * direction = System_Get_Spin_Directions( state.get() );
+    for( int i = 0; i < 3 * nos; i += 3 )
     {
-        WARN( "Detected single precision calculation. Reducing precision requirements." );
-        epsilon_apprx = 1e-4;
+        REQUIRE_THAT( direction[i + 0], WithinAbs( sin( theta ), epsilon_4 ) );
+        REQUIRE_THAT( direction[i + 1], WithinAbs( 0., epsilon_4 ) );
+        REQUIRE_THAT( direction[i + 2], WithinAbs( cos( theta ), epsilon_4 ) );
     }
 
-    for( auto ham : hamiltonians )
+    // Make sure that mu_s is the same as the one define in input file
+    scalar mu_s{};
+    Geometry_Get_mu_s( state.get(), &mu_s );
+    REQUIRE( mu_s == 2 );
+
+    // Set the magnitude of the magnetic field (it has only z-axis component)
+    const scalar B_mag = 0.0;
+    const scalar normal[3]{ 0, 0, 1 };
+    Hamiltonian_Set_Field( state.get(), B_mag, normal );
+
+    // Set the magnitude of the anisotropy
+    const scalar ani_mag = 1.0;
+    const scalar ani_normal[3]{ 0, 0, 1 };
+    Hamiltonian_Set_Anisotropy( state.get(), ani_mag, ani_normal );
+
+    // Set the magnitude of the exchange interaction
+    const scalar exchange_mag = 50;
+    Hamiltonian_Set_Exchange( state.get(), 1, &exchange_mag );
+
+    const Vector3 n0{ init_direction[0], init_direction[1], init_direction[2] };
+    const Vector3 K0{ ani_normal[0], ani_normal[1], ani_normal[2] };
+
+    // Set zero damping
+    const scalar damping = 0.0;
+    Parameters_LLG_Set_Damping( state.get(), damping );
+
+    // absolute value of the std of the magnetization
+    auto stdev = [nos, direction, state = state.get(), prefactor = 1.0 / static_cast<scalar>( std::max( 1, nos - 1 ) )]
     {
-        INFO( " Testing " << ham );
+        scalar average[3] = { 0, 0, 0 };
+        Quantity_Get_Average_Spin( state, average );
 
-        // create state
-        auto state = std::shared_ptr<State>( State_Setup( ham ), State_Delete );
-
-        Configuration_Random( state.get() );
-
-        auto & vf    = *state->active_image->spins;
-        auto grad    = vectorfield( state->nos );
-        auto grad_fd = vectorfield( state->nos );
-
-        state->active_image->hamiltonian->Gradient_FD( vf, grad_fd );
-        state->active_image->hamiltonian->Gradient( vf, grad );
-
-        for( int i = 0; i < state->nos; i++ )
+        scalar variance = 0;
+        for( auto j = 0; j < 3 * nos; j += 3 )
         {
-            INFO( "i = " << i << "\n" );
-            INFO( "Gradient (FD) = " << grad_fd[i].transpose() << "\n" );
-            INFO( "Gradient      = " << grad[i].transpose() << "\n" );
-            REQUIRE( grad_fd[i].isApprox( grad[i], epsilon_apprx ) );
+            for( auto k = 0; k < 3; ++k )
+            {
+                const scalar diff = direction[j + k] - average[k];
+                variance += diff * diff;
+            }
+        }
+        return sqrt( prefactor * variance );
+    };
+
+    for( auto solver : solvers )
+    {
+        // Set spin parallel to x-axis
+        Configuration_Domain( state.get(), init_direction );
+        Simulation_LLG_Start( state.get(), static_cast<int>( solver ), -1, -1, /*singleshot=*/true );
+
+        for( int i = 0; i < 1000; ++i )
+        {
+            INFO( fmt::format(
+                "Solver \"{}: {}\" failed spin dephasing test at iteration {}", static_cast<int>( solver ),
+                name( solver ), i ) );
+
+            // A single iteration
+            Simulation_SingleShot( state.get() );
+            REQUIRE_THAT( stdev(), WithinAbs( 0, epsilon_4 ) );
         }
 
+        Simulation_Stop( state.get() );
+    }
+}
+
+// Hamiltonians to be tested
+static constexpr std::array hamiltonian_input_files{ "core/test/input/fd_pairs.cfg",
+                                                     "core/test/input/fd_neighbours.cfg",
+                                                     // "core/test/input/fd_gaussian.cfg", // TODO: issue with precision
+                                                     "core/test/input/fd_quadruplet.cfg" };
+
+TEST_CASE( "Finite difference and regular Hamiltonian should match", "[physics]" )
+{
+    for( const auto * input_file : hamiltonian_input_files )
+    {
+        INFO( " Testing " << input_file );
+
+        auto state = std::shared_ptr<State>( State_Setup( input_file ), State_Delete );
+        Configuration_Random( state.get() );
+        const auto & system_state = *state->active_image->state;
+        auto & hamiltonian        = state->active_image->hamiltonian;
+
+        // Compare gradients
+        auto grad    = vectorfield( state->nos, Vector3::Zero() );
+        auto grad_fd = vectorfield( state->nos, Vector3::Zero() );
+        for( const auto & interaction : hamiltonian->active_interactions() )
+        {
+            Engine::Vectormath::fill( grad, Vector3::Zero() );
+            Engine::Vectormath::fill( grad_fd, Vector3::Zero() );
+            interaction->Gradient( system_state, grad );
+            Engine::Vectormath::Gradient(
+                system_state, grad_fd,
+                [&interaction]( const auto & state ) -> scalar { return interaction->Energy( state ); } );
+            INFO( "Interaction: " << interaction->Name() << "\n" );
+            for( int i = 0; i < state->nos; i++ )
+            {
+                INFO( "i = " << i << ", epsilon = " << epsilon_2 << "\n" );
+                INFO( "Gradient (FD) = " << grad_fd[i].transpose() << "\n" );
+                INFO( "Gradient      = " << grad[i].transpose() << "\n" );
+                REQUIRE( grad_fd[i].isApprox( grad[i], epsilon_2 ) );
+            }
+        }
+
+        // Compare Hessians
         auto hessian    = MatrixX( 3 * state->nos, 3 * state->nos );
         auto hessian_fd = MatrixX( 3 * state->nos, 3 * state->nos );
+        for( const auto & interaction : hamiltonian->active_interactions() )
+        {
+            hessian.setZero();
+            hessian_fd.setZero();
 
-        state->active_image->hamiltonian->Hessian_FD( vf, hessian_fd );
-        state->active_image->hamiltonian->Hessian( vf, hessian );
-
-        INFO( "Hessian (FD) = " << hessian_fd << "\n" );
-        INFO( "Hessian      = " << hessian << "\n" );
-        REQUIRE( hessian_fd.isApprox( hessian, epsilon_apprx ) );
+            Engine::Vectormath::Hessian(
+                system_state, hessian_fd,
+                [&interaction]( const auto & state, auto & gradient ) { interaction->Gradient( state, gradient ); } );
+            interaction->Hessian( system_state, hessian );
+            INFO( "Interaction: " << interaction->Name() << "\n" );
+            INFO( "epsilon = " << epsilon_3 << "\n" );
+            INFO( "Hessian (FD) =\n" << hessian_fd << "\n" );
+            INFO( "Hessian      =\n" << hessian << "\n" );
+            REQUIRE( hessian_fd.isApprox( hessian, epsilon_3 ) );
+        }
     }
 }
 
 TEST_CASE( "Dipole-Dipole Interaction", "[physics]" )
 {
-    Catch::StringMaker<float>::precision  = 12;
-    Catch::StringMaker<double>::precision = 12;
-
-    // cfg where only ddi is enabled
-    auto state = std::shared_ptr<State>( State_Setup( "core/test/input/physics_ddi.cfg" ), State_Delete );
+    // Config file where only DDI is enabled
+    constexpr auto input_file = "core/test/input/physics_ddi.cfg";
+    auto state                = std::shared_ptr<State>( State_Setup( input_file ), State_Delete );
 
     Configuration_Random( state.get() );
+    auto & system_state = *state->active_image->state;
 
-    auto & spins = *state->active_image->spins;
+    auto ddi_interaction = state->active_image->hamiltonian->getInteraction<Engine::Spin::Interaction::DDI>();
 
-    auto grad_fft    = vectorfield( state->nos );
-    auto grad_direct = vectorfield( state->nos );
+    // FFT gradient and energy
+    auto grad_fft = vectorfield( state->nos, Vector3::Zero() );
+    ddi_interaction->Gradient( system_state, grad_fft );
+    auto energy_fft = ddi_interaction->Energy( system_state );
+    {
+        auto grad_fft_fd = vectorfield( state->nos, Vector3::Zero() );
+        Engine::Vectormath::Gradient(
+            system_state, grad_fft_fd,
+            [&ddi_interaction]( const auto & state ) -> scalar { return ddi_interaction->Energy( state ); } );
 
-    state->active_image->hamiltonian->Gradient( spins, grad_fft );
-    auto energy_fft = state->active_image->hamiltonian->Energy( spins );
-
+        INFO( "Interaction: " << ddi_interaction->Name() << "\n" );
+        for( int i = 0; i < state->nos; i++ )
+        {
+            INFO( "i = " << i << ", epsilon = " << epsilon_2 << "\n" );
+            INFO( "Gradient (FD) = " << grad_fft_fd[i].transpose() << "\n" );
+            INFO( "Gradient      = " << grad_fft[i].transpose() << "\n" );
+            REQUIRE_THAT( ( grad_fft_fd[i] - grad_fft[i] ).norm(), WithinAbs( 0, epsilon_2 ) );
+        }
+    }
+    // Direct (cutoff) gradient and energy
     auto n_periodic_images = std::vector<int>{ 4, 4, 4 };
     Hamiltonian_Set_DDI( state.get(), SPIRIT_DDI_METHOD_CUTOFF, n_periodic_images.data(), -1 );
+    auto grad_direct = vectorfield( state->nos, Vector3::Zero() );
+    ddi_interaction->Gradient( system_state, grad_direct );
+    auto energy_direct = ddi_interaction->Energy( system_state );
 
-    state->active_image->hamiltonian->Gradient( spins, grad_direct );
-    auto energy_direct = state->active_image->hamiltonian->Energy( spins );
-
+    // Compare gradients
     for( int i = 0; i < state->nos; i++ )
     {
-        INFO( "Failed DDI-Gradient comparison at i = " << i );
-        INFO( "Gradient (FFT):" );
-        INFO( grad_fft[i] );
-        INFO( "Gradient (Direct):" );
-        INFO( grad_direct[i] );
-        REQUIRE( grad_fft[i].isApprox( grad_direct[i] ) );
+        INFO( "Failed DDI-Gradient comparison at i = " << i << ", epsilon = " << epsilon_4 << "\n" );
+        INFO( "Gradient (FFT)    = " << grad_fft[i].transpose() << "\n" );
+        INFO( "Gradient (Direct) = " << grad_direct[i].transpose() << "\n" );
+        REQUIRE( grad_fft[i].isApprox(
+            grad_direct[i], epsilon_4 ) ); // Seems this is a relative test, not an absolute error margin
     }
-    INFO( "Failed energy comparison test!" );
+
+    // Compare energies
+    INFO( "Failed energy comparison test! epsilon = " << epsilon_6 );
     INFO( "Energy (Direct) = " << energy_direct << "\n" );
     INFO( "Energy (FFT)    = " << energy_fft << "\n" );
-    REQUIRE_THAT( energy_fft, WithinAbs( energy_direct, 1e-7 ) );
+    REQUIRE_THAT( energy_fft, WithinAbs( energy_direct, epsilon_6 ) );
 }

@@ -1,5 +1,7 @@
 pandoc
+sphinx_rtd_theme
 sphinx-markdown-tables
+myst-parser
 numpy
 cmake
 gcc7

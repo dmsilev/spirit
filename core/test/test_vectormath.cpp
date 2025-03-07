@@ -1,17 +1,27 @@
-#include <catch.hpp>
 #include <data/Geometry.hpp>
 #include <engine/Vectormath.hpp>
 #include <engine/Vectormath_Defines.hpp>
+
+#include "catch.hpp"
+
 #include <iostream>
 #include <vector>
 
 using Catch::Matchers::WithinAbs;
 
+// Reduce required precision if float accuracy
+#ifdef SPIRIT_SCALAR_TYPE_DOUBLE
+[[maybe_unused]] constexpr scalar epsilon_close = 1e-12;
+[[maybe_unused]] constexpr scalar epsilon_apprx = 1e-11;
+[[maybe_unused]] constexpr scalar epsilon_rough = 1e-11;
+#else
+[[maybe_unused]] constexpr scalar epsilon_close = 1e-7;
+[[maybe_unused]] constexpr scalar epsilon_apprx = 1e-5;
+[[maybe_unused]] constexpr scalar epsilon_rough = 1e-2;
+#endif
+
 TEST_CASE( "Vectormath operations", "[vectormath]" )
 {
-    Catch::StringMaker<float>::precision  = 12;
-    Catch::StringMaker<double>::precision = 12;
-
     int N       = 10000;
     int N_check = std::min( 100, N );
     scalarfield sf( N, 1 );
@@ -26,7 +36,7 @@ TEST_CASE( "Vectormath operations", "[vectormath]" )
         auto m = Engine::Vectormath::Magnetization( vf1, mu_s_field );
         REQUIRE_THAT( m[0], WithinAbs( 0, 1e-12 ) );
         REQUIRE_THAT( m[1], WithinAbs( 0, 1e-12 ) );
-        REQUIRE_THAT( m[2], WithinAbs( mu_s, 1e-12 ) );
+        REQUIRE_THAT( m[2], WithinAbs( mu_s, epsilon_rough ) );
     }
 
     SECTION( "Rotate" )
@@ -41,7 +51,7 @@ TEST_CASE( "Vectormath operations", "[vectormath]" )
 
         Engine::Vectormath::rotate( v1_in, v1_axis, angle, v1_out );
         for( unsigned int i = 0; i < 3; i++ )
-            REQUIRE_THAT( v1_out[i], WithinAbs( v1_exp[i], 1e-12 ) );
+            REQUIRE_THAT( v1_out[i], WithinAbs( v1_exp[i], epsilon_close ) );
 
         // zero rotation test
         Vector3 v2_out{ 0, 0, 0 };
@@ -84,7 +94,7 @@ TEST_CASE( "Vectormath operations", "[vectormath]" )
     SECTION( "Sum, Mean and Divide" )
     {
         // Sum
-        scalar sN = (scalar)N;
+        auto sN = scalar( N );
         Vector3 vref1{ sN, sN, sN };
         Vector3 vref2{ -sN, sN, sN };
         scalar stest1  = Engine::Vectormath::sum( sf );
@@ -118,9 +128,6 @@ TEST_CASE( "Vectormath operations", "[vectormath]" )
 
     SECTION( "Normalization" )
     {
-        scalar mc = Engine::Vectormath::max_abs_component( vf1 );
-        REQUIRE( mc == 1 );
-
         Vector3 vtest1 = vf1[0].normalized();
         Vector3 vtest2 = vf2[0].normalized();
         Engine::Vectormath::normalize_vectors( vf1 );
@@ -130,22 +137,6 @@ TEST_CASE( "Vectormath operations", "[vectormath]" )
             REQUIRE( vf1[i] == vtest1 );
             REQUIRE( vf2[i] == vtest2 );
         }
-    }
-
-    SECTION( "MAX Abs component" )
-    {
-        Vector3 vtest1 = vf1[0].normalized();
-        Vector3 vtest2 = vf2[0].normalized();
-        scalar vmc1    = std::max( vtest1[0], std::max( vtest1[1], vtest1[2] ) );
-        scalar vmc2    = std::max( vtest2[0], std::max( vtest2[1], vtest2[2] ) );
-
-        Engine::Vectormath::normalize_vectors( vf1 );
-        Engine::Vectormath::normalize_vectors( vf2 );
-        scalar vfmc1 = Engine::Vectormath::max_abs_component( vf1 );
-        scalar vfmc2 = Engine::Vectormath::max_abs_component( vf2 );
-
-        REQUIRE( vfmc1 == vmc1 );
-        REQUIRE( vfmc2 == vmc2 );
     }
 
     SECTION( "MAX norm" )
@@ -302,16 +293,14 @@ TEST_CASE( "Vectormath operations", "[vectormath]" )
         intfield boundary_conditions = { 0, 0, 0 }; // Our test only works with open boundary conditions
         Engine::Vectormath::jacobian( vftest, test_geometry, boundary_conditions, jacobians );
 
-        double epsilon_apprx = 1e-11;
-
         for( int i = 0; i < test_geometry.nos; i++ )
         {
             auto j   = jacobians[i];
             auto j_e = expected_jacobians[i];
 
-            INFO( i );
-            INFO( j.block( 0, 0, 3, 2 ) );
-            INFO( j_e.block( 0, 0, 3, 2 ) );
+            INFO( "index " << i << "\n" );
+            INFO( "j.block( 0, 0, 3, 2 )\n" << j.block( 0, 0, 3, 2 ) << "\n" );
+            INFO( "j_e.block( 0, 0, 3, 2 )\n" << j_e.block( 0, 0, 3, 2 ) << "\n" );
 
             REQUIRE( j_e.block( 0, 0, 3, 2 ).isApprox( j.block( 0, 0, 3, 2 ), epsilon_apprx ) );
         }

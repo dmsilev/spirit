@@ -1,6 +1,7 @@
 #include <engine/Manifoldmath.hpp>
 #include <engine/Method.hpp>
 #include <engine/Vectormath.hpp>
+#include <engine/spin/Method.hpp>
 #include <utility/Constants.hpp>
 #include <utility/Exception.hpp>
 #include <utility/Logging.hpp>
@@ -18,8 +19,8 @@ Method::Method( std::shared_ptr<Data::Parameters_Method> parameters, int idx_img
           step( 0 ),
           idx_image( idx_img ),
           idx_chain( idx_chain ),
-          parameters( parameters ),
-          n_iterations_amortize( parameters->n_iterations_amortize )
+          n_iterations_amortize( parameters->n_iterations_amortize ),
+          parameters( parameters )
 {
     // Sender name for log messages
     this->SenderName = Log_Sender::All;
@@ -45,13 +46,6 @@ Method::Method( std::shared_ptr<Data::Parameters_Method> parameters, int idx_img
         this->t_iterations.push_back( std::chrono::system_clock::now() );
     this->ips       = 0;
     this->starttime = Timing::CurrentDateTime();
-
-// Printing precision for scalars
-#ifdef CORE_SCALAR_TYPE_FLOAT
-    this->print_precision = 8;
-#else
-    this->print_precision = 12;
-#endif
 }
 
 void Method::Iterate()
@@ -75,7 +69,7 @@ void Method::Iterate()
         t_current = std::chrono::system_clock::now();
 
         // Lock Systems
-        this->Lock();
+        this->lock();
 
         // Pre-iteration hook
         this->Hook_Pre_Iteration();
@@ -98,7 +92,7 @@ void Method::Iterate()
         }
 
         // Unlock systems
-        this->Unlock();
+        this->unlock();
     }
 
     //---- Finalize (set iterations_allowed to false etc.)
@@ -144,16 +138,6 @@ std::int64_t Method::getWallTime()
     return dt_ms.count();
 }
 
-scalar Method::getForceMaxAbsComponent()
-{
-    return this->force_max_abs_component;
-}
-
-std::vector<scalar> Method::getForceMaxAbsComponent_All()
-{
-    return { this->force_max_abs_component };
-}
-
 scalar Method::getTorqueMaxNorm()
 {
     return this->max_torque;
@@ -170,7 +154,9 @@ std::vector<scalar> Method::getTorqueMaxNorm_All()
 void Method::Initialize() {}
 
 void Method::Message_Start() {}
+
 void Method::Message_Step() {}
+
 void Method::Message_End() {}
 
 void Method::Iteration() {}
@@ -178,11 +164,6 @@ void Method::Iteration() {}
 bool Method::ContinueIterating()
 {
     return this->iteration < this->n_iterations && this->Iterations_Allowed() && !this->StopFile_Present();
-}
-
-bool Method::Iterations_Allowed()
-{
-    return this->systems[0]->iteration_allowed;
 }
 
 bool Method::Walltime_Expired( std::chrono::duration<scalar> dt_seconds )
@@ -231,19 +212,7 @@ void Method::Finalize()
         "Tried to use Method::Save_Current() of the Method base class!" );
 }
 
-void Method::Lock()
-{
-    for( auto & system : this->systems )
-        system->Lock();
-}
-
-void Method::Unlock()
-{
-    for( auto & system : this->systems )
-        system->Unlock();
-}
-
-std::string Method::Name()
+std::string_view Method::Name()
 {
     // Not Implemented!
     Log( Log_Level::Error, Log_Sender::All, std::string( "Tried to use Method::Name() of the Method base class!" ) );
@@ -251,7 +220,8 @@ std::string Method::Name()
 }
 
 // Solver name as string
-std::string Method::SolverName()
+
+std::string_view Method::SolverName()
 {
     // Not Implemented!
     Log( Log_Level::Error, Log_Sender::All,
@@ -260,7 +230,7 @@ std::string Method::SolverName()
     return "--";
 }
 
-std::string Method::SolverFullName()
+std::string_view Method::SolverFullName()
 {
     // Not Implemented!
     Log( Log_Level::Error, Log_Sender::All,

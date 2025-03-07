@@ -4,10 +4,11 @@
 namespace Data
 {
 
-Spin_System_Chain::Spin_System_Chain(
-    std::vector<std::shared_ptr<Spin_System>> images, std::shared_ptr<Data::Parameters_Method_GNEB> gneb_parameters,
+template<typename Hamiltonian>
+Spin_System_Chain<Hamiltonian>::Spin_System_Chain(
+    std::vector<std::shared_ptr<system_t>> images, std::shared_ptr<Data::Parameters_Method_GNEB> gneb_parameters,
     bool iteration_allowed )
-        : iteration_allowed( iteration_allowed ), singleshot_allowed( false ), gneb_parameters( gneb_parameters )
+        : gneb_parameters( gneb_parameters ), iteration_allowed( iteration_allowed ), singleshot_allowed( false )
 {
     this->noi    = images.size();
     this->images = images;
@@ -24,23 +25,25 @@ Spin_System_Chain::Spin_System_Chain(
     this->E_array_interpolated = std::vector<std::vector<scalar>>( 7, std::vector<scalar>( size_interpolated, 0 ) );
 }
 
-void Spin_System_Chain::Lock() noexcept
+template<typename Hamiltonian>
+void Spin_System_Chain<Hamiltonian>::lock() noexcept
 try
 {
     this->ordered_lock.lock();
     for( auto & image : this->images )
-        image->Lock();
+        image->lock();
 }
 catch( ... )
 {
     spirit_handle_exception_core( "Unlocking the Spin_System_Chain failed!" );
 }
 
-void Spin_System_Chain::Unlock() noexcept
+template<typename Hamiltonian>
+void Spin_System_Chain<Hamiltonian>::unlock() noexcept
 try
 {
     for( auto & image : this->images )
-        image->Unlock();
+        image->unlock();
     this->ordered_lock.unlock();
 }
 catch( ... )
@@ -49,3 +52,5 @@ catch( ... )
 }
 
 } // namespace Data
+
+template class Data::Spin_System_Chain<Engine::Spin::Hamiltonian>;

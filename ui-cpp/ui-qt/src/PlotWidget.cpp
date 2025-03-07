@@ -10,10 +10,10 @@
 
 using namespace QtCharts;
 
-static const int SIZE = 30;
-static const int INCR = 3;
-static const int REGU = 8;
-static const int TRIA = 10;
+static constexpr int SIZE = 30;
+static constexpr int INCR = 3;
+static constexpr int REGU = 8;
+static constexpr int TRIA = 10;
 
 PlotWidget::PlotWidget( std::shared_ptr<State> state, bool plot_image_energies, bool plot_interpolated )
         : plot_image_energies( plot_image_energies ), plot_interpolated( plot_interpolated )
@@ -121,10 +121,16 @@ PlotWidget::PlotWidget( std::shared_ptr<State> state, bool plot_image_energies, 
 
     // Create Axes
     this->chart->createDefaultAxes();
-    this->chart->axisX()->setTitleText( "Rx" );
-    this->chart->axisX()->setMin( -0.04 );
-    this->chart->axisX()->setMax( 1.04 );
-    this->chart->axisY()->setTitleText( "E" );
+    if( auto axes = this->chart->axes( Qt::Horizontal ); !axes.empty() )
+    {
+        axes[0]->setTitleText( "Rx" );
+        axes[0]->setMin( -0.04 );
+        axes[0]->setMax( 1.04 );
+    }
+    if( auto axes = this->chart->axes( Qt::Horizontal ); !axes.empty() )
+    {
+        axes[0]->setTitleText( "E" );
+    }
 
     // Fill the Series with initial values
     this->plotEnergies();
@@ -148,13 +154,13 @@ void PlotWidget::plotEnergies()
     int size_interp = noi + ( noi - 1 ) * Parameters_GNEB_Get_N_Energy_Interpolations( state.get() );
 
     // Allocate arrays
-    Rx              = std::vector<float>( noi, 0 );
-    energies        = std::vector<float>( noi, 0 );
-    Rx_interp       = std::vector<float>( size_interp, 0 );
-    energies_interp = std::vector<float>( size_interp, 0 );
+    Rx              = std::vector<scalar>( noi, 0 );
+    energies        = std::vector<scalar>( noi, 0 );
+    Rx_interp       = std::vector<scalar>( size_interp, 0 );
+    energies_interp = std::vector<scalar>( size_interp, 0 );
 
     // Get Data
-    float Rx_tot = System_Get_Rx( state.get(), noi - 1 );
+    scalar Rx_tot = System_Get_Rx( state.get(), noi - 1 );
     Chain_Get_Rx( state.get(), Rx.data() );
     Chain_Get_Energy( state.get(), energies.data() );
     if( this->plot_interpolated )
@@ -164,13 +170,13 @@ void PlotWidget::plotEnergies()
     }
 
     // Replacement data vectors
-    auto empty      = QVector<QPointF>( 0 );
-    auto current    = QVector<QPointF>( 0 );
-    auto normal     = QVector<QPointF>( 0 );
-    auto climbing   = QVector<QPointF>( 0 );
-    auto falling    = QVector<QPointF>( 0 );
-    auto stationary = QVector<QPointF>( 0 );
-    auto interp     = QVector<QPointF>( 0 );
+    const auto empty = QVector<QPointF>( 0 );
+    auto current     = QVector<QPointF>( 0 );
+    auto normal      = QVector<QPointF>( 0 );
+    auto climbing    = QVector<QPointF>( 0 );
+    auto falling     = QVector<QPointF>( 0 );
+    auto stationary  = QVector<QPointF>( 0 );
+    auto interp      = QVector<QPointF>( 0 );
 
     // Min and max yaxis values
     float ymin = 1e8, ymax = -1e8;
@@ -179,14 +185,14 @@ void PlotWidget::plotEnergies()
     int idx_current = System_Get_Index( state.get() );
 
     scalar Rx_cur = Rx[idx_current];
-    if (renormalize_Rx && Rx_tot > 0)
+    if( renormalize_Rx && Rx_tot > 0 )
         Rx_cur /= Rx_tot;
-    
+
     scalar E_cur = energies[idx_current];
-    if (divide_by_nos)
+    if( divide_by_nos )
         E_cur /= nos;
 
-    current.push_back( QPointF( Rx_cur, E_cur) );
+    current.push_back( QPointF( Rx_cur, E_cur ) );
 
     if( this->plot_image_energies )
     {
@@ -196,20 +202,20 @@ void PlotWidget::plotEnergies()
                 Rx[i] = Rx[i];
             energies[i] = energies[i];
 
-            if (renormalize_Rx && Rx_tot > 0)
+            if( renormalize_Rx && Rx_tot > 0 )
                 Rx[i] /= Rx_tot;
 
-            if (divide_by_nos)
+            if( divide_by_nos )
                 energies[i] /= nos;
 
-            if( Parameters_GNEB_Get_Climbing_Falling( state.get(), i ) == 0 )
-                normal.push_back( QPointF( Rx[i], energies[i] ) );
-            else if( Parameters_GNEB_Get_Climbing_Falling( state.get(), i ) == 1 )
-                climbing.push_back( QPointF( Rx[i], energies[i] ) );
-            else if( Parameters_GNEB_Get_Climbing_Falling( state.get(), i ) == 2 )
-                falling.push_back( QPointF( Rx[i], energies[i] ) );
-            else if( Parameters_GNEB_Get_Climbing_Falling( state.get(), i ) == 3 )
-                stationary.push_back( QPointF( Rx[i], energies[i] ) );
+            switch( Parameters_GNEB_Get_Climbing_Falling( state.get(), i ) )
+            {
+                case 0: normal.push_back( QPointF( Rx[i], energies[i] ) ); break;
+                case 1: climbing.push_back( QPointF( Rx[i], energies[i] ) ); break;
+                case 2: falling.push_back( QPointF( Rx[i], energies[i] ) ); break;
+                case 3: stationary.push_back( QPointF( Rx[i], energies[i] ) ); break;
+                default: break;
+            }
 
             if( energies[i] < ymin )
                 ymin = energies[i];
@@ -225,10 +231,10 @@ void PlotWidget::plotEnergies()
                 Rx_interp[i] = Rx_interp[i];
             energies_interp[i] = energies_interp[i];
 
-            if (renormalize_Rx && Rx_tot > 0)
+            if( renormalize_Rx && Rx_tot > 0 )
                 Rx_interp[i] /= Rx_tot;
 
-            if (divide_by_nos)
+            if( divide_by_nos )
                 energies_interp[i] /= nos;
 
             interp.push_back( QPointF( Rx_interp[i], energies_interp[i] ) );
@@ -241,31 +247,31 @@ void PlotWidget::plotEnergies()
     }
 
     // Set marker type for current image
-    if( Parameters_GNEB_Get_Climbing_Falling( state.get() ) == 0 )
+    switch( Parameters_GNEB_Get_Climbing_Falling( state.get() ) )
     {
-        series_E_current->setMarkerShape( QScatterSeries::MarkerShapeCircle );
-        series_E_current->setMarkerSize( REGU );
-        series_E_current->setBrush( QColor( "Red" ) );
-    }
-    else if( Parameters_GNEB_Get_Climbing_Falling( state.get() ) == 1 )
-    {
-        series_E_current->setMarkerShape( QScatterSeries::MarkerShapeRectangle );
-        series_E_current->setMarkerSize( TRIA );
-        series_E_current->setBrush( triangleUpRed.scaled( TRIA, TRIA ) );
-        series_E_current->setPen( QColor( Qt::transparent ) );
-    }
-    else if( Parameters_GNEB_Get_Climbing_Falling( state.get() ) == 2 )
-    {
-        series_E_current->setMarkerShape( QScatterSeries::MarkerShapeRectangle );
-        series_E_current->setMarkerSize( TRIA );
-        series_E_current->setBrush( triangleDownRed.scaled( TRIA, TRIA ) );
-        series_E_current->setPen( QColor( Qt::transparent ) );
-    }
-    else if( Parameters_GNEB_Get_Climbing_Falling( state.get() ) == 3 )
-    {
-        series_E_current->setMarkerShape( QScatterSeries::MarkerShapeRectangle );
-        series_E_current->setMarkerSize( REGU );
-        series_E_current->setBrush( QColor( "Red" ) );
+        case 0:
+            series_E_current->setMarkerShape( QScatterSeries::MarkerShapeCircle );
+            series_E_current->setMarkerSize( REGU );
+            series_E_current->setBrush( QColor( "Red" ) );
+            break;
+        case 1:
+            series_E_current->setMarkerShape( QScatterSeries::MarkerShapeRectangle );
+            series_E_current->setMarkerSize( TRIA );
+            series_E_current->setBrush( triangleUpRed.scaled( TRIA, TRIA ) );
+            series_E_current->setPen( QColor( Qt::transparent ) );
+            break;
+        case 2:
+            series_E_current->setMarkerShape( QScatterSeries::MarkerShapeRectangle );
+            series_E_current->setMarkerSize( TRIA );
+            series_E_current->setBrush( triangleDownRed.scaled( TRIA, TRIA ) );
+            series_E_current->setPen( QColor( Qt::transparent ) );
+            break;
+        case 3:
+            series_E_current->setMarkerShape( QScatterSeries::MarkerShapeRectangle );
+            series_E_current->setMarkerSize( REGU );
+            series_E_current->setBrush( QColor( "Red" ) );
+            break;
+        default: break;
     }
 
     // Clear series
@@ -287,24 +293,34 @@ void PlotWidget::plotEnergies()
     series_E_current->replace( current );
 
     // Rescale y axis
-    float delta = 0.1 * ( ymax - ymin );
-    if( delta < 1e-6 )
-        delta = 0.1;
+    if( auto axes = this->chart->axes( Qt::Vertical ); !axes.empty() )
+    {
+        float delta = 0.1 * ( ymax - ymin );
+        if( delta < 1e-6 )
+            delta = 0.1;
 
-    this->chart->axisY()->setMin( ymin - delta );
-    this->chart->axisY()->setMax( ymax + delta );
+        axes[0]->setMin( ymin - delta );
+        axes[0]->setMax( ymax + delta );
+    }
 
     // Rescale x axis
-    if (!renormalize_Rx && Rx_tot > 0)
+    if( auto axes = this->chart->axes( Qt::Horizontal ); !axes.empty() )
     {
-        delta = 0.04 * Rx_tot;
-        this->chart->axisX()->setMin( Rx[0] - delta );
-        this->chart->axisX()->setMax( Rx[noi-1] + delta );
-    } else if(Rx_tot > 0) {
-        this->chart->axisX()->setMin( -0.04 );
-        this->chart->axisX()->setMax( 1.04 );
-    } else {
-        this->chart->axisX()->setMin( -0.04 );
-        this->chart->axisX()->setMax( 0.04 );
+        if( !renormalize_Rx && Rx_tot > 0 )
+        {
+            const float delta = 0.04 * Rx_tot;
+            axes[0]->setMin( Rx[0] - delta );
+            axes[0]->setMax( Rx[noi - 1] + delta );
+        }
+        else if( Rx_tot > 0 )
+        {
+            axes[0]->setMin( -0.04 );
+            axes[0]->setMax( 1.04 );
+        }
+        else
+        {
+            axes[0]->setMin( -0.04 );
+            axes[0]->setMax( 0.04 );
+        }
     }
 }

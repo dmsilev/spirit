@@ -22,6 +22,8 @@ public:
         size_max = { 800, 999999 };
     };
 
+    virtual ~WidgetBase() = default;
+
     bool & show_;
     bool dragging = false; // Is the window being dragged?
     bool docked   = false; // Is the window docked to another window?
@@ -66,8 +68,8 @@ public:
     }
 
     virtual void show_content() = 0;
-    virtual void hook_pre_show(){};
-    virtual void hook_post_show(){};
+    virtual void hook_pre_show() {};
+    virtual void hook_post_show() {};
 
 private:
     ImGuiID get_root_dock_node_id();

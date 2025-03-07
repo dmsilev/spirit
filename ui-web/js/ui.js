@@ -816,7 +816,7 @@ $(document).ready(function() {
       });
 
       $('#button-export-energy').on('click', function(e) {
-        spirit.core.System_Update_Data();
+        spirit.core.System_Update_Energy();
         downloadURI(spirit.core.exportEnergyDataURI(), $('#input-export-energy').val() + '.txt');
       });
 

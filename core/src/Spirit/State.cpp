@@ -1,4 +1,4 @@
-#include "Spirit_Defines.h"
+#include <Spirit/Spirit_Defines.h>
 #include <Spirit/State.h>
 
 #include <data/State.hpp>
@@ -23,7 +23,7 @@ try
 
     // Initialize the state
     state->datetime_creation        = std::chrono::system_clock::now();
-    state->datetime_creation_string = Utility::Timing::TimePointToString( state->datetime_creation );
+    state->datetime_creation_string = fmt::format( "{:%Y-%m-%d_%H-%M-%S}", state->datetime_creation );
     state->config_file              = config_file;
     state->quiet                    = quiet;
 
@@ -49,12 +49,12 @@ try
     block.emplace_back( "========== Spirit State: Initialising... ============" );
 
     // Log version info
-    block.emplace_back( "==========     Version:  " + version );
+    block.emplace_back( fmt::format( "==========     Version:  {}", version ) );
     // Log revision hash
-    block.emplace_back( "==========     Revision: " + version_revision );
-    Log.SendBlock( Log_Level::All, Log_Sender::All, block );
+    block.emplace_back( fmt::format( "==========     Revision: {}", version_revision ) );
+    Log( Log_Level::All, Log_Sender::All, block );
     // Log compiler
-    Log( Log_Level::Info, Log_Sender::All, "==========     Compiled with: " + compiler_full );
+    Log( Log_Level::Info, Log_Sender::All, fmt::format( "==========     Compiled with: {}", compiler_full ) );
 
     // Log whether running in "quiet" mode
     if( state->quiet )
@@ -89,6 +89,12 @@ try
 #else
     block.emplace_back( "    Not using OpenMP" );
 #endif
+// Log STL parallelization info
+#ifdef SPIRIT_USE_STDPAR
+    block.emplace_back( "    Using parallel STL" );
+#else
+    block.emplace_back( "    Not using parallel STL" );
+#endif
 // Log CUDA info
 #ifdef SPIRIT_USE_CUDA
     block.emplace_back( "    Using CUDA" );
@@ -120,13 +126,17 @@ try
 #ifdef SPIRIT_SCALAR_TYPE_FLOAT
     block.emplace_back( "    Using float as scalar type" );
 #endif
-    Log.SendBlock( Log_Level::Info, Log_Sender::All, block );
+    Log( Log_Level::Info, Log_Sender::All, block );
     Log( Log_Level::All, Log_Sender::All, "=====================================================" );
     //------------------------------------------------------------------------------------------
 
+    using Engine::Field;
+    using Engine::get;
     //---------------------- Initialize spin_system --------------------------------------------
     state->active_image = IO::Spin_System_from_Config( state->config_file );
-    Configurations::Random( *state->active_image );
+    auto & image        = state->active_image;
+    Configurations::Random_Sphere(
+        image->state->spin, image->hamiltonian->get_geometry(), image->llg_parameters->prng );
     //------------------------------------------------------------------------------------------
 
     //----------------------- Initialize spin system chain -------------------------------------
@@ -135,9 +145,9 @@ try
         = std::shared_ptr<Data::Parameters_Method_GNEB>( IO::Parameters_Method_GNEB_from_Config( state->config_file ) );
 
     // Create the chain
-    auto sv = std::vector<std::shared_ptr<Data::Spin_System>>();
+    auto sv = std::vector<std::shared_ptr<State::system_t>>();
     sv.push_back( state->active_image );
-    state->chain = std::make_shared<Data::Spin_System_Chain>( sv, params_gneb, false );
+    state->chain = std::make_shared<State::chain_t>( sv, params_gneb, false );
     //------------------------------------------------------------------------------------------
 
     //----------------------- Fill in the state ------------------------------------------------
@@ -176,7 +186,7 @@ try
     block.emplace_back( "    Number of  Errors:  " + fmt::format( "{}", Log_Get_N_Errors( state ) ) );
     block.emplace_back( "    Number of Warnings: " + fmt::format( "{}", Log_Get_N_Warnings( state ) ) );
     block.emplace_back( "=====================================================" );
-    Log.SendBlock( Log_Level::All, Log_Sender::All, block );
+    Log( Log_Level::All, Log_Sender::All, block );
     // Try to write the log file
     try
     {
@@ -221,7 +231,7 @@ try
     block.emplace_back( "============== Spirit State: Deleted ================" );
     block.emplace_back( "=====================================================" );
 
-    Log.SendBlock( Log_Level::All, Log_Sender::All, block );
+    Log( Log_Level::All, Log_Sender::All, block );
     Log.Append_to_File();
 }
 catch( ... )
@@ -277,7 +287,7 @@ try
 
     // Geometry
     IO::append_to_file( "\n\n\n", cfg );
-    IO::Geometry_to_Config( cfg, state->active_image->geometry );
+    IO::Geometry_to_Config( cfg, state->active_image->hamiltonian->get_geometry() );
 
     // LLG
     IO::append_to_file( "\n\n\n", cfg );
@@ -297,7 +307,7 @@ try
 
     // Hamiltonian
     IO::append_to_file( "\n\n\n", cfg );
-    IO::Hamiltonian_to_Config( cfg, state->active_image->hamiltonian, state->active_image->geometry );
+    IO::Hamiltonian_to_Config( cfg, state->active_image->hamiltonian );
 }
 catch( ... )
 {

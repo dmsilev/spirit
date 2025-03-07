@@ -142,6 +142,19 @@ Set a global uniaxial anisotropy [meV]
 
 
 
+### Hamiltonian_Set_Biaxial_Anisotropy
+
+```C
+void Hamiltonian_Set_Biaxial_Anisotropy(
+    State * state, const scalar * magnitude, const unsigned int exponents[][3], const scalar * primary,
+    const scalar * secondary, int n_terms, int idx_image=-1, int idx_chain=-1)
+```
+
+Set a global biaxial anisotropy [meV]
+**Note:** the secondary axis will be orthogonalized with respect to the primary axis and both axes will be normalized.
+
+
+
 ### Hamiltonian_Set_Exchange
 
 ```C
@@ -222,6 +235,40 @@ void Hamiltonian_Get_Anisotropy(State *state, float * magnitude, float * normal,
 ```
 
 Retrieves the uniaxial anisotropy [meV]
+
+
+
+### Hamiltonian_Get_Biaxial_Anisotropy_N_Atoms
+
+```C
+int Hamiltonian_Get_Biaxial_Anisotropy_N_Atoms( State * state, int idx_image = -1, int idx_chain = -1 )
+```
+
+Retrieve the number of atoms within the unit cell for which a biaxial anisotropy is defined
+
+
+
+### Hamiltonian_Get_Biaxial_Anisotropy_N_Terms
+
+```C
+void Hamiltonian_Get_Biaxial_Anisotropy_N_Terms(State * state, int idx_image = -1, int idx_chain = -1 )
+```
+
+Retrieve the total number of terms that define the biaxial anisotropy.
+
+
+
+### Hamiltonian_Get_Biaxial_Anisotropy
+
+```C
+void Hamiltonian_Get_Biaxial_Anisotropy(
+    State * state, int * indices, scalar primary[][3], scalar secondary[][3], int * site_p, const int n_indices,
+    scalar * magnitude, int exponents[][3], const int n_terms, int idx_image = -1, int idx_chain = -1 )
+```
+
+Retrieve the data representing the biaxial anisotropy.
+Each index `indices[i]` has a corresponding `primary[i]` and `secondary[i]` axis as well as a range of terms [`site_p[i]`, `site_p[i+1]`).
+The full list of terms is written to the `magnitude` (given in [meV]) and the `exponents` array respectively.
 
 
 

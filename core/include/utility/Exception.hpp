@@ -14,16 +14,20 @@ namespace Utility
 
 enum class Exception_Classifier
 {
+    // Recoverable
     File_not_Found,
-    System_not_Initialized,
     Division_by_zero,
-    Simulated_domain_too_small,
     Not_Implemented,
     Non_existing_Image,
     Non_existing_Chain,
     Input_parse_failed,
     Bad_File_Content,
     Standard_Exception,
+    API_GOT_NULLPTR,
+    Unknown_Solver,
+    // Unrecoverable
+    System_not_Initialized,
+    Simulated_domain_too_small,
     CUDA_Error,
     Unknown_Exception
     // TODO: from Chain.cpp
@@ -44,7 +48,7 @@ public:
         Exception_Classifier classifier, Log_Level level, const std::string & message, const char * file,
         unsigned int line, const char * function ) noexcept( false )
             : std::runtime_error(
-                fmt::format( "{}:{} in function \'{}\':\n{:>49}{}", file, line, function, " ", message ) ),
+                  fmt::format( "{}:{} in function \'{}\':\n{:>49}{}", file, line, function, " ", message ) ),
               classifier( classifier ),
               level( level ),
               file( file ),

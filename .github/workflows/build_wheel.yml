@@ -1,0 +1,46 @@
+---
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.22.0
+        env:
+          CIBW_BUILD: >
+            cp311-*
+            cp312-*
+          CIBW_SKIP: >
+            pp*
+            *musllinux*
+            *-win32
+            *_i686
+          CIBW_BEFORE_BUILD: >
+            cmake -B build -S .
+            -DCMAKE_BUILD_TYPE=Release
+            -DSPIRIT_BUILD_FOR_PYTHON=ON
+            -DSPIRIT_BUILD_TEST=OFF
+            -DSPIRIT_UI_CXX_USE_QT=OFF
+            -DSPIRIT_UI_IMGUI=OFF
+            && cmake --build build -j2
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+        with:
+          package-dir: ./core/python
+          output-dir: wheelhouse
+          config-file: "{package}/pyproject.toml"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          path: ./wheelhouse/*.whl

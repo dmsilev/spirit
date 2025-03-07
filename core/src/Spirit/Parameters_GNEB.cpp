@@ -22,15 +22,13 @@ void Parameters_GNEB_Set_Output_Tag( State * state, const char * tag, int idx_ch
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    chain->Lock();
+    chain->lock();
     chain->gneb_parameters->output_file_tag = tag;
-    chain->Unlock();
+    chain->unlock();
 
     Log( Utility::Log_Level::Parameter, Utility::Log_Sender::API, fmt::format( "Set GNEB output tag = \"{}\"", tag ),
          idx_image, idx_chain );
@@ -44,15 +42,13 @@ void Parameters_GNEB_Set_Output_Folder( State * state, const char * folder, int 
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    chain->Lock();
+    chain->lock();
     chain->gneb_parameters->output_folder = folder;
-    chain->Unlock();
+    chain->unlock();
 }
 catch( ... )
 {
@@ -63,17 +59,15 @@ void Parameters_GNEB_Set_Output_General( State * state, bool any, bool initial, 
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    chain->Lock();
+    chain->lock();
     chain->gneb_parameters->output_any     = any;
     chain->gneb_parameters->output_initial = initial;
     chain->gneb_parameters->output_final   = final;
-    chain->Unlock();
+    chain->unlock();
 }
 catch( ... )
 {
@@ -86,18 +80,16 @@ void Parameters_GNEB_Set_Output_Energies(
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    chain->Lock();
+    chain->lock();
     chain->gneb_parameters->output_energies_step                  = energies_step;
     chain->gneb_parameters->output_energies_interpolated          = energies_interpolated;
     chain->gneb_parameters->output_energies_divide_by_nspins      = energies_divide_by_nos;
     chain->gneb_parameters->output_energies_add_readability_lines = energies_add_readability_lines;
-    chain->Unlock();
+    chain->unlock();
 }
 catch( ... )
 {
@@ -108,16 +100,14 @@ void Parameters_GNEB_Set_Output_Chain( State * state, bool chain_step, int chain
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    chain->Lock();
+    chain->lock();
     chain->gneb_parameters->output_chain_step  = chain_step;
     chain->gneb_parameters->output_vf_filetype = IO::VF_FileFormat( chain_filetype );
-    chain->Unlock();
+    chain->unlock();
 }
 catch( ... )
 {
@@ -128,16 +118,14 @@ void Parameters_GNEB_Set_N_Iterations( State * state, int n_iterations, int n_it
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    chain->Lock();
+    chain->lock();
     chain->gneb_parameters->n_iterations     = n_iterations;
     chain->gneb_parameters->n_iterations_log = n_iterations_log;
-    chain->Unlock();
+    chain->unlock();
 }
 catch( ... )
 {
@@ -145,19 +133,17 @@ catch( ... )
 }
 
 // Set GNEB Calculation Parameters
-void Parameters_GNEB_Set_Convergence( State * state, float convergence, int idx_image, int idx_chain ) noexcept
+void Parameters_GNEB_Set_Convergence( State * state, scalar convergence, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    image->Lock();
+    image->lock();
     auto p               = chain->gneb_parameters;
     p->force_convergence = convergence;
-    image->Unlock();
+    image->unlock();
 
     Log( Utility::Log_Level::Parameter, Utility::Log_Sender::API,
          fmt::format( "Set GNEB force convergence = {}", convergence ), idx_image, idx_chain );
@@ -167,19 +153,17 @@ catch( ... )
     spirit_handle_exception_api( idx_image, idx_chain );
 }
 
-void Parameters_GNEB_Set_Spring_Constant( State * state, float spring_constant, int idx_image, int idx_chain ) noexcept
+void Parameters_GNEB_Set_Spring_Constant( State * state, scalar spring_constant, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    chain->Lock();
+    chain->lock();
     auto p             = chain->gneb_parameters;
     p->spring_constant = spring_constant;
-    chain->Unlock();
+    chain->unlock();
 
     Log( Utility::Log_Level::Parameter, Utility::Log_Sender::API,
          fmt::format( "Set GNEB spring constant = {}", spring_constant ), idx_image, idx_chain );
@@ -189,21 +173,19 @@ catch( ... )
     spirit_handle_exception_api( idx_image, idx_chain );
 }
 
-void Parameters_GNEB_Set_Spring_Force_Ratio( State * state, float ratio, int idx_chain ) noexcept
+void Parameters_GNEB_Set_Spring_Force_Ratio( State * state, scalar ratio, int idx_chain ) noexcept
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    chain->Lock();
+    chain->lock();
     auto p                = chain->gneb_parameters;
-    ratio                 = std::max( std::min( ratio, 1.0f ), 0.0f );
+    ratio                 = std::max( std::min( ratio, scalar( 1 ) ), scalar( 0 ) );
     p->spring_force_ratio = ratio;
-    chain->Unlock();
+    chain->unlock();
 
     Log( Utility::Log_Level::Parameter, Utility::Log_Sender::API,
          fmt::format( "Set GNEB spring force ratio (E vs Rx) = {}", ratio ), idx_image, idx_chain );
@@ -214,20 +196,18 @@ catch( ... )
 }
 
 void Parameters_GNEB_Set_Path_Shortening_Constant(
-    State * state, float path_shortening_constant, int idx_chain ) noexcept
+    State * state, scalar path_shortening_constant, int idx_chain ) noexcept
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    chain->Lock();
+    chain->lock();
     auto p                      = chain->gneb_parameters;
     p->path_shortening_constant = path_shortening_constant;
-    chain->Unlock();
+    chain->unlock();
 
     Log( Utility::Log_Level::Parameter, Utility::Log_Sender::API,
          fmt::format( "Set GNEB path shortening constant = {}", path_shortening_constant ), idx_image, idx_chain );
@@ -242,16 +222,14 @@ void Parameters_GNEB_Set_Moving_Endpoints( State * state, bool moving_endpoints,
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    chain->Lock();
+    chain->lock();
     auto p              = chain->gneb_parameters;
     p->moving_endpoints = moving_endpoints;
-    chain->Unlock();
+    chain->unlock();
 
     Log( Utility::Log_Level::Parameter, Utility::Log_Sender::API,
          fmt::format( "Set GNEB moving endpoints = {}", moving_endpoints ), idx_image, idx_chain );
@@ -266,16 +244,14 @@ void Parameters_GNEB_Set_Translating_Endpoints( State * state, bool translating_
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    chain->Lock();
+    chain->lock();
     auto p                   = chain->gneb_parameters;
     p->translating_endpoints = translating_endpoints;
-    chain->Unlock();
+    chain->unlock();
 
     Log( Utility::Log_Level::Parameter, Utility::Log_Sender::API,
          fmt::format( "Set GNEB translating endpoints = {}", translating_endpoints ), idx_image, idx_chain );
@@ -286,22 +262,20 @@ catch( ... )
 }
 
 void Parameters_GNEB_Set_Equilibrium_Delta_Rx(
-    State * state, float delta_Rx_left, float delta_Rx_right, int idx_chain ) noexcept
+    State * state, scalar delta_Rx_left, scalar delta_Rx_right, int idx_chain ) noexcept
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    chain->Lock();
+    chain->lock();
     auto p                        = chain->gneb_parameters;
     p->equilibrium_delta_Rx_left  = delta_Rx_left;
     p->equilibrium_delta_Rx_right = delta_Rx_right;
 
-    chain->Unlock();
+    chain->unlock();
 
     Log( Utility::Log_Level::Parameter, Utility::Log_Sender::API,
          fmt::format(
@@ -317,15 +291,13 @@ catch( ... )
 void Parameters_GNEB_Set_Climbing_Falling( State * state, int image_type, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    chain->Lock();
+    chain->lock();
     chain->image_type[idx_image] = static_cast<Data::GNEB_Image_Type>( image_type );
-    chain->Unlock();
+    chain->unlock();
 
     Log( Utility::Log_Level::Parameter, Utility::Log_Sender::API, fmt::format( "Set GNEB image type = {}", image_type ),
          idx_image, idx_chain );
@@ -339,17 +311,15 @@ void Parameters_GNEB_Set_Image_Type_Automatically( State * state, int idx_chain 
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     for( int img = 1; img < chain->noi - 1; ++img )
     {
-        scalar E0 = chain->images[img - 1]->E;
-        scalar E1 = chain->images[img]->E;
-        scalar E2 = chain->images[img + 1]->E;
+        scalar E0 = chain->images[img - 1]->E.total;
+        scalar E1 = chain->images[img]->E.total;
+        scalar E2 = chain->images[img + 1]->E.total;
 
         // Maximum
         if( E0 < E1 && E1 > E2 )
@@ -370,19 +340,17 @@ void Parameters_GNEB_Set_N_Energy_Interpolations( State * state, int n, int idx_
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
-    chain->Lock();
+    chain->lock();
     chain->gneb_parameters->n_E_interpolations = n;
     int size_interpolated                      = chain->noi + ( chain->noi - 1 ) * n;
     chain->Rx_interpolated                     = std::vector<scalar>( size_interpolated, 0 );
     chain->E_interpolated                      = std::vector<scalar>( size_interpolated, 0 );
     chain->E_array_interpolated = std::vector<std::vector<scalar>>( 7, std::vector<scalar>( size_interpolated, 0 ) );
-    chain->Unlock();
+    chain->unlock();
 }
 catch( ... )
 {
@@ -398,11 +366,9 @@ const char * Parameters_GNEB_Get_Output_Tag( State * state, int idx_chain ) noex
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     return chain->gneb_parameters->output_file_tag.c_str();
 }
@@ -416,11 +382,9 @@ const char * Parameters_GNEB_Get_Output_Folder( State * state, int idx_chain ) n
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     return chain->gneb_parameters->output_folder.c_str();
 }
@@ -435,11 +399,9 @@ void Parameters_GNEB_Get_Output_General(
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     *any     = chain->gneb_parameters->output_any;
     *initial = chain->gneb_parameters->output_initial;
@@ -456,11 +418,9 @@ void Parameters_GNEB_Get_Output_Energies(
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     *energies_step                  = chain->gneb_parameters->output_energies_step;
     *energies_interpolated          = chain->gneb_parameters->output_energies_interpolated;
@@ -476,11 +436,9 @@ void Parameters_GNEB_Get_Output_Chain( State * state, bool * chain_step, int * c
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     *chain_step     = chain->gneb_parameters->output_chain_step;
     *chain_filetype = static_cast<int>( chain->gneb_parameters->output_vf_filetype );
@@ -494,11 +452,9 @@ void Parameters_GNEB_Get_N_Iterations( State * state, int * iterations, int * it
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     auto p          = chain->gneb_parameters;
     *iterations     = p->n_iterations;
@@ -510,17 +466,15 @@ catch( ... )
 }
 
 // Get GNEB Calculation Parameters
-float Parameters_GNEB_Get_Convergence( State * state, int idx_image, int idx_chain ) noexcept
+scalar Parameters_GNEB_Get_Convergence( State * state, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     auto p = chain->gneb_parameters;
-    return static_cast<float>( p->force_convergence );
+    return p->force_convergence;
 }
 catch( ... )
 {
@@ -528,17 +482,15 @@ catch( ... )
     return 0;
 }
 
-float Parameters_GNEB_Get_Spring_Constant( State * state, int idx_image, int idx_chain ) noexcept
+scalar Parameters_GNEB_Get_Spring_Constant( State * state, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     auto p = chain->gneb_parameters;
-    return static_cast<float>( p->spring_constant );
+    return p->spring_constant;
 }
 catch( ... )
 {
@@ -546,18 +498,16 @@ catch( ... )
     return 0;
 }
 
-float Parameters_GNEB_Get_Spring_Force_Ratio( State * state, int idx_chain ) noexcept
+scalar Parameters_GNEB_Get_Spring_Force_Ratio( State * state, int idx_chain ) noexcept
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     auto p = chain->gneb_parameters;
-    return static_cast<float>( p->spring_force_ratio );
+    return p->spring_force_ratio;
 }
 catch( ... )
 {
@@ -565,18 +515,16 @@ catch( ... )
     return 0;
 }
 
-float Parameters_GNEB_Get_Path_Shortening_Constant( State * state, int idx_chain ) noexcept
+scalar Parameters_GNEB_Get_Path_Shortening_Constant( State * state, int idx_chain ) noexcept
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     auto p = chain->gneb_parameters;
-    return static_cast<float>( p->path_shortening_constant );
+    return p->path_shortening_constant;
 }
 catch( ... )
 {
@@ -588,11 +536,9 @@ bool Parameters_GNEB_Get_Moving_Endpoints( State * state, int idx_chain ) noexce
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     auto p = chain->gneb_parameters;
     return static_cast<bool>( p->moving_endpoints );
@@ -607,11 +553,9 @@ bool Parameters_GNEB_Get_Translating_Endpoints( State * state, int idx_chain ) n
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     auto p = chain->gneb_parameters;
     return static_cast<bool>( p->translating_endpoints );
@@ -623,19 +567,17 @@ catch( ... )
 }
 
 void Parameters_GNEB_Get_Equilibrium_Delta_Rx(
-    State * state, float * delta_Rx_left, float * delta_Rx_right, int idx_chain ) noexcept
+    State * state, scalar * delta_Rx_left, scalar * delta_Rx_right, int idx_chain ) noexcept
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     auto p          = chain->gneb_parameters;
-    *delta_Rx_left  = float( p->equilibrium_delta_Rx_left );
-    *delta_Rx_right = float( p->equilibrium_delta_Rx_right );
+    *delta_Rx_left  = p->equilibrium_delta_Rx_left;
+    *delta_Rx_right = p->equilibrium_delta_Rx_right;
 }
 catch( ... )
 {
@@ -645,11 +587,9 @@ catch( ... )
 int Parameters_GNEB_Get_Climbing_Falling( State * state, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     return static_cast<int>( chain->image_type[idx_image] );
 }
@@ -663,11 +603,9 @@ int Parameters_GNEB_Get_N_Energy_Interpolations( State * state, int idx_chain ) 
 try
 {
     int idx_image = -1;
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     auto p = chain->gneb_parameters;
     return p->n_E_interpolations;

@@ -1,4 +1,5 @@
 #include <engine/Vectormath.hpp>
+#include <io/Datawriter.hpp>
 #include <io/Fileformat.hpp>
 #include <io/IO.hpp>
 #include <io/OVF_File.hpp>
@@ -8,31 +9,18 @@
 #include <fmt/format.h>
 
 #include <algorithm>
-#include <cctype>
 #include <cstring>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <sstream>
 #include <string>
 
 namespace IO
 {
 
-void Write_Neighbours_Exchange( const Data::Spin_System & system, const std::string & filename )
+void Write_Neighbours_Exchange( const Engine::Spin::Interaction::Exchange::Cache & cache, const std::string & filename )
 {
-    auto * ham = dynamic_cast<Engine::Hamiltonian_Heisenberg *>( system.hamiltonian.get() );
+    const pairfield & exchange_pairs        = cache.pairs;
+    const scalarfield & exchange_magnitudes = cache.magnitudes;
 
-    std::size_t n_neighbours = ham->exchange_pairs.size();
-
-#if defined( SPIRIT_USE_OPENMP )
-    // When parallelising (cuda or openmp), all neighbours per spin are already there
-    const bool mirror_neighbours = false;
-#else
-    // When running on a single thread, we need to re-create redundant neighbours
-    const bool mirror_neighbours = true;
-    n_neighbours *= 2;
-#endif
+    const std::size_t n_neighbours = 2 * exchange_pairs.size();
 
     std::string output;
     output.reserve( int( 0x02000000 ) ); // reserve 32[MByte]
@@ -40,44 +28,34 @@ void Write_Neighbours_Exchange( const Data::Spin_System & system, const std::str
     output += "###    Interaction neighbours:\n";
     output += fmt::format( "n_neighbours_exchange {}\n", n_neighbours );
 
-    if( !ham->exchange_pairs.empty() )
+    if( !exchange_pairs.empty() )
     {
         output += fmt::format( "{:^3} {:^3}    {:^3} {:^3} {:^3}    {:^15}\n", "i", "j", "da", "db", "dc", "Jij" );
-        for( std::size_t i = 0; i < ham->exchange_pairs.size(); ++i )
+        for( std::size_t i = 0; i < exchange_pairs.size(); ++i )
         {
             output += fmt::format(
-                "{:^3} {:^3}    {:^3} {:^3} {:^3}    {:^15.8f}\n", ham->exchange_pairs[i].i, ham->exchange_pairs[i].j,
-                ham->exchange_pairs[i].translations[0], ham->exchange_pairs[i].translations[1],
-                ham->exchange_pairs[i].translations[2], ham->exchange_magnitudes[i] );
-            if( mirror_neighbours )
-            {
-                // Mirrored interactions
-                output += fmt::format(
-                    "{:^3} {:^3}    {:^3} {:^3} {:^3}    {:^15.8f}\n", ham->exchange_pairs[i].j,
-                    ham->exchange_pairs[i].i, ( -1 ) * ham->exchange_pairs[i].translations[0],
-                    ( -1 ) * ham->exchange_pairs[i].translations[1], ( -1 ) * ham->exchange_pairs[i].translations[2],
-                    ham->exchange_magnitudes[i] );
-            }
+                "{:^3} {:^3}    {:^3} {:^3} {:^3}    {:^15.8f}\n", exchange_pairs[i].i, exchange_pairs[i].j,
+                exchange_pairs[i].translations[0], exchange_pairs[i].translations[1], exchange_pairs[i].translations[2],
+                exchange_magnitudes[i] );
+            // Mirrored interactions
+            output += fmt::format(
+                "{:^3} {:^3}    {:^3} {:^3} {:^3}    {:^15.8f}\n", exchange_pairs[i].j, exchange_pairs[i].i,
+                ( -1 ) * exchange_pairs[i].translations[0], ( -1 ) * exchange_pairs[i].translations[1],
+                ( -1 ) * exchange_pairs[i].translations[2], exchange_magnitudes[i] );
         }
     }
 
     dump_to_file( output, filename );
 }
 
-void Write_Neighbours_DMI( const Data::Spin_System & system, const std::string & filename )
+void Write_Neighbours_DMI( const Engine::Spin::Interaction::DMI::Cache & cache, const std::string & filename )
 {
-    auto * ham = dynamic_cast<Engine::Hamiltonian_Heisenberg *>( system.hamiltonian.get() );
 
-    std::size_t n_neighbours = ham->dmi_pairs.size();
+    const pairfield & dmi_pairs        = cache.pairs;
+    const scalarfield & dmi_magnitudes = cache.magnitudes;
+    const vectorfield & dmi_normals    = cache.normals;
 
-#if defined( SPIRIT_USE_OPENMP )
-    // When parallelising (cuda or openmp), all neighbours per spin are already there
-    const bool mirror_neighbours = false;
-#else
-    // When running on a single thread, we need to re-create redundant neighbours
-    const bool mirror_neighbours = true;
-    n_neighbours *= 2;
-#endif
+    const std::size_t n_neighbours = 2 * dmi_pairs.size();
 
     std::string output;
     output.reserve( int( 0x02000000 ) ); // reserve 32[MByte]
@@ -85,28 +63,24 @@ void Write_Neighbours_DMI( const Data::Spin_System & system, const std::string &
     output += "###    Interaction neighbours:\n";
     output += fmt::format( "n_neighbours_dmi {}\n", n_neighbours );
 
-    if( !ham->dmi_pairs.empty() )
+    if( !dmi_pairs.empty() )
     {
         output += fmt::format(
             "{:^3} {:^3}    {:^3} {:^3} {:^3}    {:^15} {:^15} {:^15} {:^15}\n", "i", "j", "da", "db", "dc", "Dij",
             "Dijx", "Dijy", "Dijz" );
-        for( std::size_t i = 0; i < ham->dmi_pairs.size(); ++i )
+        for( std::size_t i = 0; i < dmi_pairs.size(); ++i )
         {
             output += fmt::format(
-                "{:^3} {:^3}    {:^3} {:^3} {:^3}    {:^15.8f} {:^15.8f} {:^15.8f} {:^15.8f}\n", ham->dmi_pairs[i].i,
-                ham->dmi_pairs[i].j, ham->dmi_pairs[i].translations[0], ham->dmi_pairs[i].translations[1],
-                ham->dmi_pairs[i].translations[2], ham->dmi_magnitudes[i], ham->dmi_normals[i][0],
-                ham->dmi_normals[i][1], ham->dmi_normals[i][2] );
-            if( mirror_neighbours )
-            {
-                // Mirrored interactions
-                output += fmt::format(
-                    "{:^3} {:^3}    {:^3} {:^3} {:^3}    {:^15.8f} {:^15.8f} {:^15.8f} {:^15.8f}\n",
-                    ham->dmi_pairs[i].j, ham->dmi_pairs[i].i, ( -1 ) * ham->dmi_pairs[i].translations[0],
-                    ( -1 ) * ham->dmi_pairs[i].translations[1], ( -1 ) * ham->dmi_pairs[i].translations[2],
-                    ham->dmi_magnitudes[i], ( -1 ) * ham->dmi_normals[i][0], ( -1 ) * ham->dmi_normals[i][1],
-                    ( -1 ) * ham->dmi_normals[i][2] );
-            }
+                "{:^3} {:^3}    {:^3} {:^3} {:^3}    {:^15.8f} {:^15.8f} {:^15.8f} {:^15.8f}\n", dmi_pairs[i].i,
+                dmi_pairs[i].j, dmi_pairs[i].translations[0], dmi_pairs[i].translations[1],
+                dmi_pairs[i].translations[2], dmi_magnitudes[i], dmi_normals[i][0], dmi_normals[i][1],
+                dmi_normals[i][2] );
+            // Mirrored interactions
+            output += fmt::format(
+                "{:^3} {:^3}    {:^3} {:^3} {:^3}    {:^15.8f} {:^15.8f} {:^15.8f} {:^15.8f}\n", dmi_pairs[i].j,
+                dmi_pairs[i].i, ( -1 ) * dmi_pairs[i].translations[0], ( -1 ) * dmi_pairs[i].translations[1],
+                ( -1 ) * dmi_pairs[i].translations[2], dmi_magnitudes[i], ( -1 ) * dmi_normals[i][0],
+                ( -1 ) * dmi_normals[i][1], ( -1 ) * dmi_normals[i][2] );
         }
     }
 
@@ -114,34 +88,36 @@ void Write_Neighbours_DMI( const Data::Spin_System & system, const std::string &
 }
 
 void Write_Energy_Header(
-    const Data::Spin_System & system, const std::string & filename, const std::vector<std::string> && firstcolumns,
-    bool contributions, bool normalize_by_nos, bool readability_toggle )
+    const Data::System_Energy & E, const std::string & filename, const std::vector<std::string> && firstcolumns,
+    Flags flags )
 {
+    verify_flags( flags, Flag::Contributions | Flag::Readability | Flag::Normalize_by_nos, __func__ );
+
     std::string separator = "";
     std::string line      = "";
     for( const auto & column : firstcolumns )
     {
-        if( readability_toggle )
+        if( flags & Flag::Readability )
             separator += "----------------------++";
         // Centered column titles
         line += fmt::format( " {:^20} ||", column );
     }
-    if( contributions )
+    if( flags & Flag::Contributions )
     {
         bool first = true;
-        for( const auto & pair : system.E_array )
+        for( const auto & pair : E.per_interaction )
         {
             if( first )
                 first = false;
             else
             {
                 line += "|";
-                if( readability_toggle )
+                if( flags & Flag::Readability )
                     separator += "+";
             }
             // Centered column titles
             line += fmt::format( " {:^20} ", pair.first );
-            if( readability_toggle )
+            if( flags & Flag::Readability )
                 separator += "----------------------";
         }
     }
@@ -149,99 +125,107 @@ void Write_Energy_Header(
     separator += "\n";
 
     std::string header;
-    if( readability_toggle )
+    if( flags & Flag::Readability )
         header = separator + line + separator;
     else
+    {
         header = line;
-    if( !readability_toggle )
         std::replace( header.begin(), header.end(), '|', ' ' );
+    }
 
     write_to_file( header, filename );
 }
 
 void Append_Image_Energy(
-    const Data::Spin_System & system, const int iteration, const std::string & filename, bool normalize_by_nos,
-    bool readability_toggle )
+    const Data::System_Energy & E, const Data::Geometry & geometry, const int iteration, const std::string & filename,
+    Flags flags )
 {
-    scalar normalization = 1;
-    if( normalize_by_nos )
-        normalization = static_cast<scalar>( 1.0 / static_cast<double>( system.nos ) );
+    verify_flags( flags, Flag::Readability | Flag::Normalize_by_nos, __func__ );
 
-    // s.UpdateEnergy();
+    scalar normalization = 1;
+    if( flags & Flag::Normalize_by_nos )
+        normalization = static_cast<scalar>( 1.0 / static_cast<double>( geometry.nos ) );
 
     // Centered column entries
-    std::string line = fmt::format( " {:^20} || {:^20.10f} |", iteration, system.E * normalization );
-    for( const auto & pair : system.E_array )
+    std::string line = fmt::format( " {:^20} || {:^20.10f} |", iteration, E.total * normalization );
+    for( const auto & pair : E.per_interaction )
     {
         line += fmt::format( "| {:^20.10f} ", pair.second * normalization );
     }
     line += "\n";
 
-    if( !readability_toggle )
+    if( !( flags & Flag::Readability ) )
         std::replace( line.begin(), line.end(), '|', ' ' );
 
     append_to_file( line, filename );
 }
 
 void Write_Image_Energy(
-    const Data::Spin_System & system, const std::string & filename, bool normalize_by_nos, bool readability_toggle )
+    const Data::System_Energy & E, const Data::Geometry & geometry, const std::string & filename, Flags flags )
 {
+    verify_flags( flags, Flag::Readability | Flag::Normalize_by_nos, __func__ );
+
     scalar normalization = 1;
-    if( normalize_by_nos )
-        normalization = static_cast<scalar>( 1.0 / static_cast<double>( system.nos ) );
+    if( flags & Flag::Normalize_by_nos )
+        normalization = static_cast<scalar>( 1.0 / static_cast<double>( geometry.nos ) );
 
-    Write_Energy_Header( system, filename, { "E_tot" } );
+    Write_Energy_Header( E, filename, { "E_tot" } );
 
-    std::string line = fmt::format( " {:^20.10f} |", system.E * normalization );
-    for( const auto & pair : system.E_array )
+    std::string line = fmt::format( " {:^20.10f} |", E.total * normalization );
+    for( const auto & pair : E.per_interaction )
     {
         line += fmt::format( "| {:^20.10f} ", pair.second * normalization );
     }
     line += "\n";
 
-    if( !readability_toggle )
+    if( !( flags & Flag::Readability ) )
         std::replace( line.begin(), line.end(), '|', ' ' );
 
     append_to_file( line, filename );
 }
 
-void Write_Chain_Energies(
-    const Data::Spin_System_Chain & chain, const int iteration, const std::string & filename, bool normalize_by_nos,
-    bool readability_toggle )
+template<typename ChainType>
+void Write_Chain_Energies( const ChainType & chain, const int iteration, const std::string & filename, Flags flags )
 {
+    verify_flags( flags, Flag::Readability | Flag::Normalize_by_nos, __func__ );
+
     scalar normalization = 1;
-    if( normalize_by_nos )
+    if( flags & Flag::Normalize_by_nos )
         normalization = static_cast<scalar>( 1.0 / static_cast<double>( chain.images[0]->nos ) );
 
-    Write_Energy_Header( *chain.images[0], filename, { "image", "Rx", "E_tot" } );
+    Write_Energy_Header( chain.images[0]->E, filename, { "image", "Rx", "E_tot" } );
 
     for( int isystem = 0; isystem < chain.noi; ++isystem )
     {
         auto & system    = *chain.images[isystem];
         std::string line = fmt::format(
-            " {:^20} || {:^20.10f} || {:^20.10f} |", isystem, chain.Rx[isystem], system.E * normalization );
-        for( const auto & pair : system.E_array )
+            " {:^20} || {:^20.10f} || {:^20.10f} |", isystem, chain.Rx[isystem], system.E.total * normalization );
+        for( const auto & pair : system.E.per_interaction )
         {
             line += fmt::format( "| {:^20.10f} ", pair.second * normalization );
         }
         line += "\n";
 
-        if( !readability_toggle )
+        if( !( flags & Flag::Readability ) )
             std::replace( line.begin(), line.end(), '|', ' ' );
 
         append_to_file( line, filename );
     }
 }
 
-void Write_Chain_Energies_Interpolated(
-    const Data::Spin_System_Chain & chain, const std::string & filename, bool normalize_by_nos,
-    bool readability_toggle )
+template void Write_Chain_Energies(
+    const Data::Spin_System_Chain<Engine::Spin::Hamiltonian> &, const int, const std::string &, Flags );
+
+template<typename ChainType>
+void Write_Chain_Energies_Interpolated( const ChainType & chain, const std::string & filename, Flags flags )
 {
+    verify_flags( flags, Flag::Readability | Flag::Normalize_by_nos, __func__ );
+
     scalar normalization = 1;
-    if( normalize_by_nos )
+    if( flags & Flag::Normalize_by_nos )
         normalization = static_cast<scalar>( 1.0 / static_cast<double>( chain.images[0]->nos ) );
 
-    Write_Energy_Header( *chain.images[0], filename, { "image", "iinterp", "Rx", "E_tot" } );
+    Write_Energy_Header( chain.images[0]->E, filename, { "image", "iinterp", "Rx", "E_tot" } );
 
     for( int isystem = 0; isystem < chain.noi; ++isystem )
     {
@@ -256,7 +240,7 @@ void Write_Chain_Energies_Interpolated(
 
             // TODO: interpolated Energy contributions
             bool first = true;
-            for( std::size_t p = 0; p < system.E_array.size(); p++ )
+            for( std::size_t p = 0; p < system.E.per_interaction.size(); p++ )
             {
                 if( first )
                     first = false;
@@ -268,7 +252,7 @@ void Write_Chain_Energies_Interpolated(
             line += "\n";
 
             // Whether to use space or | as column separator
-            if( !readability_toggle )
+            if( !( flags & Flag::Readability ) )
                 std::replace( line.begin(), line.end(), '|', ' ' );
 
             // Write
@@ -279,6 +263,54 @@ void Write_Chain_Energies_Interpolated(
                 break;
         }
     }
+}
+
+template void Write_Chain_Energies_Interpolated(
+    const Data::Spin_System_Chain<Engine::Spin::Hamiltonian> &, const std::string &, Flags );
+
+void Write_Image_Energy_Contributions(
+    const Data::System_Energy & E, const Data::Geometry & geometry, const std::string & filename,
+    const IO::VF_FileFormat format )
+{
+    const std::size_t nos      = geometry.nos;
+    const std::size_t valuedim = 1 + E.per_interaction_per_spin.size();
+    scalarfield data( valuedim * nos, 0 );
+    for( std::size_t ispin = 0; ispin < nos; ++ispin )
+    {
+        scalar E_spin = 0;
+        std::size_t j = 1;
+        for( const auto & [_, contribution] : E.per_interaction_per_spin )
+        {
+            E_spin += contribution[ispin];
+            data[ispin * valuedim + j] = contribution[ispin];
+            ++j;
+        }
+        data[ispin * valuedim] = E_spin;
+    }
+
+    IO::OVF_Segment segment( geometry );
+    std::string title   = fmt::format( "SPIRIT Version {}", Utility::version_full );
+    segment.title       = strdup( title.c_str() );
+    std::string comment = fmt::format( "Energy per spin. Total={}meV", E.total );
+    for( const auto & [label, contribution] : E.per_interaction )
+        comment += fmt::format( ", {}={}meV", label, contribution );
+    segment.comment  = strdup( comment.c_str() );
+    segment.valuedim = 1 + E.per_interaction.size();
+
+    std::string valuelabels = "Total";
+    std::string valueunits  = "meV";
+    for( const auto & [label, _] : E.per_interaction )
+    {
+        valuelabels += fmt::format( " {}", label );
+        valueunits += " meV";
+    }
+    segment.valuelabels = strdup( valuelabels.c_str() );
+
+    // open and write
+    IO::OVF_File( filename ).write_segment( segment, data.data(), static_cast<int>( format ) );
+
+    Log( Utility::Log_Level::Info, Utility::Log_Sender::IO,
+         fmt::format( "Wrote spins to file \"{}\" with format {}", filename, static_cast<int>( format ) ), -1, -1 );
 }
 
 } // namespace IO

@@ -240,7 +240,7 @@ target_compile_definitions( ${PROJECT_NAME} PRIVATE -DFMT_HEADER_ONLY )
 
 target_include_directories( ${PROJECT_NAME} PRIVATE
     ${SPIRIT_INCLUDE_DIRS}
-    # ${CMAKE_SOURCE_DIR}/thirdparty/fmt/include
+    ${libfmt_INCLUDE_DIRS}
     ${PROJECT_SOURCE_DIR}/thirdparty/Lyra/include
     ${PROJECT_BINARY_DIR}/thirdparty-install/include )
 
@@ -249,7 +249,7 @@ target_link_libraries( ${PROJECT_NAME} PRIVATE ${SPIRIT_LIBRARIES_STATIC} )
 set_target_properties( ${PROJECT_NAME} PROPERTIES
     OUTPUT_NAME              ${SPIRIT_EXE_NAME}
     RUNTIME_OUTPUT_DIRECTORY ${SPIRIT_OUTPUT_DIRECTORY}
-    CXX_STANDARD             14
+    CXX_STANDARD             17
     CXX_STANDARD_REQUIRED    ON
     CXX_EXTENSIONS           OFF )
 

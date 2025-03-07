@@ -1,13 +1,14 @@
 #pragma once
 
+#include <Spirit/Spirit_Defines.h>
+#include <data/Pair.hpp>
+
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
 #include <array>
 #include <complex>
 #include <vector>
-
-#include "Spirit_Defines.h"
 
 // Dynamic Eigen typedefs
 using VectorX    = Eigen::Matrix<scalar, -1, 1>;
@@ -30,48 +31,72 @@ using Vector2 = Eigen::Matrix<scalar, 2, 1>;
 #ifdef SPIRIT_USE_CUDA
 // The general field, using the managed allocator
 #include "Managed_Allocator.hpp"
+
 template<typename T>
 using field = std::vector<T, managed_allocator<T>>;
 
-struct Site
-{
-    // Basis index
-    int i;
-    // Translations of the basis cell
-    int translations[3];
-};
-struct Pair
-{
-    // Basis indices of first and second atom of pair
-    int i, j;
-    // Translations of the basis cell of second atom of pair
-    int translations[3];
-};
-struct Triplet
-{
-    int i, j, k;
-    int d_j[3], d_k[3];
-};
-struct Quadruplet
-{
-    int i, j, k, l;
-    int d_j[3], d_k[3], d_l[3];
-};
+#define SPIRIT_HOSTDEVICE __host__ __device__
+
 #else
 // The general field
 template<typename T>
 using field = std::vector<T>;
 
+#define SPIRIT_HOSTDEVICE
+
+// Definition for OpenMP reduction operation using Vector3's
+#pragma omp declare reduction( + : Vector3 : omp_out = omp_out + omp_in ) initializer( omp_priv = Vector3::Zero() )
+#endif
+
+template<typename T>
+struct has_zero_method
+{
+private:
+    template<typename U>
+    static auto test( int ) -> decltype( U::Zero(), std::true_type{} );
+
+    template<typename U>
+    static auto test( ... ) -> std::false_type;
+
+public:
+    static constexpr bool value = decltype( test<T>( 0 ) )::value;
+};
+
+// utility function to get a zero valued object of type T
+// this should only be useful in templated code
+template<typename T>
+SPIRIT_HOSTDEVICE T zero_value() noexcept
+{
+    if constexpr( has_zero_method<T>::value )
+        return T::Zero();
+    else if constexpr( std::is_arithmetic<T>::value )
+        return T( 0 );
+    else
+        return T();
+}
+
+// cast an iterator to its underlying raw pointer type
+template<typename Iter>
+[[nodiscard]] constexpr auto raw_pointer_cast( Iter ptr ) noexcept -> typename std::iterator_traits<Iter>::pointer
+{
+    static_assert(
+        std::is_same<typename std::decay<Iter>::type::iterator_category, std::random_access_iterator_tag>::value,
+        "contiguous iterator is needed here. Otherwise there is no valid conversion" );
+    return static_cast<typename std::iterator_traits<Iter>::pointer>( std::addressof( *ptr ) );
+}
+
+// noop for raw pointer types to make this operation idempotent
+template<typename T>
+constexpr SPIRIT_HOSTDEVICE T * raw_pointer_cast( T * ptr ) noexcept
+{
+    return ptr;
+}
+
 struct Site
 {
     // Basis index
     int i;
     // Translations of the basis cell
-    std::array<int, 3> translations;
-};
-struct Pair
-{
-    int i, j;
     std::array<int, 3> translations;
 };
 struct Triplet
@@ -85,9 +110,29 @@ struct Quadruplet
     std::array<int, 3> d_j, d_k, d_l;
 };
 
-// Definition for OpenMP reduction operation using Vector3's
-#pragma omp declare reduction( + : Vector3 : omp_out = omp_out + omp_in ) initializer( omp_priv = Vector3::Zero() )
-#endif
+struct PolynomialBasis
+{
+    Vector3 k1, k2, k3;
+};
+
+struct PolynomialTerm
+{
+    scalar coefficient;
+    unsigned int n1, n2, n3;
+};
+
+struct AnisotropyPolynomial
+{
+    Vector3 k1, k2, k3;
+    field<PolynomialTerm> terms;
+};
+
+struct PolynomialField
+{
+    field<PolynomialBasis> basis;
+    field<unsigned int> site_p;
+    field<PolynomialTerm> terms;
+};
 
 struct Neighbour : Pair
 {

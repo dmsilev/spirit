@@ -130,6 +130,36 @@ Write the energy as formatted output to the console
 
 
 
+### System_Update_Energy
+
+```C
+void System_Update_Energy(State * state, int idx_image=-1, int idx_chain=-1)
+```
+
+Update Energy (primarily for plots)
+
+
+
+### System_Update_Magnetization
+
+```C
+void System_Update_Magnetization(State * state, int idx_image=-1, int idx_chain=-1)
+```
+
+Update Magnetization (primarily for plots)
+
+
+
+### System_Update_Effective_Field
+
+```C
+void System_Update_Effective_Field(State * state, int idx_image=-1, int idx_chain=-1)
+```
+
+Update Effective Field (primarily for plots)
+
+
+
 ### System_Update_Data
 
 ```C

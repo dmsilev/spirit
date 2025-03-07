@@ -19,16 +19,18 @@ option( SPIRIT_BUILD_FOR_CXX    "Build the static library for C++ applications" 
 option( SPIRIT_ENABLE_PINNING   "Enable pinning individual or rows of spins."            OFF )
 option( SPIRIT_ENABLE_DEFECTS   "Enable defects and disorder in the lattice."            ON )
 ### Options for Spirit
-option( SPIRIT_BUILD_TEST       "Build unit tests for the Spirit library."               ON  )
+option( SPIRIT_BUILD_TEST       "Build unit tests for the Spirit library."               OFF )
 option( SPIRIT_TEST_COVERAGE    "Build in debug with special flags for coverage checks." OFF )
 option( SPIRIT_USE_CUDA         "Use CUDA to speed up certain parts of the code."        OFF )
+option( SPIRIT_USE_STDPAR       "Use parallel STL to speed up certain parts of the code." OFF )
 option( SPIRIT_USE_OPENMP       "Use OpenMP to speed up certain parts of the code."      OFF )
 option( SPIRIT_USE_THREADS      "Use std threads to speed up certain parts of the code." OFF )
 option( SPIRIT_USE_FFTW         "If available, use the FFTW library instead of kissFFT." ON  )
+option( SPIRIT_USE_HDF5         "Enable HDF5 library for data export and import."        OFF )
 ### Set the scalar type used in the Spirit library
 option( SPIRIT_SCALAR_TYPE      "Use std threads to speed up certain parts of the code." "double" )
 ### Set the compute capability for CUDA compilation
-option( SPIRIT_CUDA_ARCH        "Use std threads to speed up certain parts of the code." "sm_60"  )
+option( SPIRIT_CUDA_ARCH        "Use std threads to speed up certain parts of the code." "60"  )
 ####################################################################
 
 
@@ -49,6 +51,8 @@ elseif( CMAKE_BUILD_TYPE )
 else()
     message( STATUS ">> Spirit core: Did not need to set build type. Configuration types: ${CMAKE_CONFIGURATION_TYPES}" )
 endif()
+#----- Write a compilation database (compile-commands.json)
+set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 ####################################################################
 
 
@@ -56,6 +60,7 @@ endif()
 if( SPIRIT_USE_CUDA )
     ### If CUDA is used, we use float and and we cannot use OpenMP
     ### and we cannot build for JS or Julia
+    set( SPIRIT_USE_STDPAR       OFF )
     set( SPIRIT_USE_OPENMP       OFF )
     set( SPIRIT_SCALAR_TYPE      float )
     set( SPIRIT_BUILD_FOR_JS     OFF )
@@ -63,6 +68,12 @@ if( SPIRIT_USE_CUDA )
     set( SPIRIT_USE_FFTW         OFF )
     ### Enable CUDA language support
     enable_language( CUDA )
+endif()
+#-----
+if( SPIRIT_USE_STDPAR )
+    set( SPIRIT_USE_CUDA         OFF )
+    set( SPIRIT_BUILD_FOR_JS     OFF )
+    set( SPIRIT_BUILD_FOR_JULIA  OFF )
 endif()
 #-----
 if( SPIRIT_USE_OPENMP )
@@ -101,8 +112,8 @@ set( META_PROJECT_NAME         "Spirit" )
 set( META_PROJECT_DESCRIPTION  "Optimizations and Dynamics Framework for atomistic Spin systems" )
 set( META_AUTHOR_ORGANIZATION  "" )
 set( META_AUTHOR_DOMAIN        "https://spirit-code.github.io" )
-set( META_AUTHOR_MAINTAINER    "Gideon Mueller" )
-set( META_AUTHOR_EMAIL         "g.mueller@fz-juelich.de" )
+set( META_AUTHOR_MAINTAINER    "Thorben Pürling" "Moritz Sallermann" )
+set( META_AUTHOR_EMAIL         "t.puerling@fz-juelich.de" "moritz.sallermann@rwth-aachen.de" )
 set( META_VERSION_MAJOR        "2" )
 set( META_VERSION_MINOR        "2" )
 set( META_VERSION_PATCH        "0" )
@@ -138,28 +149,45 @@ if( SPIRIT_USE_CUDA )
     find_package( CUDA 8 REQUIRED )
 
     # set( CUDA_PROPAGATE_HOST_FLAGS ON )
-    # --std=c++14 flag may be necessary, but it is propagated from global flags...
+    # --std=c++17 flag may be necessary, but it is propagated from global flags...
     # if it appears twice, for some reason the compilation breaks
 
-    set( CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -lineinfo -arch=${SPIRIT_CUDA_ARCH} --expt-relaxed-constexpr --expt-extended-lambda" )
     set( SPIRIT_CUDA_LIBS "${CUDA_LIBRARIES};${CUDA_CUFFT_LIBRARIES};${CUDA_curand_LIBRARY}" )
     set( FFT_LIB          ${CUDA_CUFFT_LIBRARIES} )
 
-    ### Deactivate CUDA warning inside Eigen such as "warning: __host__ annotation is ignored on a function("Quaternion") that is explicitly defaulted on its first declaration"
-    set( CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe=\"--diag_suppress=esa_on_defaulted_function_ignored\"")
-    ### Display warning number when writing a warning
-    set( CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe \"--display_error_number\"" )
+    if( "${CMAKE_CUDA_COMPILER_ID}" MATCHES "NVIDIA" ) 
+        set( CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -lineinfo -arch=sm_${SPIRIT_CUDA_ARCH} --expt-relaxed-constexpr --expt-extended-lambda" )
+        ### Deactivate CUDA warning inside Eigen such as "warning: __host__ annotation is ignored on a function("Quaternion") that is explicitly defaulted on its first declaration"
+        set( CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --diag-suppress=20011 --diag-suppress=20012 --diag-suppress=20014 --diag-suppress=1675")
+        ### Display warning number when writing a warning
+        set( CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --display-error-number" )
 
-    set( META_COMPILER         "${META_COMPILER} and nvcc" )
-    set( META_COMPILER_VERSION "${META_COMPILER_VERSION} and ${CUDA_VERSION}" )
-    set( META_COMPILER_FULL    "${META_COMPILER_FULL} and nvcc (${CUDA_VERSION}) for cuda arch \\\"${SPIRIT_CUDA_ARCH}\\\"" )
+        set( META_COMPILER         "${META_COMPILER} and nvcc" )
+        set( META_COMPILER_VERSION "${META_COMPILER_VERSION} and ${CUDA_VERSION}" )
+        set( META_COMPILER_FULL    "${META_COMPILER_FULL} and nvcc (${CUDA_VERSION}) for cuda arch \\\"sm_${SPIRIT_CUDA_ARCH}\\\"" )
+
+    elseif( "${CMAKE_CXX_COMPILER_ID}" MATCHES "NVHPC") 
+        set( CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -cuda" )
+
+        set( META_COMPILER         "${META_COMPILER}" )
+        set( META_COMPILER_VERSION "${META_COMPILER_VERSION} and ${CUDA_VERSION}" )
+        set( META_COMPILER_FULL    "${META_COMPILER_FULL} and nvcc (${CUDA_VERSION}) for cuda arch \\\"sm_${SPIRIT_CUDA_ARCH}\\\"" )
+
+    else()
+        set( CMAKE_CUDA_ARCHITECTURES ${SPIRIT_CUDA_ARCH} )
+        # set( CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -D__STRICT_ANSI__" )
+        # set( SPIRIT_COMPILE_DEFINITIONS "${SPIRIT_COMPILE_DEFINITIONS} -D__STRICT_ANSI__" )
+        set( META_COMPILER         "${META_COMPILER}" )
+        set( META_COMPILER_VERSION "${META_COMPILER_VERSION} and CUDA ${CUDA_VERSION}" )
+        set( META_COMPILER_FULL    "${META_COMPILER_FULL} and (CUDA ${CUDA_VERSION}) for cuda arch \\\"${SPIRIT_CUDA_ARCH}\\\"" )
+    endif()
 
     if( NOT DEFINED CMAKE_CUDA_STANDARD )
-        set( CMAKE_CUDA_STANDARD 14 )
+        set( CMAKE_CUDA_STANDARD 17 )
         set( CMAKE_CUDA_STANDARD_REQUIRED ON )
     endif()
 
-    message( STATUS ">> Using CUDA. Flags: ${CUDA_NVCC_FLAGS}" )
+    message( STATUS ">> Using CUDA. Flags: ${CMAKE_CUDA_FLAGS}" )
     message( STATUS ">> CUDA toolkit path: ${CUDA_TOOLKIT_ROOT_DIR}" )
     message( STATUS ">> CUDA libraries: ${SPIRIT_CUDA_LIBS}" )
 endif()
@@ -175,7 +203,7 @@ if( SPIRIT_USE_THREADS )
     find_package( Threads REQUIRED )
     set( THREAD_LIBS Threads::Threads )
 endif()
-configure_file( ${CMAKE_CURRENT_LIST_DIR}/CMake/Spirit_Defines.h.in   ${CMAKE_CURRENT_LIST_DIR}/include/Spirit_Defines.h )
+configure_file( ${CMAKE_CURRENT_LIST_DIR}/CMake/Spirit_Defines.h.in   ${CMAKE_CURRENT_LIST_DIR}/include/Spirit/Spirit_Defines.h )
 ####################################################################
 
 
@@ -191,13 +219,25 @@ if( SPIRIT_USE_OPENMP )
         message( STATUS ">> OpenMP C Flags:          ${OpenMP_C_FLAGS}" )
         message( STATUS ">> OpenMP CXX Flags:        ${OpenMP_CXX_FLAGS}" )
         message( STATUS ">> OpenMP EXE Linker Flags: ${OpenMP_EXE_LINKER_FLAGS}" )
-    else( OPENMP_FOUND )
+    else()
         message( WARNING ">> OpenMP could not be found." )
-        set(SPIRIT_USE_OPENMP OFF)
-    endif( OPENMP_FOUND )
+        set( SPIRIT_USE_OPENMP OFF )
+    endif()
 endif()
 ####################################################################
 
+######### TBB decisions ############################################
+if( SPIRIT_USE_STDPAR )
+    include( FindTBB )
+    if( TBB_FOUND )
+        set( SPIRIT_COMPILE_DEFINITIONS ${SPIRIT_COMPILE_DEFINITIONS} -DSPIRIT_USE_STDPAR )
+        message( STATUS ">> using TBB for parallel STL" )
+    else()
+        message( WARNING ">> TBB could not be found." )
+        set( SPIRIT_USE_STDPAR OFF )
+    endif()
+endif()
+######### TBB decisions ############################################
 
 ######## FFT decisions #############################################
 
@@ -270,6 +310,32 @@ message( STATUS ">> Using FFT lib:     ${FFT_LIB}" )
 message( STATUS ">> With include dirs: ${FFT_INCLUDE_DIRS}" )
 ####################################################################
 
+######### TinyXML library ##########################################
+set( XML_LIB tinyxml2 )
+set( XML_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/tinyxml2 )
+set( XML_INCLUDE_DIRS ${XML_INCLUDE_DIRS} )
+
+add_library( ${XML_LIB} STATIC
+    ${XML_INCLUDE_DIR}/tinyxml2.h
+    ${XML_INCLUDE_DIR}/tinyxml2.cpp )
+####################################################################
+
+######### HDF5 library for data export and import ##################
+if( SPIRIT_USE_HDF5 )
+    find_package( HDF5 COMPONENTS CXX HL REQUIRED )
+
+    if ( HDF5_FOUND )
+        message( STATUS ">> HDF5 found.")
+        set(HDF5_LIB ${HDF5_CXX_LIBRARIES})
+        set(SPIRIT_COMPILE_DEFINITIONS ${SPIRIT_COMPILE_DEFINITIONS} -DSPIRIT_USE_HDF5)
+    else()
+        message( STATUS ">> HDF5 could not be found.")
+        message( WARNING "Could not find high level HDF5 library -> disabling HDF5 feature" )
+        set(SPIRIT_USE_HDF5 OFF)
+    endif()
+endif()
+####################################################################
+
 ######### Generate Version.hpp #####################################
 configure_file( ${CMAKE_CURRENT_LIST_DIR}/CMake/Spirit_Version.hpp.in ${CMAKE_CURRENT_LIST_DIR}/include/utility/Version.hpp )
 ####################################################################
@@ -277,47 +343,75 @@ configure_file( ${CMAKE_CURRENT_LIST_DIR}/CMake/Spirit_Version.hpp.in ${CMAKE_CU
 ######### Dependencies that need to be built #######################
 include( GetQHull )
 add_subdirectory( ${PROJECT_SOURCE_DIR}/thirdparty/ovf )
+target_include_directories( ovf PRIVATE ${libfmt_INCLUDE_DIRS} )
 ####################################################################
 
 
 ######### Gather headers and sources ###############################
 ### Header Gropus
-set( HEADER_SPIRIT_ROOT )
 set( HEADER_SPIRIT_API )
 set( HEADER_SPIRIT_DATA )
 set( HEADER_SPIRIT_ENGINE )
+set( HEADER_SPIRIT_ENGINE_BACKEND )
+set( HEADER_SPIRIT_ENGINE_COMMON )
+set( HEADER_SPIRIT_ENGINE_COMMON_INTERACTION )
+set( HEADER_SPIRIT_ENGINE_SPIN )
+set( HEADER_SPIRIT_ENGINE_SPIN_INTERACTION )
 set( HEADER_SPIRIT_IO )
+set( HEADER_SPIRIT_IO_HAMILTONIAN )
 set( HEADER_SPIRIT_UTILITY )
 ### Source Groups
 set( SOURCE_SPIRIT_ROOT )
 set( SOURCE_SPIRIT_API )
 set( SOURCE_SPIRIT_DATA )
 set( SOURCE_SPIRIT_ENGINE )
+set( SOURCE_SPIRIT_ENGINE_COMMON )
+set( SOURCE_SPIRIT_ENGINE_COMMON_INTERACTION )
+set( SOURCE_SPIRIT_ENGINE_SPIN )
+set( SOURCE_SPIRIT_ENGINE_SPIN_INTERACTION )
 set( SOURCE_SPIRIT_IO )
+set( SOURCE_SPIRIT_IO_HAMILTONIAN )
 set( SOURCE_SPIRIT_UTILITY )
+### CUDA enabled source files
+set( SPIRIT_CUDA_SOURCES )
 ### Add Subdirectories
-add_subdirectory( ${CMAKE_CURRENT_LIST_DIR}/src )
-add_subdirectory( ${CMAKE_CURRENT_LIST_DIR}/include )
+add_subdirectory( src )
+add_subdirectory( include )
 ####################################################################
 
-
-############ Create object library #################################
-add_library( ${META_PROJECT_NAME} OBJECT
-    ${HEADER_SPIRIT_ROOT}
+set( SPIRIT_CPP_HEADERS
     ${HEADER_SPIRIT_DATA}
+    ${HEADER_SPIRIT_ENGINE_BACKEND}
+    ${HEADER_SPIRIT_ENGINE_COMMON_INTERACTION}
+    ${HEADER_SPIRIT_ENGINE_COMMON}
+    ${HEADER_SPIRIT_ENGINE_SPIN_INTERACTION}
+    ${HEADER_SPIRIT_ENGINE_SPIN}
     ${HEADER_SPIRIT_ENGINE}
     ${HEADER_SPIRIT}
+    ${HEADER_SPIRIT_IO_HAMILTONIAN}
     ${HEADER_SPIRIT_IO}
-    ${HEADER_SPIRIT_UTILITY}
+    ${HEADER_SPIRIT_UTILITY} )
+
+set( SPIRIT_CPP_SOURCES
     ${SOURCE_SPIRIT_ROOT}
     ${SOURCE_SPIRIT_DATA}
+    ${SOURCE_SPIRIT_ENGINE_COMMON}
+    ${SOURCE_SPIRIT_ENGINE_COMMON_INTERACTION}
+    ${SOURCE_SPIRIT_ENGINE_SPIN_INTERACTION}
+    ${SOURCE_SPIRIT_ENGINE_SPIN}
     ${SOURCE_SPIRIT_ENGINE}
     ${SOURCE_SPIRIT}
     ${SOURCE_SPIRIT_IO}
+    ${SOURCE_SPIRIT_IO_HAMILTONIAN}
     ${SOURCE_SPIRIT_UTILITY} )
 
+############ Create object library #################################
+add_library( ${META_PROJECT_NAME} OBJECT
+    ${SPIRIT_CPP_HEADERS}
+    ${SPIRIT_CPP_SOURCES} )
+
 set_target_properties( ${META_PROJECT_NAME} PROPERTIES
-    CXX_STANDARD            14
+    CXX_STANDARD            17
     CXX_STANDARD_REQUIRED   ON
     CXX_EXTENSIONS          OFF )
 
@@ -328,11 +422,14 @@ target_include_directories( ${META_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/thirdparty
     ${CMAKE_CURRENT_LIST_DIR}/thirdparty/ovf/include
     ${CMAKE_CURRENT_LIST_DIR}/thirdparty/spectra/include
+    ${libfmt_INCLUDE_DIRS}
     ${qhull_INCLUDE_DIRS}
-    ${FFT_INCLUDE_DIRS} )
+    ${FFT_INCLUDE_DIRS}
+    ${XML_INCLUDE_DIRS}
+    ${HDF5_INCLUDE_DIRS} )
 
 target_link_libraries( ${META_PROJECT_NAME} INTERFACE
-    ${qhull_LIBS} ${OVF_LIBRARIES_STATIC} ${FFT_LIB} ${THREAD_LIBS} )
+    ${qhull_LIBS} ${OVF_LIBRARIES_STATIC} ${XML_LIB} ${HDF5_LIB} ${FFT_LIB} ${THREAD_LIBS} ${TBB_LIB} )
 
 ### Flag needed to use fmt as header-only
 set( SPIRIT_COMPILE_DEFINITIONS ${SPIRIT_COMPILE_DEFINITIONS} -DFMT_HEADER_ONLY )
@@ -347,62 +444,28 @@ if( SPIRIT_USE_CUDA )
     set( SPIRIT_COMPILE_DEFINITIONS ${SPIRIT_COMPILE_DEFINITIONS} -DSPIRIT_USE_CUDA )
 
     ### Need to use nvcc on many source files because they indirectly include cuda.h
-    set_source_files_properties(
-        ${CMAKE_CURRENT_LIST_DIR}/src/data/Geometry.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/data/Spin_System.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/data/Spin_System_Chain.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/engine/Eigenmodes.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/engine/Hamiltonian.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/engine/Hamiltonian_Gaussian.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/engine/HTST.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/engine/Sparse_HTST.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/engine/Manifoldmath.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/engine/Method.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/engine/Method_MC.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/engine/Method_LLG.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/engine/Method_GNEB.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/engine/Method_MMF.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/engine/Method_EMA.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/engine/Neighbours.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/engine/Solver_Kernels.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/engine/Vectormath.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/io/Configwriter.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/io/Configparser.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/io/Dataparser.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/io/Datawriter.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/io/IO.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/io/Filter_File_Handle.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/io/OVF_File.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/Spirit/Chain.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/Spirit/Configurations.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/Spirit/Geometry.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/Spirit/Hamiltonian.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/Spirit/HTST.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/Spirit/IO.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/Spirit/Parameters_EMA.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/Spirit/Parameters_GNEB.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/Spirit/Parameters_LLG.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/Spirit/Parameters_MC.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/Spirit/Parameters_MMF.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/Spirit/Simulation.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/Spirit/State.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/Spirit/System.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/Spirit/Transitions.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/Spirit/Quantities.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/utility/Configurations.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/utility/Configuration_Chain.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/utility/Logging.cpp
-        PROPERTIES LANGUAGE CUDA )
+    set_source_files_properties( ${SPIRIT_CUDA_SOURCES} PROPERTIES LANGUAGE CUDA )
 
     set_source_files_properties(
         ${CMAKE_CURRENT_LIST_DIR}/test/test_api.cpp
         ${CMAKE_CURRENT_LIST_DIR}/test/test_io.cpp
         ${CMAKE_CURRENT_LIST_DIR}/test/test_physics.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/test/test_solvers.cpp
         ${CMAKE_CURRENT_LIST_DIR}/test/test_vectormath.cpp
         ${CMAKE_CURRENT_LIST_DIR}/test/test_manifoldmath.cpp
         ${CMAKE_CURRENT_LIST_DIR}/test/test_ema.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/test/test_mc.cpp
         ${CMAKE_CURRENT_LIST_DIR}/test/test_anisotropy.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/test/test_aggregation.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/test/test_configparser.cpp
         PROPERTIES LANGUAGE CUDA )
+
+        if( SPIRIT_ENABLE_PINNING )
+            set_source_files_properties(
+                ${CMAKE_CURRENT_LIST_DIR}/test/test_pinning.cpp
+                PROPERTIES LANGUAGE CUDA )
+        endif()
+
 endif()
 
 ### Coverage flags and linking if needed
@@ -462,7 +525,7 @@ if( SPIRIT_BUILD_FOR_CXX OR SPIRIT_BUILD_FOR_JS )
             target_link_libraries( ${testName} ${META_PROJECT_NAME}_static )
             # Properties
             set_target_properties( ${testName} PROPERTIES
-                CXX_STANDARD             14
+                CXX_STANDARD             17
                 CXX_STANDARD_REQUIRED    ON
                 CXX_EXTENSIONS           OFF
                 RUNTIME_OUTPUT_DIRECTORY ${TEST_RUNTIME_OUTPUT_DIRECTORY} )
@@ -470,6 +533,7 @@ if( SPIRIT_BUILD_FOR_CXX OR SPIRIT_BUILD_FOR_JS )
             target_include_directories( ${testName} PRIVATE
                 ${CMAKE_CURRENT_LIST_DIR}/test
                 ${CMAKE_CURRENT_LIST_DIR}/thirdparty
+                ${libfmt_INCLUDE_DIRS}
                 ${FFT_INCLUDE_DIRS} )
             # Apply public includes from the object library
             target_include_directories( ${testName} PUBLIC
@@ -492,14 +556,20 @@ if( SPIRIT_BUILD_FOR_CXX OR SPIRIT_BUILD_FOR_JS )
         #----- Create test executables
         set( TEST_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR} )
         set( TEST_EXECUTABLES )
-        add_framework_test( test_vmath    test/test_vectormath.cpp )
-        add_framework_test( test_mmath    test/test_manifoldmath.cpp )
-        add_framework_test( test_api      test/test_api.cpp )
-        add_framework_test( test_solvers  test/test_solvers.cpp )
-        add_framework_test( test_physics  test/test_physics.cpp )
-        add_framework_test( test_ema      test/test_ema.cpp)
-        add_framework_test( test_io       test/test_io.cpp )
-        add_framework_test( test_anisotropy       test/test_anisotropy.cpp )
+        add_framework_test( test_configparser       test/test_configparser.cpp )
+        add_framework_test( test_vmath              test/test_vectormath.cpp )
+        add_framework_test( test_mmath              test/test_manifoldmath.cpp )
+        add_framework_test( test_api                test/test_api.cpp )
+        add_framework_test( test_physics            test/test_physics.cpp )
+        add_framework_test( test_ema                test/test_ema.cpp)
+        add_framework_test( test_io                 test/test_io.cpp )
+        add_framework_test( test_anisotropy         test/test_anisotropy.cpp )
+        add_framework_test( test_aggregation        test/test_aggregation.cpp )
+        add_framework_test( test_solvers            test/test_solvers.cpp )
+        add_framework_test( test_mc                 test/test_mc.cpp )
+        if( SPIRIT_ENABLE_PINNING )
+            add_framework_test( test_pinning            test/test_pinning.cpp )
+        endif()
     endif()
     #--------------------------------------------------
 endif()
@@ -547,6 +617,7 @@ if( SPIRIT_BUILD_FOR_PYTHON )
         "defects          = \"${SPIRIT_ENABLE_DEFECTS}\"\n"
         "cuda             = \"${SPIRIT_USE_CUDA}\"\n"
         "openmp           = \"${SPIRIT_USE_OPENMP}\"\n"
+        "stdpar           = \"${SPIRIT_USE_STDPAR}\"\n"
         "threads          = \"${SPIRIT_USE_THREADS}\"\n"
         "fftw             = \"${SPIRIT_USE_FFTW}\"" )
 
@@ -570,7 +641,7 @@ if( SPIRIT_BUILD_FOR_PYTHON )
     if( SPIRIT_BUILD_TEST )
         message( STATUS ">> Setting up unit tests for python bindings" )
         # find_package( PythonInterp 2.7 REQUIRED )
-        find_package( PythonInterp REQUIRED )
+        find_package( Python3 COMPONENTS Interpreter NumPy REQUIRED )
 
         #----- Enable CTest testing
         enable_testing()
@@ -581,7 +652,7 @@ if( SPIRIT_BUILD_FOR_PYTHON )
             add_test(
                 NAME                ${test_name}
                 WORKING_DIRECTORY   ${CMAKE_SOURCE_DIR}
-                COMMAND             ${PYTHON_EXECUTABLE} "${SPIRIT_PYTHON_MODULE_DIR}/test/${src}" )
+                COMMAND             ${Python3_EXECUTABLE} "${SPIRIT_PYTHON_MODULE_DIR}/test/${src}" )
             # Properties
             set_tests_properties( ${test_name}
                 PROPERTIES ENVIRONMENT "PYTHONPATH=${SPIRIT_PYTHON_MODULE_DIR}:$PYTHONPATH" )
@@ -643,19 +714,29 @@ endif()
 
 ######### IDE Folders ##############################################
 ### Folder include
-source_group( "include"          FILES ${HEADER_SPIRIT_ROOT} )
-source_group( "include\\data"    FILES ${HEADER_SPIRIT_DATA} )
-source_group( "include\\engine"  FILES ${HEADER_SPIRIT_ENGINE} )
-source_group( "include\\io"      FILES ${HEADER_SPIRIT_IO} )
-source_group( "include\\utility" FILES ${HEADER_SPIRIT_UTILITY} )
-source_group( "include\\spirit"  FILES ${HEADER_SPIRIT} )
+source_group( "include\\data"                               FILES ${HEADER_SPIRIT_DATA} )
+source_group( "include\\engine"                             FILES ${HEADER_SPIRIT_ENGINE} )
+source_group( "include\\engine\\backend"                    FILES ${HEADER_SPIRIT_ENGINE_BACKEND} )
+source_group( "include\\engine\\common"                     FILES ${HEADER_SPIRIT_ENGINE_COMMON} )
+source_group( "include\\engine\\common\\interaction"        FILES ${HEADER_SPIRIT_ENGINE_COMMON_INTERACTION} )
+source_group( "include\\engine\\spin"                       FILES ${HEADER_SPIRIT_ENGINE_SPIN} )
+source_group( "include\\engine\\spin\\interaction"          FILES ${HEADER_SPIRIT_ENGINE_SPIN_INTERACTION} )
+source_group( "include\\io"                                 FILES ${HEADER_SPIRIT_IO} )
+source_group( "include\\io\\hamiltonian"                    FILES ${HEADER_SPIRIT_IO_HAMILTONIAN} )
+source_group( "include\\utility"                            FILES ${HEADER_SPIRIT_UTILITY} )
+source_group( "include\\spirit"                             FILES ${HEADER_SPIRIT} )
 ### Folder src
-source_group( "src"          FILES ${SOURCE_SPIRIT_ROOT} ) #${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-source_group( "src\\data"    FILES ${SOURCE_SPIRIT_DATA} )
-source_group( "src\\engine"  FILES ${SOURCE_SPIRIT_ENGINE} )
-source_group( "src\\io"      FILES ${SOURCE_SPIRIT_IO} )
-source_group( "src\\utility" FILES ${SOURCE_SPIRIT_UTILITY} )
-source_group( "src\\spirit"  FILES ${SOURCE_SPIRIT} )
+source_group( "src"                                         FILES ${SOURCE_SPIRIT_ROOT} ) #${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+source_group( "src\\data"                                   FILES ${SOURCE_SPIRIT_DATA} )
+source_group( "src\\engine"                                 FILES ${SOURCE_SPIRIT_ENGINE} )
+source_group( "src\\engine\\common"                         FILES ${SOURCE_SPIRIT_ENGINE_COMMON} )
+source_group( "src\\engine\\common\\interaction"            FILES ${SOURCE_SPIRIT_ENGINE_COMMON_INTERACTION} )
+source_group( "src\\engine\\spin"                           FILES ${SOURCE_SPIRIT_ENGINE_SPIN} )
+source_group( "src\\engine\\spin\\interaction"              FILES ${SOURCE_SPIRIT_ENGINE_SPIN_INTERACTION} )
+source_group( "src\\io"                                     FILES ${SOURCE_SPIRIT_IO} )
+source_group( "src\\io\\hamiltonian"                        FILES ${SOURCE_SPIRIT_IO_HAMILTONIAN} )
+source_group( "src\\utility"                                FILES ${SOURCE_SPIRIT_UTILITY} )
+source_group( "src\\spirit"                                 FILES ${SOURCE_SPIRIT} )
 ####################################################################
 
 
@@ -681,9 +762,13 @@ endif()
 
 #----- Shared library and python tests
 if( SPIRIT_BUILD_FOR_PYTHON )
-    install( TARGETS ${META_PROJECT_NAME}_python DESTINATION bin COMPONENT spirit_core_python )
     install( DIRECTORY python/spirit DESTINATION python COMPONENT spirit_core_python
         FILES_MATCHING PATTERN "*.py" )
+    install( TARGETS ${META_PROJECT_NAME}_python DESTINATION python/spirit COMPONENT spirit_core_python )
+    install( FILES python/setup.py DESTINATION python COMPONENT spirit_core_python )
+    install( FILES python/pyproject.toml DESTINATION python COMPONENT spirit_core_python )
+    install( FILES python/README.md DESTINATION python COMPONENT spirit_core_python )
+    install( FILES python/LICENSE.txt DESTINATION python COMPONENT spirit_core_python )
     if( SPIRIT_BUILD_TEST )
         # install( TARGETS ${PYTHON_TEST_EXECUTABLES} DESTINATION python/test )
         install( DIRECTORY python/test/ DESTINATION test/python COMPONENT spirit_core_python
@@ -710,7 +795,7 @@ endif()
 set( SPIRIT_OBJS             $<TARGET_OBJECTS:${META_PROJECT_NAME}>  PARENT_SCOPE )
 set( SPIRIT_LIBRARIES        ${META_PROJECT_NAME}                    PARENT_SCOPE )
 set( SPIRIT_LIBRARIES_STATIC ${META_PROJECT_NAME}_static             PARENT_SCOPE )
-set( SPIRIT_LINK_DEPS        ${qhull_LIBS} ${OVF_LIBRARIES_STATIC} ${FFT_LIB} ${THREAD_LIBS} PARENT_SCOPE )
+set( SPIRIT_LINK_DEPS        ${qhull_LIBS} ${OVF_LIBRARIES_STATIC} ${FFT_LIB} ${THREAD_LIBS} ${TBB_LIB} PARENT_SCOPE )
 set( SPIRIT_INCLUDE_DIRS     ${SPIRIT_INCLUDE_DIRS}                  PARENT_SCOPE )
 ### Meta information
 set( META_PROJECT_NAME        ${META_PROJECT_NAME}        PARENT_SCOPE )
@@ -725,8 +810,8 @@ set( META_VERSION_REVISION    ${META_VERSION_REVISION}    PARENT_SCOPE )
 
 
 if( SPIRIT_PRINT_SOURCES )
-    MESSAGE( STATUS ">> Headers:                    ${HEADER_SPIRIT_ROOT} ${HEADER_SPIRIT_DATA} ${HEADER_SPIRIT_ENGINE} ${HEADER_SPIRIT} ${HEADER_SPIRIT_UTILITY}" )
-    MESSAGE( STATUS ">> Sources:                    ${SOURCE_SPIRIT_ROOT} ${SOURCE_SPIRIT_DATA} ${SOURCE_SPIRIT_ENGINE} ${SOURCE_SPIRIT} ${SOURCE_SPIRIT_UTILITY}" )
+    MESSAGE( STATUS ">> Headers:                    ${SPIRIT_CPP_HEADERS}" )
+    MESSAGE( STATUS ">> Sources:                    ${SPIRIT_CPP_SOURCES}" )
 endif()
 MESSAGE( STATUS ">> --------------------- Spirit done ---------------------------------- <<" )
 message( STATUS ">> CMake CXX Flags:        ${CMAKE_CXX_FLAGS}" )

@@ -35,11 +35,10 @@ You can pass an input file specifying your initial system parameters.
 If you do not pass an input file, the implemented defaults are used.
 """
 
-from spirit import spiritlib
 import ctypes
 
 ### Load Library
-_spirit = spiritlib.load_spirit_library()
+from spirit.spiritlib import _spirit
 
 
 ### State wrapper class to be used in 'with' statement
@@ -104,4 +103,4 @@ _State_DateTime.restype = ctypes.c_char_p
 
 def date_time(p_state):
     """Returns a string containing the date-time of the creation of the state."""
-    return str(_State_DateTime(ctypes.c_void_p(p_state)))
+    return str(_State_DateTime(ctypes.c_void_p(p_state)).decode("utf-8"))

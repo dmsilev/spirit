@@ -73,15 +73,13 @@ void RenderingLayer::draw( int display_w, int display_h )
             update_widgets = true;
     }
 
-    for( auto renderer_widget_iterator = renderer_widgets.begin(); renderer_widget_iterator != renderer_widgets.end(); )
+    if( auto new_end = std::remove_if(
+            renderer_widgets.begin(), renderer_widgets.end(),
+            []( const std::shared_ptr<RendererWidget> & rw ) { return rw->remove_; } );
+        new_end != renderer_widgets.end() )
     {
-        if( ( *renderer_widget_iterator )->remove_ )
-        {
-            renderer_widget_iterator = renderer_widgets.erase( renderer_widget_iterator );
-            update_widgets           = true;
-        }
-        else
-            ++renderer_widget_iterator;
+        renderer_widgets.erase( new_end, renderer_widgets.end() );
+        update_widgets = true;
     }
 
     if( update_widgets )
@@ -405,13 +403,13 @@ void RenderingLayer::update_vf_geometry()
 
 void RenderingLayer::update_visibility()
 {
-    const float epsilon = 1e-5;
+    const scalar epsilon = 1e-5;
 
-    float b_min[3], b_max[3], b_range[3];
+    scalar b_min[3], b_max[3], b_range[3];
     Geometry_Get_Bounds( state.get(), b_min, b_max );
 
-    float filter_pos_min[3], filter_pos_max[3];
-    float filter_dir_min[3], filter_dir_max[3];
+    scalar filter_pos_min[3], filter_pos_max[3];
+    scalar filter_dir_min[3], filter_dir_max[3];
     for( int dim = 0; dim < 3; ++dim )
     {
         b_range[dim]        = b_max[dim] - b_min[dim];
@@ -541,7 +539,7 @@ void RenderingLayer::update_vf_directions()
 
 void RenderingLayer::reset_camera()
 {
-    float b_min[3], b_max[3];
+    scalar b_min[3], b_max[3];
     Geometry_Get_Bounds( state.get(), b_min, b_max );
     glm::vec3 bounds_min      = glm::make_vec3( b_min );
     glm::vec3 bounds_max      = glm::make_vec3( b_max );

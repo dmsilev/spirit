@@ -1,75 +1,78 @@
-#include <engine/Backend_par.hpp>
+#include <engine/Backend.hpp>
 #include <engine/Manifoldmath.hpp>
 #include <engine/Vectormath.hpp>
+#include <engine/spin/StateType.hpp>
 #include <utility/Constants.hpp>
 #include <utility/Exception.hpp>
 #include <utility/Logging.hpp>
 
 #include <Eigen/Dense>
 
-#include <GenEigsRealShiftSolver.h>
-#include <GenEigsSolver.h> // Also includes <MatOp/DenseGenMatProd.h>
-
-#include <array>
-
 namespace C = Utility::Constants;
-
-#ifndef SPIRIT_USE_CUDA
 
 namespace Engine
 {
+
 namespace Manifoldmath
 {
+
 void project_parallel( vectorfield & vf1, const vectorfield & vf2 )
 {
     scalar proj = Vectormath::dot( vf1, vf2 );
-    Backend::par::apply(
-        vf1.size(),
-        [vf1 = vf1.data(), vf2 = vf2.data(), proj] SPIRIT_LAMBDA( int idx ) { vf1[idx] = proj * vf2[idx]; } );
+    Backend::transform(
+        SPIRIT_PAR vf2.begin(), vf2.end(), vf1.begin(),
+        [proj] SPIRIT_LAMBDA( const Vector3 & v ) -> Vector3 { return proj * v; } );
 }
 
 void project_orthogonal( vectorfield & vf1, const vectorfield & vf2 )
 {
-    scalar x = Vectormath::dot( vf1, vf2 );
-// TODO: replace the loop with Vectormath Kernel
-#pragma omp parallel for
-    for( unsigned int i = 0; i < vf1.size(); ++i )
-        vf1[i] -= x * vf2[i];
+    const scalar x = Vectormath::dot( vf1, vf2 );
+    Backend::transform(
+        SPIRIT_PAR vf1.begin(), vf1.end(), vf2.begin(), vf1.begin(),
+        [x] SPIRIT_LAMBDA( const Vector3 & v1, const Vector3 & v2 ) -> Vector3 { return v1 - x * v2; } );
 }
 
 void invert_parallel( vectorfield & vf1, const vectorfield & vf2 )
 {
-    scalar x = Vectormath::dot( vf1, vf2 );
-// TODO: replace the loop with Vectormath Kernel
-#pragma omp parallel for
-    for( unsigned int i = 0; i < vf1.size(); ++i )
-        vf1[i] -= 2 * x * vf2[i];
+    const scalar x = Vectormath::dot( vf1, vf2 );
+    Backend::transform(
+        SPIRIT_PAR vf1.begin(), vf1.end(), vf2.begin(), vf1.begin(),
+        [x] SPIRIT_LAMBDA( const Vector3 & v1, const Vector3 & v2 ) -> Vector3 { return v1 - 2 * x * v2; } );
 }
 
 void invert_orthogonal( vectorfield & vf1, const vectorfield & vf2 )
 {
     vectorfield vf3 = vf1;
     project_orthogonal( vf3, vf2 );
-// TODO: replace the loop with Vectormath Kernel
-#pragma omp parallel for
-    for( unsigned int i = 0; i < vf1.size(); ++i )
-        vf1[i] -= 2 * vf3[i];
+    Backend::transform(
+        SPIRIT_PAR vf1.begin(), vf1.end(), vf3.begin(), vf1.begin(),
+        [] SPIRIT_LAMBDA( const Vector3 & v1, const Vector3 & v3 ) -> Vector3 { return v1 - 2 * v3; } );
 }
 
 void project_tangential( vectorfield & vf1, const vectorfield & vf2 )
 {
-#pragma omp parallel for
-    for( unsigned int i = 0; i < vf1.size(); ++i )
-        vf1[i] -= vf1[i].dot( vf2[i] ) * vf2[i];
+    Backend::transform(
+        SPIRIT_PAR vf1.begin(), vf1.end(), vf2.begin(), vf1.begin(),
+        [] SPIRIT_LAMBDA( const Vector3 & v1, const Vector3 & v2 ) -> Vector3 { return v1 - v1.dot( v2 ) * v2; } );
+}
+
+scalar max_tangential_norm( const vectorfield & vector_field, const vectorfield & normal_field )
+{
+    return sqrt( Backend::transform_reduce(
+        SPIRIT_PAR vector_field.begin(), vector_field.end(), normal_field.begin(), scalar( 0 ),
+        [] SPIRIT_LAMBDA( const scalar lhs, const scalar rhs ) { return ( lhs < rhs ) ? rhs : lhs; },
+        [] SPIRIT_LAMBDA( const Vector3 & v, const Vector3 & n ) { return ( v - v.dot( n ) * n ).squaredNorm(); } ) );
 }
 
 scalar dist_geodesic( const vectorfield & v1, const vectorfield & v2 )
 {
-    scalar dist = 0;
-#pragma omp parallel for reduction( + : dist )
-    for( unsigned int i = 0; i < v1.size(); ++i )
-        dist += pow( Vectormath::angle( v1[i], v2[i] ), 2 );
-    return sqrt( dist );
+    return sqrt( Backend::transform_reduce(
+        SPIRIT_PAR v1.begin(), v1.end(), v2.begin(), scalar( 0 ), Backend::plus<scalar>{},
+        [] SPIRIT_LAMBDA( const Vector3 & v1, const Vector3 & v2 ) -> scalar
+        {
+            const scalar phi = Vectormath::angle( v1, v2 );
+            return phi * phi;
+        } ) );
 }
 
 /*
@@ -78,144 +81,139 @@ scalar dist_geodesic( const vectorfield & v1, const vectorfield & v2 )
 void Geodesic_Tangent(
     vectorfield & tangent, const vectorfield & image_1, const vectorfield & image_2, const vectorfield & image_mid )
 {
-    // clang-format off
-    Backend::par::apply(
-        image_1.size(),
-        [
-            image_minus = image_1.data(),
-            image_plus  = image_2.data(),
-            image_mid   = image_mid.data(),
-            tangent     = tangent.data()
-        ] SPIRIT_LAMBDA (int idx)
+    const auto * image_minus = image_1.data();
+    const auto * image_plus  = image_2.data();
+    const auto * image_zero  = image_mid.data();
+    auto * tang              = tangent.data();
+
+    Backend::for_each_n(
+        SPIRIT_PAR Backend::make_counting_iterator( 0 ), image_1.size(),
+        [image_minus, image_plus, image_zero, tang] SPIRIT_LAMBDA( const int idx ) -> void
         {
-            const Vector3 ex = { 1, 0, 0 };
-            const Vector3 ey = { 0, 1, 0 };
-            scalar epsilon   = 1e-15;
+            const Vector3 ex     = { 1, 0, 0 };
+            const Vector3 ey     = { 0, 1, 0 };
+            const scalar epsilon = 1e-15;
 
             Vector3 axis = image_plus[idx].cross( image_minus[idx] );
 
             // If the spins are anti-parallel, we choose an arbitrary axis
-            if( std::abs(image_minus[idx].dot(image_plus[idx]) + 1) < epsilon ) // Check if anti-parallel
+            if( std::abs( image_minus[idx].dot( image_plus[idx] ) + 1 ) < epsilon ) // Check if anti-parallel
             {
-                if( std::abs( image_mid[idx].dot( ex ) - 1 ) > epsilon ) // Check if parallel to ex
+                if( std::abs( image_zero[idx].dot( ex ) - 1 ) > epsilon ) // Check if parallel to ex
                     axis = ex;
                 else
                     axis = ey;
             }
-            tangent[idx] = image_mid[idx].cross( axis );
-        }
-    );
-    Manifoldmath::normalize(tangent);
-    // clang-format on
+            tang[idx] = image_zero[idx].cross( axis );
+        } );
+    Manifoldmath::normalize( tangent );
 };
 
 /*
 Calculates the 'tangent' vectors, i.e.in crudest approximation the difference between an image and the neighbouring
 */
+template<typename StateType>
 void Tangents(
-    std::vector<std::shared_ptr<vectorfield>> configurations, const std::vector<scalar> & energies,
+    const std::vector<std::shared_ptr<StateType>> & configurations, const std::vector<scalar> & energies,
     std::vector<vectorfield> & tangents )
 {
-    int noi = configurations.size();
-    int nos = ( *configurations[0] ).size();
+    const auto noi = configurations.size();
+    const auto nos = configurations[0]->spin.size();
 
-    for( int idx_img = 0; idx_img < noi; ++idx_img )
+    if( noi < 2 )
+        return;
+
+    // first image
     {
-        auto & image = *configurations[idx_img];
+        const auto & image      = configurations[0]->spin;
+        const auto & image_plus = configurations[1]->spin;
+        Geodesic_Tangent(
+            tangents[0], image, image_plus,
+            image ); // Use the accurate tangent at the endpoints, useful for the dimer method
+    }
 
-        // First Image
-        if( idx_img == 0 )
+    // Images Inbetween
+    for( unsigned int idx_img = 1; idx_img < noi - 1; ++idx_img )
+    {
+        const auto & image       = configurations[idx_img]->spin;
+        const auto & image_plus  = configurations[idx_img + 1]->spin;
+        const auto & image_minus = configurations[idx_img - 1]->spin;
+
+        // Energies
+        scalar E_mid = 0, E_plus = 0, E_minus = 0;
+        E_mid   = energies[idx_img];
+        E_plus  = energies[idx_img + 1];
+        E_minus = energies[idx_img - 1];
+
+        // Vectors to neighbouring images
+        vectorfield t_plus( nos ), t_minus( nos );
+
+        Vectormath::set_c_a( 1, image_plus, t_plus );
+        Vectormath::add_c_a( -1, image, t_plus );
+
+        Vectormath::set_c_a( 1, image, t_minus );
+        Vectormath::add_c_a( -1, image_minus, t_minus );
+
+        // Near maximum or minimum
+        if( ( E_plus < E_mid && E_mid > E_minus ) || ( E_plus > E_mid && E_mid < E_minus ) )
         {
-            auto & image_plus = *configurations[idx_img + 1];
-            Geodesic_Tangent(
-                tangents[idx_img], image, image_plus,
-                image ); // Use the accurate tangent at the endpoints, useful for the dimer method
-        }
-        // Last Image
-        else if( idx_img == noi - 1 )
-        {
-            auto & image_minus = *configurations[idx_img - 1];
-            Geodesic_Tangent(
-                tangents[idx_img], image_minus, image,
-                image ); // Use the accurate tangent at the endpoints, useful for the dimer method
-        }
-        // Images Inbetween
-        else
-        {
-            auto & image_plus  = *configurations[idx_img + 1];
-            auto & image_minus = *configurations[idx_img - 1];
+            // Get a smooth transition between forward and backward tangent
+            scalar E_max = std::max( std::abs( E_plus - E_mid ), std::abs( E_minus - E_mid ) );
+            scalar E_min = std::min( std::abs( E_plus - E_mid ), std::abs( E_minus - E_mid ) );
 
-            // Energies
-            scalar E_mid = 0, E_plus = 0, E_minus = 0;
-            E_mid   = energies[idx_img];
-            E_plus  = energies[idx_img + 1];
-            E_minus = energies[idx_img - 1];
-
-            // Vectors to neighbouring images
-            vectorfield t_plus( nos ), t_minus( nos );
-
-            Vectormath::set_c_a( 1, image_plus, t_plus );
-            Vectormath::add_c_a( -1, image, t_plus );
-
-            Vectormath::set_c_a( 1, image, t_minus );
-            Vectormath::add_c_a( -1, image_minus, t_minus );
-
-            // Near maximum or minimum
-            if( ( E_plus < E_mid && E_mid > E_minus ) || ( E_plus > E_mid && E_mid < E_minus ) )
+            if( E_plus > E_minus )
             {
-                // Get a smooth transition between forward and backward tangent
-                scalar E_max = std::max( std::abs( E_plus - E_mid ), std::abs( E_minus - E_mid ) );
-                scalar E_min = std::min( std::abs( E_plus - E_mid ), std::abs( E_minus - E_mid ) );
-
-                if( E_plus > E_minus )
-                {
-                    Vectormath::set_c_a( E_max, t_plus, tangents[idx_img] );
-                    Vectormath::add_c_a( E_min, t_minus, tangents[idx_img] );
-                }
-                else
-                {
-                    Vectormath::set_c_a( E_min, t_plus, tangents[idx_img] );
-                    Vectormath::add_c_a( E_max, t_minus, tangents[idx_img] );
-                }
+                Vectormath::set_c_a( E_max, t_plus, tangents[idx_img] );
+                Vectormath::add_c_a( E_min, t_minus, tangents[idx_img] );
             }
-            // Rising slope
-            else if( E_plus > E_mid && E_mid > E_minus )
-            {
-                Vectormath::set_c_a( 1, t_plus, tangents[idx_img] );
-            }
-            // Falling slope
-            else if( E_plus < E_mid && E_mid < E_minus )
-            {
-                Vectormath::set_c_a( 1, t_minus, tangents[idx_img] );
-                // tangents = t_minus;
-                for( int i = 0; i < nos; ++i )
-                {
-                    tangents[idx_img][i] = t_minus[i];
-                }
-            }
-            // No slope(constant energy)
             else
             {
-                Vectormath::set_c_a( 1, t_plus, tangents[idx_img] );
-                Vectormath::add_c_a( 1, t_minus, tangents[idx_img] );
+                Vectormath::set_c_a( E_min, t_plus, tangents[idx_img] );
+                Vectormath::add_c_a( E_max, t_minus, tangents[idx_img] );
             }
-
-            // Project tangents into tangent planes of spin vectors to make them actual tangents
-            project_tangential( tangents[idx_img], image );
-            // Normalise in 3N - dimensional space
-            Manifoldmath::normalize( tangents[idx_img] );
         }
-    } // end for idx_img
+        // Rising slope
+        else if( E_plus > E_mid && E_mid > E_minus )
+        {
+            Vectormath::set_c_a( 1, t_plus, tangents[idx_img] );
+        }
+        // Falling slope
+        else if( E_plus < E_mid && E_mid < E_minus )
+        {
+            Vectormath::set_c_a( 1, t_minus, tangents[idx_img] );
+            // tangents = t_minus;
+            for( unsigned int i = 0; i < nos; ++i )
+            {
+                tangents[idx_img][i] = t_minus[i];
+            }
+        }
+        // No slope(constant energy)
+        else
+        {
+            Vectormath::set_c_a( 1, t_plus, tangents[idx_img] );
+            Vectormath::add_c_a( 1, t_minus, tangents[idx_img] );
+        }
+
+        // Project tangents into tangent planes of spin vectors to make them actual tangents
+        project_tangential( tangents[idx_img], image );
+        // Normalise in 3N - dimensional space
+        Manifoldmath::normalize( tangents[idx_img] );
+    }
+
+    // Last Image
+    {
+        const auto & image       = configurations[noi - 1]->spin;
+        const auto & image_minus = configurations[noi - 2]->spin;
+        Geodesic_Tangent(
+            tangents[noi - 1], image_minus, image,
+            image ); // Use the accurate tangent at the endpoints, useful for the dimer method
+    }
 } // end Tangents
-} // namespace Manifoldmath
-} // namespace Engine
 
-#endif
+template void Tangents(
+    const std::vector<std::shared_ptr<Engine::Spin::StateType>> & configurations, const std::vector<scalar> & energies,
+    std::vector<vectorfield> & tangents );
 
-namespace Engine
-{
-namespace Manifoldmath
-{
 scalar norm( const vectorfield & vf )
 {
     scalar x = Vectormath::dot( vf, vf );
@@ -230,12 +228,12 @@ void normalize( vectorfield & vf )
 
 MatrixX tangential_projector( const vectorfield & image )
 {
-    int nos  = image.size();
-    int size = 3 * nos;
+    const auto nos = image.size();
+    int size       = 3 * nos;
 
     // Get projection matrix M=1-S, blockwise S=x*x^T
     MatrixX proj = MatrixX::Identity( size, size );
-    for( int i = 0; i < nos; ++i )
+    for( unsigned int i = 0; i < nos; ++i )
     {
         proj.block<3, 3>( 3 * i, 3 * i ) -= image[i] * image[i].transpose();
     }
@@ -273,8 +271,8 @@ void tangent_basis_spherical( const vectorfield & vf, MatrixX & basis )
         }
         else
         {
-            scalar rxy   = std::sqrt( 1 - vf[i][2] * vf[i][2] );
-            scalar z_rxy = vf[i][2] / rxy;
+            const scalar rxy   = std::sqrt( 1 - vf[i][2] * vf[i][2] );
+            const scalar z_rxy = vf[i][2] / rxy;
 
             // Note: these are not unit vectors, but derivatives!
             etheta = Vector3{ vf[i][0] * z_rxy, vf[i][1] * z_rxy, -rxy };
@@ -288,8 +286,7 @@ void tangent_basis_spherical( const vectorfield & vf, MatrixX & basis )
 
 void sparse_tangent_basis_spherical( const vectorfield & vf, SpMatrixX & basis )
 {
-    typedef Eigen::Triplet<scalar> T;
-    std::vector<T> triplet_list;
+    std::vector<Eigen::Triplet<scalar>> triplet_list;
     triplet_list.reserve( vf.size() * 3 );
 
     Vector3 tmp, etheta, ephi, res;
@@ -300,29 +297,29 @@ void sparse_tangent_basis_spherical( const vectorfield & vf, SpMatrixX & basis )
             tmp = Vector3{ 1, 0, 0 };
             res = ( tmp - tmp.dot( vf[i] ) * vf[i] ).normalized();
 
-            triplet_list.push_back( T( 3 * i, 2 * i, res[0] ) );
-            triplet_list.push_back( T( 3 * i + 1, 2 * i, res[1] ) );
-            triplet_list.push_back( T( 3 * i + 2, 2 * i, res[2] ) );
+            triplet_list.emplace_back( 3 * i, 2 * i, res[0] );
+            triplet_list.emplace_back( 3 * i + 1, 2 * i, res[1] );
+            triplet_list.emplace_back( 3 * i + 2, 2 * i, res[2] );
 
             tmp = Vector3{ 0, 1, 0 };
             res = ( tmp - tmp.dot( vf[i] ) * vf[i] ).normalized();
-            triplet_list.push_back( T( 3 * i, 2 * i + 1, res[0] ) );
-            triplet_list.push_back( T( 3 * i + 1, 2 * i + 1, res[1] ) );
-            triplet_list.push_back( T( 3 * i + 2, 2 * i + 1, res[2] ) );
+            triplet_list.emplace_back( 3 * i, 2 * i + 1, res[0] );
+            triplet_list.emplace_back( 3 * i + 1, 2 * i + 1, res[1] );
+            triplet_list.emplace_back( 3 * i + 2, 2 * i + 1, res[2] );
         }
         else if( vf[i][2] < -1 + 1e-8 )
         {
             tmp = Vector3{ 1, 0, 0 };
             res = ( tmp - tmp.dot( vf[i] ) * vf[i] ).normalized();
-            triplet_list.push_back( T( 3 * i, 2 * i, res[0] ) );
-            triplet_list.push_back( T( 3 * i + 1, 2 * i, res[1] ) );
-            triplet_list.push_back( T( 3 * i + 2, 2 * i, res[2] ) );
+            triplet_list.emplace_back( 3 * i, 2 * i, res[0] );
+            triplet_list.emplace_back( 3 * i + 1, 2 * i, res[1] );
+            triplet_list.emplace_back( 3 * i + 2, 2 * i, res[2] );
 
             tmp = Vector3{ 0, -1, 0 };
             res = ( tmp - tmp.dot( vf[i] ) * vf[i] ).normalized();
-            triplet_list.push_back( T( 3 * i, 2 * i + 1, res[0] ) );
-            triplet_list.push_back( T( 3 * i + 1, 2 * i + 1, res[1] ) );
-            triplet_list.push_back( T( 3 * i + 2, 2 * i + 1, res[2] ) );
+            triplet_list.emplace_back( 3 * i, 2 * i + 1, res[0] );
+            triplet_list.emplace_back( 3 * i + 1, 2 * i + 1, res[1] );
+            triplet_list.emplace_back( 3 * i + 2, 2 * i + 1, res[2] );
         }
         else
         {
@@ -334,13 +331,13 @@ void sparse_tangent_basis_spherical( const vectorfield & vf, SpMatrixX & basis )
             ephi   = Vector3{ -vf[i][1] / rxy, vf[i][0] / rxy, 0 };
 
             res = ( etheta - etheta.dot( vf[i] ) * vf[i] ).normalized();
-            triplet_list.push_back( T( 3 * i, 2 * i, res[0] ) );
-            triplet_list.push_back( T( 3 * i + 1, 2 * i, res[1] ) );
-            triplet_list.push_back( T( 3 * i + 2, 2 * i, res[2] ) );
+            triplet_list.emplace_back( 3 * i, 2 * i, res[0] );
+            triplet_list.emplace_back( 3 * i + 1, 2 * i, res[1] );
+            triplet_list.emplace_back( 3 * i + 2, 2 * i, res[2] );
             res = ( ephi - ephi.dot( vf[i] ) * vf[i] ).normalized();
-            triplet_list.push_back( T( 3 * i, 2 * i + 1, res[0] ) );
-            triplet_list.push_back( T( 3 * i + 1, 2 * i + 1, res[1] ) );
-            triplet_list.push_back( T( 3 * i + 2, 2 * i + 1, res[2] ) );
+            triplet_list.emplace_back( 3 * i, 2 * i + 1, res[0] );
+            triplet_list.emplace_back( 3 * i + 1, 2 * i + 1, res[1] );
+            triplet_list.emplace_back( 3 * i + 2, 2 * i + 1, res[2] );
         }
     }
     basis.setFromTriplets( triplet_list.begin(), triplet_list.end() );
@@ -351,7 +348,7 @@ void sparse_tangent_basis_spherical( const vectorfield & vf, SpMatrixX & basis )
 void tangent_basis_cross( const vectorfield & vf, MatrixX & basis )
 {
     basis.setZero();
-    for( int i = 0; i < vf.size(); ++i )
+    for( unsigned int i = 0; i < vf.size(); ++i )
     {
         if( std::abs( vf[i].z() ) > 1 - 1e-8 )
         {
@@ -370,7 +367,7 @@ void tangent_basis_cross( const vectorfield & vf, MatrixX & basis )
 // This assumes that the vectors of vf are normalized and that basis is 3N x 2N
 void tangent_basis_righthanded( const vectorfield & vf, MatrixX & basis )
 {
-    int size = vf.size();
+    const auto size = vf.size();
     basis.setZero();
 
     // vf should be 3N
@@ -380,9 +377,9 @@ void tangent_basis_righthanded( const vectorfield & vf, MatrixX & basis )
     Vector3 e1, e2, v1;
     Vector3 ex{ 1, 0, 0 }, ey{ 0, 1, 0 }, ez{ 0, 0, 1 };
 
-    for( int i = 0; i < size; ++i )
+    for( unsigned int i = 0; i < size; ++i )
     {
-        auto & axis = vf[i];
+        const auto & axis = vf[i];
 
         // Choose orthogonalisation basis for Grahm-Schmidt
         //      We will need two vectors with which the axis always forms the
@@ -444,8 +441,8 @@ void spherical_to_cartesian_jacobian( const vectorfield & vf, MatrixX & jacobian
         }
         else
         {
-            scalar rxy   = std::sqrt( 1 - vf[i][2] * vf[i][2] );
-            scalar z_rxy = vf[i][2] / rxy;
+            const scalar rxy   = std::sqrt( 1 - vf[i][2] * vf[i][2] );
+            const scalar z_rxy = vf[i][2] / rxy;
 
             // Note: these are not unit vectors, but derivatives!
             etheta = Vector3{ vf[i][0] * z_rxy, vf[i][1] * z_rxy, -rxy };
@@ -460,7 +457,7 @@ void spherical_to_cartesian_jacobian( const vectorfield & vf, MatrixX & jacobian
 // The Hessian matrix of the transformation from spherical to euclidean coordinates
 void spherical_to_cartesian_hessian( const vectorfield & vf, MatrixX & gamma_x, MatrixX & gamma_y, MatrixX & gamma_z )
 {
-    int nos = vf.size();
+    const auto nos = vf.size();
     gamma_x.setZero();
     gamma_y.setZero();
     gamma_z.setZero();
@@ -480,23 +477,14 @@ void spherical_to_cartesian_hessian( const vectorfield & vf, MatrixX & gamma_x, 
 // The (2Nx2N) Christoffel symbols of the transformation from (unit-)spherical coordinates to euclidean
 void spherical_to_cartesian_christoffel_symbols( const vectorfield & vf, MatrixX & gamma_theta, MatrixX & gamma_phi )
 {
-    using std::acos;
-    using std::atan2;
-    using std::cos;
-    using std::sin;
-    using std::tan;
-
-    int nos     = vf.size();
-    gamma_theta = MatrixX::Zero( 2 * nos, 2 * nos );
-    gamma_phi   = MatrixX::Zero( 2 * nos, 2 * nos );
+    const auto nos = vf.size();
+    gamma_theta    = MatrixX::Zero( 2 * nos, 2 * nos );
+    gamma_phi      = MatrixX::Zero( 2 * nos, 2 * nos );
 
     for( unsigned int i = 0; i < nos; ++i )
     {
-        scalar theta = acos( vf[i][2] );
-        scalar phi   = atan2( vf[i][1], vf[i][0] );
-        scalar cot   = 0;
-        if( std::abs( theta ) > 1e-4 )
-            cot = -tan( C::Pi_2 + theta );
+        const scalar theta = acos( vf[i][2] );
+        const scalar cot   = abs( theta ) > 1e-4 ? -tan( C::Pi_2 + theta ) : 0;
 
         gamma_theta( 2 * i + 1, 2 * i + 1 ) = -sin( theta ) * cos( theta );
 
@@ -511,14 +499,13 @@ void sparse_hessian_bordered_3N(
     // Calculates a 3Nx3N matrix in the bordered Hessian approach and transforms it into the tangent basis,
     // making the result a 2Nx2N matrix. The bordered Hessian's Lagrange multipliers assume a local extremum.
 
-    int nos = image.size();
+    const auto nos = image.size();
     VectorX lambda( nos );
-    for( int i = 0; i < nos; ++i )
+    for( unsigned int i = 0; i < nos; ++i )
         lambda[i] = image[i].normalized().dot( gradient[i] );
 
     // Construct hessian_out
-    typedef Eigen::Triplet<scalar> T;
-    std::vector<T> tripletList;
+    std::vector<Eigen::Triplet<scalar>> tripletList;
     tripletList.reserve( hessian.nonZeros() + 3 * nos );
 
     // Iterate over non zero entries of hesiian
@@ -526,11 +513,10 @@ void sparse_hessian_bordered_3N(
     {
         for( SpMatrixX::InnerIterator it( hessian, k ); it; ++it )
         {
-            tripletList.push_back( T( it.row(), it.col(), it.value() ) );
+            tripletList.emplace_back( it.row(), it.col(), it.value() );
         }
-        int j = k % 3;
-        int i = ( k - j ) / 3;
-        tripletList.push_back( T( k, k, -lambda[i] ) ); // Correction to the diagonal
+        const int i = ( k - ( k % 3 ) ) / 3;
+        tripletList.emplace_back( k, k, -lambda[i] ); // Correction to the diagonal
     }
     hessian_out.setFromTriplets( tripletList.begin(), tripletList.end() );
 }
@@ -542,16 +528,16 @@ void hessian_bordered(
     // Calculates a 3Nx3N matrix in the bordered Hessian approach and transforms it into the tangent basis,
     // making the result a 2Nx2N matrix. The bordered Hessian's Lagrange multipliers assume a local extremum.
 
-    int nos        = image.size();
+    const auto nos = image.size();
     MatrixX tmp_3N = hessian;
 
     VectorX lambda( nos );
-    for( int i = 0; i < nos; ++i )
+    for( unsigned int i = 0; i < nos; ++i )
         lambda[i] = image[i].dot( gradient[i] );
 
-    for( int i = 0; i < nos; ++i )
+    for( unsigned int i = 0; i < nos; ++i )
     {
-        for( int j = 0; j < 3; ++j )
+        for( unsigned int j = 0; j < 3; ++j )
         {
             tmp_3N( 3 * i + j, 3 * i + j ) -= lambda( i );
         }
@@ -572,11 +558,11 @@ void hessian_projected(
     // Calculates a 3Nx3N matrix in the projector approach and transforms it into the tangent basis,
     // making the result a 2Nx2N matrix
 
-    int nos = image.size();
+    const auto nos = image.size();
     hessian_out.setZero();
 
     // Calculate projector matrix
-    auto P = tangential_projector( image );
+    const auto P = tangential_projector( image );
 
     // Calculate tangential projection of Hessian
     hessian_out = P * hessian * P;
@@ -604,7 +590,7 @@ void hessian_weingarten(
     // Calculates a 3Nx3N matrix in the Weingarten map approach and transforms it into the tangent basis,
     // making the result a 2Nx2N matrix
 
-    int nos = image.size();
+    const std::size_t nos = image.size();
     hessian_out.setZero();
 
     // Calculate projector matrix
@@ -633,7 +619,7 @@ void hessian_spherical(
 {
     // Calculates a 2Nx2N hessian matrix containing second order spherical derivatives
 
-    int nos = image.size();
+    const auto nos = image.size();
 
     MatrixX jacobian   = MatrixX::Zero( 3 * nos, 2 * nos );
     MatrixX sph_hess_x = MatrixX::Zero( 2 * nos, 2 * nos );
@@ -648,7 +634,7 @@ void hessian_spherical(
 
     // Calculate transformed Hessian
     hessian_out = jacobian.transpose() * hessian * jacobian;
-    for( int i = 0; i < nos; ++i )
+    for( unsigned int i = 0; i < nos; ++i )
     {
         hessian_out.block<2, 2>( 2 * i, 2 * i ) += gradient[i][0] * sph_hess_x.block<2, 2>( 2 * i, 2 * i )
                                                    + gradient[i][1] * sph_hess_y.block<2, 2>( 2 * i, 2 * i )
@@ -662,7 +648,7 @@ void hessian_covariant(
     // Calculates a 2Nx2N covariant hessian matrix containing second order spherical derivatives
     // and correction terms (containing Christoffel symbols)
 
-    int nos = image.size();
+    const auto nos = image.size();
 
     // Calculate coordinate transformation jacobian
     MatrixX jacobian( 3 * nos, 2 * nos );
@@ -681,7 +667,7 @@ void hessian_covariant(
     Engine::Manifoldmath::spherical_to_cartesian_christoffel_symbols( image, christoffel_theta, christoffel_phi );
 
     // Calculate the covariant Hessian
-    for( int i = 0; i < nos; ++i )
+    for( unsigned int i = 0; i < nos; ++i )
     {
         hessian_out.block<2, 2>( 2 * i, 2 * i )
             -= gradient_spherical[2 * i] * christoffel_theta.block<2, 2>( 2 * i, 2 * i )
