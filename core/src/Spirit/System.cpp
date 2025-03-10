@@ -68,12 +68,11 @@ catch( ... )
 scalar * System_Get_DDI_Field( State * state, int idx_image, int idx_chain ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
-    return image->ddi_field[0].data();
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+
+    return image->M.ddi_field[0].data();
 }
 catch( ... )
 {
@@ -84,9 +83,6 @@ catch( ... )
 void System_Set_DDI_Field(State * state, int idx_image, int idx_chain, int n_atoms, float * ddi_fields  ) noexcept
 try
 {
-    std::shared_ptr<Data::Spin_System> image;
-    std::shared_ptr<Data::Spin_System_Chain> chain;
-
     if( ddi_fields == nullptr )
     {
         spirit_throw(
@@ -96,13 +92,13 @@ try
 
 
     // Fetch correct indices and pointers
-    from_indices( state, idx_image, idx_chain, image, chain );
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     for( std::size_t i = 0; i < static_cast<std::size_t>( n_atoms ); ++i )
     {
-        image->ddi_field[i][0] = ddi_fields[3*i+0];        
-        image->ddi_field[i][1] = ddi_fields[3*i+1];        
-        image->ddi_field[i][2] = ddi_fields[3*i+2];        
+        image->M.ddi_field[i][0] = ddi_fields[3*i+0];        
+        image->M.ddi_field[i][1] = ddi_fields[3*i+1];        
+        image->M.ddi_field[i][2] = ddi_fields[3*i+2];        
     }    
 }
 catch( ... )

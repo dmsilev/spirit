@@ -1,0 +1,1304 @@
+[
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqhull_r_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_r.dir/src/libqhull_r/global_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/global_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/global_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_r.dir/src/libqhull_r/global_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqhull_r_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_r.dir/src/libqhull_r/stat_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/stat_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/stat_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_r.dir/src/libqhull_r/stat_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqhull_r_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_r.dir/src/libqhull_r/geom2_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/geom2_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/geom2_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_r.dir/src/libqhull_r/geom2_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqhull_r_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_r.dir/src/libqhull_r/poly2_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/poly2_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/poly2_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_r.dir/src/libqhull_r/poly2_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqhull_r_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_r.dir/src/libqhull_r/merge_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/merge_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/merge_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_r.dir/src/libqhull_r/merge_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqhull_r_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_r.dir/src/libqhull_r/libqhull_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/libqhull_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/libqhull_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_r.dir/src/libqhull_r/libqhull_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqhull_r_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_r.dir/src/libqhull_r/geom_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/geom_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/geom_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_r.dir/src/libqhull_r/geom_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqhull_r_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_r.dir/src/libqhull_r/poly_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/poly_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/poly_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_r.dir/src/libqhull_r/poly_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqhull_r_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_r.dir/src/libqhull_r/qset_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/qset_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/qset_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_r.dir/src/libqhull_r/qset_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqhull_r_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_r.dir/src/libqhull_r/mem_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/mem_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/mem_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_r.dir/src/libqhull_r/mem_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqhull_r_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_r.dir/src/libqhull_r/random_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/random_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/random_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_r.dir/src/libqhull_r/random_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqhull_r_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_r.dir/src/libqhull_r/usermem_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/usermem_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/usermem_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_r.dir/src/libqhull_r/usermem_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqhull_r_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_r.dir/src/libqhull_r/userprintf_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/userprintf_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/userprintf_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_r.dir/src/libqhull_r/userprintf_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqhull_r_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_r.dir/src/libqhull_r/io_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/io_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/io_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_r.dir/src/libqhull_r/io_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqhull_r_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_r.dir/src/libqhull_r/user_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/user_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/user_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_r.dir/src/libqhull_r/user_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqhull_r_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_r.dir/src/libqhull_r/rboxlib_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/rboxlib_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/rboxlib_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_r.dir/src/libqhull_r/rboxlib_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqhull_r_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_r.dir/src/libqhull_r/userprintf_rbox_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/userprintf_rbox_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/userprintf_rbox_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_r.dir/src/libqhull_r/userprintf_rbox_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dlibqhull_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/libqhull.dir/src/libqhull/global.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/global.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/global.c",
+  "output": "thirdparty/qhull/CMakeFiles/libqhull.dir/src/libqhull/global.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dlibqhull_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/libqhull.dir/src/libqhull/stat.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/stat.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/stat.c",
+  "output": "thirdparty/qhull/CMakeFiles/libqhull.dir/src/libqhull/stat.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dlibqhull_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/libqhull.dir/src/libqhull/geom2.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/geom2.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/geom2.c",
+  "output": "thirdparty/qhull/CMakeFiles/libqhull.dir/src/libqhull/geom2.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dlibqhull_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/libqhull.dir/src/libqhull/poly2.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/poly2.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/poly2.c",
+  "output": "thirdparty/qhull/CMakeFiles/libqhull.dir/src/libqhull/poly2.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dlibqhull_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/libqhull.dir/src/libqhull/merge.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/merge.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/merge.c",
+  "output": "thirdparty/qhull/CMakeFiles/libqhull.dir/src/libqhull/merge.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dlibqhull_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/libqhull.dir/src/libqhull/libqhull.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/libqhull.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/libqhull.c",
+  "output": "thirdparty/qhull/CMakeFiles/libqhull.dir/src/libqhull/libqhull.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dlibqhull_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/libqhull.dir/src/libqhull/geom.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/geom.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/geom.c",
+  "output": "thirdparty/qhull/CMakeFiles/libqhull.dir/src/libqhull/geom.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dlibqhull_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/libqhull.dir/src/libqhull/poly.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/poly.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/poly.c",
+  "output": "thirdparty/qhull/CMakeFiles/libqhull.dir/src/libqhull/poly.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dlibqhull_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/libqhull.dir/src/libqhull/qset.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/qset.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/qset.c",
+  "output": "thirdparty/qhull/CMakeFiles/libqhull.dir/src/libqhull/qset.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dlibqhull_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/libqhull.dir/src/libqhull/mem.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/mem.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/mem.c",
+  "output": "thirdparty/qhull/CMakeFiles/libqhull.dir/src/libqhull/mem.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dlibqhull_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/libqhull.dir/src/libqhull/random.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/random.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/random.c",
+  "output": "thirdparty/qhull/CMakeFiles/libqhull.dir/src/libqhull/random.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dlibqhull_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/libqhull.dir/src/libqhull/usermem.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/usermem.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/usermem.c",
+  "output": "thirdparty/qhull/CMakeFiles/libqhull.dir/src/libqhull/usermem.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dlibqhull_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/libqhull.dir/src/libqhull/userprintf.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/userprintf.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/userprintf.c",
+  "output": "thirdparty/qhull/CMakeFiles/libqhull.dir/src/libqhull/userprintf.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dlibqhull_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/libqhull.dir/src/libqhull/io.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/io.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/io.c",
+  "output": "thirdparty/qhull/CMakeFiles/libqhull.dir/src/libqhull/io.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dlibqhull_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/libqhull.dir/src/libqhull/user.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/user.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/user.c",
+  "output": "thirdparty/qhull/CMakeFiles/libqhull.dir/src/libqhull/user.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dlibqhull_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/libqhull.dir/src/libqhull/rboxlib.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/rboxlib.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/rboxlib.c",
+  "output": "thirdparty/qhull/CMakeFiles/libqhull.dir/src/libqhull/rboxlib.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dlibqhull_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/libqhull.dir/src/libqhull/userprintf_rbox.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/userprintf_rbox.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/userprintf_rbox.c",
+  "output": "thirdparty/qhull/CMakeFiles/libqhull.dir/src/libqhull/userprintf_rbox.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqh_QHpointer -Dqhull_p_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_p.dir/src/libqhull/global.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/global.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/global.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_p.dir/src/libqhull/global.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqh_QHpointer -Dqhull_p_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_p.dir/src/libqhull/stat.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/stat.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/stat.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_p.dir/src/libqhull/stat.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqh_QHpointer -Dqhull_p_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_p.dir/src/libqhull/geom2.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/geom2.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/geom2.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_p.dir/src/libqhull/geom2.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqh_QHpointer -Dqhull_p_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_p.dir/src/libqhull/poly2.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/poly2.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/poly2.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_p.dir/src/libqhull/poly2.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqh_QHpointer -Dqhull_p_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_p.dir/src/libqhull/merge.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/merge.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/merge.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_p.dir/src/libqhull/merge.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqh_QHpointer -Dqhull_p_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_p.dir/src/libqhull/libqhull.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/libqhull.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/libqhull.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_p.dir/src/libqhull/libqhull.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqh_QHpointer -Dqhull_p_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_p.dir/src/libqhull/geom.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/geom.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/geom.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_p.dir/src/libqhull/geom.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqh_QHpointer -Dqhull_p_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_p.dir/src/libqhull/poly.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/poly.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/poly.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_p.dir/src/libqhull/poly.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqh_QHpointer -Dqhull_p_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_p.dir/src/libqhull/qset.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/qset.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/qset.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_p.dir/src/libqhull/qset.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqh_QHpointer -Dqhull_p_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_p.dir/src/libqhull/mem.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/mem.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/mem.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_p.dir/src/libqhull/mem.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqh_QHpointer -Dqhull_p_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_p.dir/src/libqhull/random.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/random.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/random.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_p.dir/src/libqhull/random.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqh_QHpointer -Dqhull_p_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_p.dir/src/libqhull/usermem.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/usermem.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/usermem.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_p.dir/src/libqhull/usermem.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqh_QHpointer -Dqhull_p_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_p.dir/src/libqhull/userprintf.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/userprintf.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/userprintf.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_p.dir/src/libqhull/userprintf.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqh_QHpointer -Dqhull_p_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_p.dir/src/libqhull/io.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/io.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/io.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_p.dir/src/libqhull/io.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqh_QHpointer -Dqhull_p_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_p.dir/src/libqhull/user.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/user.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/user.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_p.dir/src/libqhull/user.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqh_QHpointer -Dqhull_p_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_p.dir/src/libqhull/rboxlib.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/rboxlib.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/rboxlib.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_p.dir/src/libqhull/rboxlib.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dqh_QHpointer -Dqhull_p_EXPORTS -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhull_p.dir/src/libqhull/userprintf_rbox.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/userprintf_rbox.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/userprintf_rbox.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhull_p.dir/src/libqhull/userprintf_rbox.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic.dir/src/libqhull/global.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/global.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/global.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic.dir/src/libqhull/global.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic.dir/src/libqhull/stat.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/stat.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/stat.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic.dir/src/libqhull/stat.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic.dir/src/libqhull/geom2.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/geom2.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/geom2.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic.dir/src/libqhull/geom2.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic.dir/src/libqhull/poly2.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/poly2.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/poly2.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic.dir/src/libqhull/poly2.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic.dir/src/libqhull/merge.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/merge.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/merge.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic.dir/src/libqhull/merge.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic.dir/src/libqhull/libqhull.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/libqhull.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/libqhull.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic.dir/src/libqhull/libqhull.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic.dir/src/libqhull/geom.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/geom.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/geom.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic.dir/src/libqhull/geom.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic.dir/src/libqhull/poly.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/poly.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/poly.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic.dir/src/libqhull/poly.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic.dir/src/libqhull/qset.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/qset.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/qset.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic.dir/src/libqhull/qset.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic.dir/src/libqhull/mem.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/mem.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/mem.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic.dir/src/libqhull/mem.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic.dir/src/libqhull/random.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/random.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/random.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic.dir/src/libqhull/random.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic.dir/src/libqhull/usermem.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/usermem.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/usermem.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic.dir/src/libqhull/usermem.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic.dir/src/libqhull/userprintf.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/userprintf.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/userprintf.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic.dir/src/libqhull/userprintf.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic.dir/src/libqhull/io.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/io.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/io.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic.dir/src/libqhull/io.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic.dir/src/libqhull/user.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/user.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/user.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic.dir/src/libqhull/user.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic.dir/src/libqhull/rboxlib.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/rboxlib.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/rboxlib.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic.dir/src/libqhull/rboxlib.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic.dir/src/libqhull/userprintf_rbox.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/userprintf_rbox.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull/userprintf_rbox.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic.dir/src/libqhull/userprintf_rbox.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic_r.dir/src/libqhull_r/global_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/global_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/global_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic_r.dir/src/libqhull_r/global_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic_r.dir/src/libqhull_r/stat_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/stat_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/stat_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic_r.dir/src/libqhull_r/stat_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic_r.dir/src/libqhull_r/geom2_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/geom2_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/geom2_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic_r.dir/src/libqhull_r/geom2_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic_r.dir/src/libqhull_r/poly2_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/poly2_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/poly2_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic_r.dir/src/libqhull_r/poly2_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic_r.dir/src/libqhull_r/merge_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/merge_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/merge_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic_r.dir/src/libqhull_r/merge_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic_r.dir/src/libqhull_r/libqhull_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/libqhull_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/libqhull_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic_r.dir/src/libqhull_r/libqhull_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic_r.dir/src/libqhull_r/geom_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/geom_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/geom_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic_r.dir/src/libqhull_r/geom_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic_r.dir/src/libqhull_r/poly_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/poly_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/poly_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic_r.dir/src/libqhull_r/poly_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic_r.dir/src/libqhull_r/qset_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/qset_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/qset_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic_r.dir/src/libqhull_r/qset_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic_r.dir/src/libqhull_r/mem_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/mem_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/mem_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic_r.dir/src/libqhull_r/mem_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic_r.dir/src/libqhull_r/random_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/random_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/random_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic_r.dir/src/libqhull_r/random_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic_r.dir/src/libqhull_r/usermem_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/usermem_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/usermem_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic_r.dir/src/libqhull_r/usermem_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic_r.dir/src/libqhull_r/userprintf_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/userprintf_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/userprintf_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic_r.dir/src/libqhull_r/userprintf_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic_r.dir/src/libqhull_r/io_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/io_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/io_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic_r.dir/src/libqhull_r/io_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic_r.dir/src/libqhull_r/user_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/user_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/user_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic_r.dir/src/libqhull_r/user_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic_r.dir/src/libqhull_r/rboxlib_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/rboxlib_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/rboxlib_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic_r.dir/src/libqhull_r/rboxlib_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullstatic_r.dir/src/libqhull_r/userprintf_rbox_r.c.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/userprintf_rbox_r.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhull_r/userprintf_rbox_r.c",
+  "output": "thirdparty/qhull/CMakeFiles/qhullstatic_r.dir/src/libqhull_r/userprintf_rbox_r.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/Coordinates.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/Coordinates.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/Coordinates.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/Coordinates.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/PointCoordinates.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/PointCoordinates.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/PointCoordinates.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/PointCoordinates.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/Qhull.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/Qhull.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/Qhull.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/Qhull.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullFacet.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullFacet.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullFacet.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullFacet.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullFacetList.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullFacetList.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullFacetList.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullFacetList.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullFacetSet.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullFacetSet.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullFacetSet.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullFacetSet.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullHyperplane.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullHyperplane.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullHyperplane.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullHyperplane.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullPoint.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullPoint.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullPoint.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullPoint.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullPointSet.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullPointSet.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullPointSet.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullPointSet.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullPoints.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullPoints.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullPoints.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullPoints.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullQh.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullQh.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullQh.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullQh.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullRidge.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullRidge.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullRidge.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullRidge.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullSet.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullSet.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullSet.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullSet.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullStat.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullStat.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullStat.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullStat.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullUser.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullUser.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullUser.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullUser.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullVertex.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullVertex.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullVertex.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullVertex.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullVertexSet.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullVertexSet.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/QhullVertexSet.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/QhullVertexSet.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/RboxPoints.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/RboxPoints.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/RboxPoints.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/RboxPoints.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/RoadError.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/RoadError.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/RoadError.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/RoadError.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -O3 -DNDEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/qhullcpp.dir/src/libqhullcpp/RoadLogEvent.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/RoadLogEvent.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp/RoadLogEvent.cpp",
+  "output": "thirdparty/qhull/CMakeFiles/qhullcpp.dir/src/libqhullcpp/RoadLogEvent.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -Dkiss_fft_scalar=double  -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=gnu++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/tinyxml2.dir/thirdparty/tinyxml2/tinyxml2.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/tinyxml2/tinyxml2.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/tinyxml2/tinyxml2.cpp",
+  "output": "core/CMakeFiles/tinyxml2.dir/thirdparty/tinyxml2/tinyxml2.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/data/Geometry.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/data/Geometry.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/data/Geometry.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/data/Geometry.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/data/Spin_System.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/data/Spin_System.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/data/Spin_System.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/data/Spin_System.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/data/Spin_System_Chain.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/data/Spin_System_Chain.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/data/Spin_System_Chain.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/data/Spin_System_Chain.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/engine/spin/interaction/DDI.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/engine/spin/interaction/DDI.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/engine/spin/interaction/DDI.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/engine/spin/interaction/DDI.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/engine/spin/Eigenmodes.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/engine/spin/Eigenmodes.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/engine/spin/Eigenmodes.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/engine/spin/Eigenmodes.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/engine/spin/HTST.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/engine/spin/HTST.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/engine/spin/HTST.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/engine/spin/HTST.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/engine/spin/Sparse_HTST.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/engine/spin/Sparse_HTST.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/engine/spin/Sparse_HTST.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/engine/spin/Sparse_HTST.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/engine/spin/Method_LLG.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/engine/spin/Method_LLG.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/engine/spin/Method_LLG.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/engine/spin/Method_LLG.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/engine/spin/Method_GNEB.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/engine/spin/Method_GNEB.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/engine/spin/Method_GNEB.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/engine/spin/Method_GNEB.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/engine/spin/Method_MC.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/engine/spin/Method_MC.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/engine/spin/Method_MC.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/engine/spin/Method_MC.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/engine/spin/Method_MMF.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/engine/spin/Method_MMF.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/engine/spin/Method_MMF.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/engine/spin/Method_MMF.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/engine/spin/Method_EMA.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/engine/spin/Method_EMA.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/engine/spin/Method_EMA.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/engine/spin/Method_EMA.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/engine/FFT.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/engine/FFT.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/engine/FFT.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/engine/FFT.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/engine/Manifoldmath.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/engine/Manifoldmath.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/engine/Manifoldmath.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/engine/Manifoldmath.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/engine/Method.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/engine/Method.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/engine/Method.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/engine/Method.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/engine/Neighbours.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/engine/Neighbours.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/engine/Neighbours.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/engine/Neighbours.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/engine/Solver_Kernels.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/engine/Solver_Kernels.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/engine/Solver_Kernels.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/engine/Solver_Kernels.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/engine/Vectormath.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/engine/Vectormath.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/engine/Vectormath.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/engine/Vectormath.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/Log.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Log.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Log.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/Log.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/State.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/State.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/State.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/State.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/Simulation.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Simulation.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Simulation.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/Simulation.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/Configurations.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Configurations.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Configurations.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/Configurations.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/Hamiltonian.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Hamiltonian.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Hamiltonian.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/Hamiltonian.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/HTST.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/HTST.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/HTST.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/HTST.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/Parameters_MC.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Parameters_MC.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Parameters_MC.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/Parameters_MC.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/Parameters_LLG.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Parameters_LLG.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Parameters_LLG.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/Parameters_LLG.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/Parameters_GNEB.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Parameters_GNEB.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Parameters_GNEB.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/Parameters_GNEB.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/Parameters_MMF.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Parameters_MMF.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Parameters_MMF.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/Parameters_MMF.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/Parameters_EMA.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Parameters_EMA.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Parameters_EMA.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/Parameters_EMA.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/Geometry.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Geometry.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Geometry.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/Geometry.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/Transitions.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Transitions.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Transitions.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/Transitions.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/System.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/System.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/System.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/System.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/Chain.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Chain.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Chain.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/Chain.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/IO.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/IO.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/IO.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/IO.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/Quantities.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Quantities.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Quantities.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/Quantities.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/Constants.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Constants.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Constants.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/Constants.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/Spirit/Version.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Version.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/Spirit/Version.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/Spirit/Version.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/io/IO.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/io/IO.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/io/IO.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/io/IO.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/io/Configparser.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/io/Configparser.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/io/Configparser.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/io/Configparser.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/io/Configwriter.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/io/Configwriter.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/io/Configwriter.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/io/Configwriter.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/io/Dataparser.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/io/Dataparser.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/io/Dataparser.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/io/Dataparser.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/io/Datawriter.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/io/Datawriter.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/io/Datawriter.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/io/Datawriter.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/io/Filter_File_Handle.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/io/Filter_File_Handle.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/io/Filter_File_Handle.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/io/Filter_File_Handle.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/io/OVF_File.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/io/OVF_File.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/io/OVF_File.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/io/OVF_File.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/io/HDF5_File.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/io/HDF5_File.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/io/HDF5_File.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/io/HDF5_File.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/io/XML_File.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/io/XML_File.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/io/XML_File.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/io/XML_File.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/io/hamiltonian/Gaussian.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/io/hamiltonian/Gaussian.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/io/hamiltonian/Gaussian.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/io/hamiltonian/Gaussian.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/io/hamiltonian/Zeeman.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/io/hamiltonian/Zeeman.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/io/hamiltonian/Zeeman.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/io/hamiltonian/Zeeman.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/io/hamiltonian/Anisotropy.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/io/hamiltonian/Anisotropy.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/io/hamiltonian/Anisotropy.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/io/hamiltonian/Anisotropy.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/io/hamiltonian/Biaxial_Anisotropy.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/io/hamiltonian/Biaxial_Anisotropy.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/io/hamiltonian/Biaxial_Anisotropy.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/io/hamiltonian/Biaxial_Anisotropy.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/io/hamiltonian/Pairs.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/io/hamiltonian/Pairs.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/io/hamiltonian/Pairs.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/io/hamiltonian/Pairs.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/io/hamiltonian/Quadruplet.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/io/hamiltonian/Quadruplet.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/io/hamiltonian/Quadruplet.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/io/hamiltonian/Quadruplet.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/io/hamiltonian/DDI.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/io/hamiltonian/DDI.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/io/hamiltonian/DDI.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/io/hamiltonian/DDI.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/io/hamiltonian/Hamiltonian.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/io/hamiltonian/Hamiltonian.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/io/hamiltonian/Hamiltonian.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/io/hamiltonian/Hamiltonian.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/utility/Exception.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/utility/Exception.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/utility/Exception.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/utility/Exception.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/utility/Configurations.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/utility/Configurations.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/utility/Configurations.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/utility/Configurations.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/utility/Configuration_Chain.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/utility/Configuration_Chain.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/utility/Configuration_Chain.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/utility/Configuration_Chain.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/utility/Cubic_Hermite_Spline.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/utility/Cubic_Hermite_Spline.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/utility/Cubic_Hermite_Spline.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/utility/Cubic_Hermite_Spline.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/utility/Logging.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/utility/Logging.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/utility/Logging.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/utility/Logging.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/spectra/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/Spirit.dir/src/utility/Timing.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/src/utility/Timing.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/src/utility/Timing.cpp",
+  "output": "core/CMakeFiles/Spirit.dir/src/utility/Timing.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_configparser.dir/test/main.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "output": "core/CMakeFiles/test_configparser.dir/test/main.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_configparser.dir/test/test_configparser.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/test_configparser.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/test_configparser.cpp",
+  "output": "core/CMakeFiles/test_configparser.dir/test/test_configparser.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_vmath.dir/test/main.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "output": "core/CMakeFiles/test_vmath.dir/test/main.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_vmath.dir/test/test_vectormath.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/test_vectormath.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/test_vectormath.cpp",
+  "output": "core/CMakeFiles/test_vmath.dir/test/test_vectormath.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_mmath.dir/test/main.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "output": "core/CMakeFiles/test_mmath.dir/test/main.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_mmath.dir/test/test_manifoldmath.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/test_manifoldmath.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/test_manifoldmath.cpp",
+  "output": "core/CMakeFiles/test_mmath.dir/test/test_manifoldmath.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_api.dir/test/main.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "output": "core/CMakeFiles/test_api.dir/test/main.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_api.dir/test/test_api.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/test_api.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/test_api.cpp",
+  "output": "core/CMakeFiles/test_api.dir/test/test_api.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_physics.dir/test/main.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "output": "core/CMakeFiles/test_physics.dir/test/main.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_physics.dir/test/test_physics.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/test_physics.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/test_physics.cpp",
+  "output": "core/CMakeFiles/test_physics.dir/test/test_physics.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_ema.dir/test/main.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "output": "core/CMakeFiles/test_ema.dir/test/main.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_ema.dir/test/test_ema.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/test_ema.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/test_ema.cpp",
+  "output": "core/CMakeFiles/test_ema.dir/test/test_ema.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_io.dir/test/main.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "output": "core/CMakeFiles/test_io.dir/test/main.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_io.dir/test/test_io.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/test_io.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/test_io.cpp",
+  "output": "core/CMakeFiles/test_io.dir/test/test_io.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_anisotropy.dir/test/main.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "output": "core/CMakeFiles/test_anisotropy.dir/test/main.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_anisotropy.dir/test/test_anisotropy.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/test_anisotropy.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/test_anisotropy.cpp",
+  "output": "core/CMakeFiles/test_anisotropy.dir/test/test_anisotropy.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_aggregation.dir/test/main.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "output": "core/CMakeFiles/test_aggregation.dir/test/main.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_aggregation.dir/test/test_aggregation.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/test_aggregation.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/test_aggregation.cpp",
+  "output": "core/CMakeFiles/test_aggregation.dir/test/test_aggregation.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_solvers.dir/test/main.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "output": "core/CMakeFiles/test_solvers.dir/test/main.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_solvers.dir/test/test_solvers.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/test_solvers.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/test_solvers.cpp",
+  "output": "core/CMakeFiles/test_solvers.dir/test/test_solvers.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_mc.dir/test/main.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/main.cpp",
+  "output": "core/CMakeFiles/test_mc.dir/test/main.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DSPIRIT_ENABLE_DEFECTS -DSPIRIT_USE_KISSFFT -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/test -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/test_mc.dir/test/test_mc.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/test/test_mc.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/test/test_mc.cpp",
+  "output": "core/CMakeFiles/test_mc.dir/test/test_mc.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/. -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/kiss_fft.dir/kiss_fft.c.o -c /Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/kiss_fft.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/kiss_fft.c",
+  "output": "core/thirdparty/kiss_fft/CMakeFiles/kiss_fft.dir/kiss_fft.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/. -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/kiss_fft.dir/tools/kfc.c.o -c /Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools/kfc.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools/kfc.c",
+  "output": "core/thirdparty/kiss_fft/CMakeFiles/kiss_fft.dir/tools/kfc.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/. -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/kiss_fft.dir/tools/kiss_fftnd.c.o -c /Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools/kiss_fftnd.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools/kiss_fftnd.c",
+  "output": "core/thirdparty/kiss_fft/CMakeFiles/kiss_fft.dir/tools/kiss_fftnd.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/. -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/kiss_fft.dir/tools/kiss_fftndr.c.o -c /Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools/kiss_fftndr.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools/kiss_fftndr.c",
+  "output": "core/thirdparty/kiss_fft/CMakeFiles/kiss_fft.dir/tools/kiss_fftndr.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/. -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/kiss_fft.dir/tools/kiss_fftr.c.o -c /Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools/kiss_fftr.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/kiss_fft/tools/kiss_fftr.c",
+  "output": "core/thirdparty/kiss_fft/CMakeFiles/kiss_fft.dir/tools/kiss_fftr.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -DFMT_TEST=no -Dkiss_fft_scalar=double -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/include -I/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/thirdparty/PEGTL/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -O3 -DNDEBUG        -DEIGEN_FAST_MATH=0 -DEIGEN_NO_DEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/ovf.dir/src/ovf.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/src/ovf.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/core/thirdparty/ovf/src/ovf.cpp",
+  "output": "core/thirdparty/ovf/CMakeFiles/ovf.dir/src/ovf.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/ArrowRenderer.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/ArrowRenderer.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/ArrowRenderer.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/ArrowRenderer.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/BoundingBoxRenderer.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/BoundingBoxRenderer.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/BoundingBoxRenderer.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/BoundingBoxRenderer.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/ParallelepipedRenderer.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/ParallelepipedRenderer.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/ParallelepipedRenderer.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/ParallelepipedRenderer.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/CombinedRenderer.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/CombinedRenderer.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/CombinedRenderer.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/CombinedRenderer.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/CoordinateSystemRenderer.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/CoordinateSystemRenderer.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/CoordinateSystemRenderer.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/CoordinateSystemRenderer.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/FPSCounter.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/FPSCounter.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/FPSCounter.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/FPSCounter.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/Geometry.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/Geometry.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/Geometry.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/Geometry.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/GlyphRenderer.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/GlyphRenderer.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/GlyphRenderer.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/GlyphRenderer.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/DotRenderer.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/DotRenderer.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/DotRenderer.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/DotRenderer.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/IsosurfaceRenderer.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/IsosurfaceRenderer.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/IsosurfaceRenderer.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/IsosurfaceRenderer.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/Options.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/Options.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/Options.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/Options.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/RendererBase.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/RendererBase.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/RendererBase.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/RendererBase.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/SphereRenderer.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/SphereRenderer.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/SphereRenderer.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/SphereRenderer.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/SurfaceRenderer.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/SurfaceRenderer.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/SurfaceRenderer.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/SurfaceRenderer.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/Utilities.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/Utilities.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/Utilities.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/Utilities.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/VectorField.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/VectorField.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/VectorField.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/VectorField.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/VectorFieldRenderer.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/VectorFieldRenderer.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/VectorFieldRenderer.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/VectorFieldRenderer.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/VectorfieldIsosurface.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/VectorfieldIsosurface.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/VectorfieldIsosurface.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/VectorfieldIsosurface.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/VectorSphereRenderer.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/VectorSphereRenderer.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/VectorSphereRenderer.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/VectorSphereRenderer.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -std=c++11 -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/src/View.cxx.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/View.cxx",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/src/View.cxx",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/src/View.cxx.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/cc  -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glm/include -I/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/include -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/qhull/src/libqhullcpp -O3 -DNDEBUG -arch arm64 -mmacosx-version-min=13.5 -fPIC -o CMakeFiles/VFRendering.dir/thirdparty/glad/src/glad.c.o -c /Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/src/glad.c",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/VFRendering/thirdparty/glad/src/glad.c",
+  "output": "VFRendering/CMakeFiles/VFRendering.dir/thirdparty/glad/src/glad.c.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/ui-cpp",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/ui-cpp/thirdparty/Lyra/include -I/Users/dmsilev/mag_solve/spirit_dev/ui-cpp/thirdparty-install/include -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/Spirit_UI_CPP.dir/main.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/ui-cpp/main.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/ui-cpp/main.cpp",
+  "output": "ui-cpp/CMakeFiles/Spirit_UI_CPP.dir/main.cpp.o"
+},
+{
+  "directory": "/Users/dmsilev/mag_solve/spirit_dev/ui-cpp",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DFMT_HEADER_ONLY -I/Users/dmsilev/mag_solve/spirit_dev/thirdparty/fmt/include -I/Users/dmsilev/mag_solve/spirit_dev/ui-cpp/thirdparty/Lyra/include -I/Users/dmsilev/mag_solve/spirit_dev/ui-cpp/thirdparty-install/include -I/Users/dmsilev/mag_solve/spirit_dev/core/include -O3 -DNDEBUG -std=c++17 -arch arm64 -mmacosx-version-min=13.5 -fPIE -o CMakeFiles/Spirit_UI_CPP.dir/utility/Handle_Signal.cpp.o -c /Users/dmsilev/mag_solve/spirit_dev/ui-cpp/utility/Handle_Signal.cpp",
+  "file": "/Users/dmsilev/mag_solve/spirit_dev/ui-cpp/utility/Handle_Signal.cpp",
+  "output": "ui-cpp/CMakeFiles/Spirit_UI_CPP.dir/utility/Handle_Signal.cpp.o"
+}
+]

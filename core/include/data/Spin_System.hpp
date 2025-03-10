@@ -39,6 +39,8 @@ struct System_Magnetization
     Vector3 mean;
     // Total effective field of the spins [3][nos]
     vectorfield effective_field;
+    // DDI field from external Ewald summation calculations
+    vectorfield ddi_field;
 };
 
 template<typename HamiltonianType>

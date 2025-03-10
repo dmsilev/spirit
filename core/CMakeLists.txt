@@ -641,7 +641,7 @@ if( SPIRIT_BUILD_FOR_PYTHON )
     if( SPIRIT_BUILD_TEST )
         message( STATUS ">> Setting up unit tests for python bindings" )
         # find_package( PythonInterp 2.7 REQUIRED )
-        find_package( Python3 COMPONENTS Interpreter NumPy REQUIRED )
+        # find_package( Python3 COMPONENTS Interpreter NumPy REQUIRED )
 
         #----- Enable CTest testing
         enable_testing()
