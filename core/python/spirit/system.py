@@ -80,6 +80,25 @@ def get_effective_field(p_state, idx_image=-1, idx_chain=-1):
     array_view.shape = (nos, 3)
     return array_view
 
+### Get Pointer to dipole-dipole Field
+ # NOTE: Changing the values of the array_view one can alter the value of the data of the state
+ _Get_DDI_Field = _spirit.System_Get_DDI_Field
+ _Get_DDI_Field.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
+ _Get_DDI_Field.restype = ctypes.POINTER(scalar)
+ 
+ 
+ def get_DDI_field(p_state, idx_image=-1, idx_chain=-1):
+     nos = get_nos(p_state, idx_image, idx_chain)
+     ArrayType = scalar * 3 * nos
+     Data = _Get_DDI_Field(
+         ctypes.c_void_p(p_state), ctypes.c_int(idx_image), ctypes.c_int(idx_chain)
+     )
+     array_pointer = ctypes.cast(Data, ctypes.POINTER(ArrayType))
+     array = frombuffer(array_pointer.contents, dtype=scalar)
+     array_view = array.view()
+     array_view.shape = (nos, 3)
+     return array_view
+
 
 ### Get Pointer to an eigenmode
 # NOTE: Changing the values of the array_view one can alter the value of the data of the state
@@ -233,6 +252,22 @@ def update_effective_field(p_state, idx_image=-1, idx_chain=-1):
         ctypes.c_void_p(p_state), ctypes.c_int(idx_image), ctypes.c_int(idx_chain)
     )
 
+### Set dipole-dipole Field
+ # NOTE: This changes the values of the array_view inside the simulation
+ _Set_DDI_Field = _spirit.System_Set_DDI_Field
+ _Set_DDI_Field.argtypes = [
+     ctypes.c_void_p,
+     ctypes.c_int,
+     ctypes.c_int,
+     ctypes.c_int,
+     ctypes.POINTER(ctypes.c_float)]
+ _Set_DDI_Field.restype = None
+ 
+ def set_DDI_Field(p_state, idx_image=-1, idx_chain=-1, n_atoms=0, ddi_fields=-1):
+     """Loads a dipole-dipole field array (from an external Ewald summation calculation) into Spirit"""
+     buffer = ctypes.c_float * 3 * n_atoms
+     _Set_DDI_Field(ctypes.c_void_p(p_state), ctypes.c_int(idx_image), ctypes.c_int(idx_chain),ctypes.c_int(n_atoms),buffer(*ddi_fields))
+ 
 
 ### Get Chain number of images
 _Update_Data = _spirit.System_Update_Data

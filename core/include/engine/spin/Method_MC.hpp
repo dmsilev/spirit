@@ -74,6 +74,7 @@ private:
     int n_rejected;
     scalar acceptance_ratio_current;
     int nos_nonvacant;
+    scalar gammaE_avg;
 
     // constrained direction for the direction constrained monte carlo algorithm
     Vector3 constrained_direction{ 0, 0, 1 };

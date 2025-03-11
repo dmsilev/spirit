@@ -95,6 +95,34 @@ void trial_spin( const int idx, StateType & state, Hamiltonian & hamiltonian, Sh
         }
     }();
 
+    //Variables for quantum tunneling terms
+    float gamma_E = 0.0;
+    float B_mag;
+    float normal[3];
+
+    if ( shared.parameters_mc.tunneling_use_tunneling )
+    {
+        const auto * data = hamiltonian.template data<Engine::Spin::Interaction::Zeeman>();
+        const scalar & field_magnitude = data->external_field_magnitude;
+        const Vector3 & field_normal   = data->external_field_normal;
+       if( field_magnitude > 0 )
+        {
+            B_mag = field_magnitude / Utility::Constants::mu_B;
+            normal[0]  = field_normal[0];
+            normal[1]  = field_normal[1];
+            normal[2]  = field_normal[2];
+        }
+        else
+        {
+            B_mag = 0;
+            normal[0]  = 0;
+            normal[1]  = 0;
+            normal[2]  = 1;
+        }
+        gamma_E = (normal[0]*normal[0] + normal[1]*normal[1])*B_mag*B_mag*shared.parameters_mc.tunneling_gamma;
+    }
+
+
     // Energy difference of configurations with and without displacement
     const scalar E_pre  = hamiltonian.Energy_Single_Spin( ispin, state );
     state.spin[ispin]   = spin_post;
@@ -106,28 +134,33 @@ void trial_spin( const int idx, StateType & state, Hamiltonian & hamiltonian, Sh
         return;
 
     // potentially reject the step if energy rose
-    if( shared.parameters_mc.temperature < 1e-12 )
+    if( (shared.parameters_mc.temperature < 1e-12 ) && (Ediff>gamma_E) )  //At 0 T and energy cost is greater than tunneling E: Always reject
     {
         // Restore the spin
         state.spin[ispin] = spin_pre;
         // Counter for the number of rejections
         ++shared.n_rejected;
     }
-    else
+    else  //Finite probability to accept
     {
         // Exponential factor
         const scalar exp_ediff = std::exp( -Ediff * shared.beta );
         // Metropolis random number
         const scalar x_metropolis = shared.distribution( shared.parameters_mc.prng );
 
-        // Only reject if random number is larger than exponential
-        if( exp_ediff < x_metropolis )
+        // Only reject if random number is larger than exponential and energy difference is greater than tunneling term
+        if( (exp_ediff < x_metropolis ) && (Ediff>gamma_E) )
         {
             // Restore the spin
             state.spin[ispin] = spin_pre;
             // Counter for the number of rejections
             ++shared.n_rejected;
         }
+        else if (Ediff<gamma_E)
+        {
+            ++shared.gammaE_avg;
+        }    
+ 
     }
 }
 

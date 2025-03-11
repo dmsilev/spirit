@@ -55,6 +55,7 @@ Method_MC<algorithm>::Method_MC( std::shared_ptr<system_t> system, int idx_img, 
     this->cone_angle               = Constants::Pi * this->parameters_mc->metropolis_cone_angle / 180.0;
     this->n_rejected               = 0;
     this->acceptance_ratio_current = this->parameters_mc->acceptance_ratio_target;
+    this->gammaE_avg = 0;
 
     // fix current magnetization direction
     if constexpr( algorithm == MC_Algorithm::Metropolis_MDC )
@@ -128,6 +129,7 @@ void Method_MC<MC_Algorithm::Metropolis>::Step( StateType & state, Hamiltonian &
         std::uniform_int_distribution<int> distribution_idx;
         const scalar beta;
         const scalar cone_angle;
+        scalar gammaE_avg;
     };
 
     SharedData shared = SharedData{ /*n_rejected=*/0,
@@ -135,7 +137,8 @@ void Method_MC<MC_Algorithm::Metropolis>::Step( StateType & state, Hamiltonian &
                                     /*distribution=*/std::uniform_real_distribution<scalar>( 0, 1 ),
                                     /*distribution_idx=*/std::uniform_int_distribution<>( 0, this->nos - 1 ),
                                     /*beta=*/scalar( 1.0 ) / ( Constants::k_B * this->parameters_mc->temperature ),
-                                    /*cone_angle=*/this->cone_angle };
+                                    /*cone_angle=*/this->cone_angle,
+                                    this->gammaE_avg };
 
     // One Metropolis step for each spin
     // Loop over NOS samples (on average every spin should be hit once per Metropolis step)
@@ -316,6 +319,13 @@ void Method_MC<algorithm>::Message_Step()
                 "    Current cone angle (deg): {:>6.3f} (non-adaptive)", this->cone_angle * 180 / Constants::Pi ) );
         }
     }
+
+     if ( this->parameters_mc->tunneling_use_tunneling )
+     {
+        block.emplace_back( fmt::format(
+             "   Tunneling spin flips: {:>6.3f}", this->gammaE_avg) );
+     }    
+ 
     block.emplace_back( fmt::format( "    Total energy:             {:20.10f}", this->system->E.total ) );
     Log( Log_Level::All, this->SenderName, block, this->idx_image, this->idx_chain );
 
@@ -366,6 +376,13 @@ void Method_MC<algorithm>::Message_End()
                 "    Cone angle (deg): {:>6.3f} (non-adaptive)", this->cone_angle * 180 / Constants::Pi ) );
         }
     }
+
+    if ( this->parameters_mc->tunneling_use_tunneling )
+    {
+        block.emplace_back( fmt::format(
+             "   Tunneling spin flips: {:>6.3f}", this->gammaE_avg) );
+    }    
+ 
     block.emplace_back( fmt::format( "    Total energy:     {:20.10f}", this->system->E.total ) );
     block.emplace_back( "-----------------------------------------------------" );
     Log( Log_Level::All, this->SenderName, block, this->idx_image, this->idx_chain );
