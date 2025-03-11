@@ -421,10 +421,10 @@ void Method_MC<algorithm>::Save_Current( std::string starttime, int iteration, b
         std::string preEnergyFile;
         std::string fileTag;
 
-        if( sys.llg_parameters->output_file_tag == "<time>" )
+        if( sys.mc_parameters->output_file_tag == "<time>" )
             fileTag = starttime + "_";
-        else if( sys.llg_parameters->output_file_tag != "" )
-            fileTag = sys.llg_parameters->output_file_tag + "_";
+        else if( sys.mc_parameters->output_file_tag != "" )
+            fileTag = sys.mc_parameters->output_file_tag + "_";
         else
             fileTag = "";
 
@@ -443,7 +443,7 @@ void Method_MC<algorithm>::Save_Current( std::string starttime, int iteration, b
                     this->Name(), this->SolverFullName(), iteration, this->max_torque );
 
                 // File format
-                switch( IO::VF_FileFormat format = sys.llg_parameters->output_vf_filetype )
+                switch( IO::VF_FileFormat format = sys.mc_parameters->output_vf_filetype )
                 {
                     case IO::VF_FileFormat::OVF_BIN:
                     case IO::VF_FileFormat::OVF_BIN4:
@@ -508,14 +508,14 @@ void Method_MC<algorithm>::Save_Current( std::string starttime, int iteration, b
             }
             catch( ... )
             {
-                spirit_handle_exception_core( "LLG output failed" );
+                spirit_handle_exception_core( "MC output failed" );
             }
         };
 
         IO::Flags flags;
-        if( sys.llg_parameters->output_energy_divide_by_nspins )
+        if( sys.mc_parameters->output_energy_divide_by_nspins )
             flags |= IO::Flag::Normalize_by_nos;
-        if( sys.llg_parameters->output_energy_add_readability_lines )
+        if( sys.mc_parameters->output_energy_add_readability_lines )
             flags |= IO::Flag::Readability;
         auto writeOutputEnergy = [&sys, flags, preEnergyFile, iteration]( const std::string & suffix, bool append )
         {
@@ -538,7 +538,7 @@ void Method_MC<algorithm>::Save_Current( std::string starttime, int iteration, b
             {
                 IO::Write_Energy_Header( sys.E, energyFile, { "iteration", "E_tot" }, IO::Flag::Contributions | flags );
                 IO::Append_Image_Energy( sys.E, sys.hamiltonian->get_geometry(), iteration, energyFile, flags );
-                if( sys.llg_parameters->output_energy_spin_resolved )
+                if( sys.mc_parameters->output_energy_spin_resolved )
                 {
                     // Gather the data
                     Data::vectorlabeled<scalarfield> contributions_spins( 0 );
@@ -547,7 +547,7 @@ void Method_MC<algorithm>::Save_Current( std::string starttime, int iteration, b
 
                     IO::Write_Image_Energy_Contributions(
                         sys.E, sys.hamiltonian->get_geometry(), energyFilePerSpin,
-                        sys.llg_parameters->output_vf_filetype );
+                        sys.mc_parameters->output_vf_filetype );
                 }
             }
         };
@@ -566,21 +566,21 @@ void Method_MC<algorithm>::Save_Current( std::string starttime, int iteration, b
         }
 
         // Single file output
-        if( sys.llg_parameters->output_configuration_step )
+        if( sys.mc_parameters->output_configuration_step )
         {
             writeOutputConfiguration( "_" + s_iter, false );
         }
-        if( sys.llg_parameters->output_energy_step )
+        if( sys.mc_parameters->output_energy_step )
         {
             writeOutputEnergy( "_" + s_iter, false );
         }
 
         // Archive file output (appending)
-        if( sys.llg_parameters->output_configuration_archive )
+        if( sys.mc_parameters->output_configuration_archive )
         {
             writeOutputConfiguration( "-archive", true );
         }
-        if( sys.llg_parameters->output_energy_archive )
+        if( sys.mc_parameters->output_energy_archive )
         {
             writeOutputEnergy( "-archive", true );
         }
