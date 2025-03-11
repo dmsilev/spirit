@@ -5,11 +5,17 @@
 #include <engine/Vectormath.hpp>
 #include <engine/common/Method_MC.hpp>
 #include <engine/spin/Method_MC.hpp>
+#include <io/HDF5_File.hpp>
 #include <io/IO.hpp>
+#include <io/OVF_File.hpp>
+#include <io/VTK_Geometry.hpp>
+#include <io/XML_File.hpp>
 #include <utility/Constants.hpp>
 #include <utility/Logging.hpp>
+#include <utility/Version.hpp>
 
 #include <Eigen/Dense>
+#include <fmt/format.h>
 
 #include <cmath>
 
@@ -368,6 +374,201 @@ void Method_MC<algorithm>::Message_End()
 template<MC_Algorithm algorithm>
 void Method_MC<algorithm>::Save_Current( std::string starttime, int iteration, bool initial, bool final )
 {
+    if( this->system == nullptr )
+        return;
+    auto & sys = *this->system;
+
+    // History save
+    this->history_iteration.push_back( this->iteration );
+    this->history_max_torque.push_back( this->max_torque );
+    this->history_energy.push_back( sys.E.total );
+
+    // this->history["max_torque"].push_back( this->max_torque );
+    // sys.update_energy();
+    // this->history["E"].push_back( sys.E );
+    // Removed magnetization, since at the moment it required a temporary allocation to compute
+    // auto mag = Engine::Vectormath::Magnetization( *sys.spins );
+    // this->history["M_z"].push_back( mag[2] );
+
+    // File save
+    if( this->parameters->output_any )
+    {
+        // Convert indices to formatted strings
+        auto s_img         = fmt::format( "{:0>2}", this->idx_image );
+        auto base          = static_cast<std::int32_t>( log10( this->parameters->n_iterations ) );
+        std::string s_iter = fmt::format( fmt::runtime( "{:0>" + fmt::format( "{}", base ) + "}" ), iteration );
+
+        std::string preSpinsFile;
+        std::string preEnergyFile;
+        std::string fileTag;
+
+        if( sys.llg_parameters->output_file_tag == "<time>" )
+            fileTag = starttime + "_";
+        else if( sys.llg_parameters->output_file_tag != "" )
+            fileTag = sys.llg_parameters->output_file_tag + "_";
+        else
+            fileTag = "";
+
+        preSpinsFile  = this->parameters->output_folder + "/" + fileTag + "Image-" + s_img + "_Spins";
+        preEnergyFile = this->parameters->output_folder + "/" + fileTag + "Image-" + s_img + "_Energy";
+
+        // Function to write or append image and energy files
+        auto writeOutputConfiguration = [this, &sys, preSpinsFile, iteration]( const std::string & suffix, bool append )
+        {
+            try
+            {
+                // File name and comment
+                std::string spinsFile      = preSpinsFile + suffix;
+                std::string output_comment = fmt::format(
+                    "{} simulation ({} solver)\n# Desc:      Iteration: {}\n# Desc:      Maximum torque: {}",
+                    this->Name(), this->SolverFullName(), iteration, this->max_torque );
+
+                // File format
+                switch( IO::VF_FileFormat format = sys.llg_parameters->output_vf_filetype )
+                {
+                    case IO::VF_FileFormat::OVF_BIN:
+                    case IO::VF_FileFormat::OVF_BIN4:
+                    case IO::VF_FileFormat::OVF_BIN8:
+                    case IO::VF_FileFormat::OVF_TEXT:
+                    case IO::VF_FileFormat::OVF_CSV:
+                    {
+                        // Spin Configuration
+                        auto & system_state = *sys.state;
+                        auto segment        = IO::OVF_Segment( sys.hamiltonian->get_geometry() );
+                        std::string title   = fmt::format( "SPIRIT Version {}", Utility::version_full );
+                        segment.title       = strdup( title.c_str() );
+                        segment.comment     = strdup( output_comment.c_str() );
+                        segment.valuedim    = IO::Spin::State::valuedim;
+                        segment.valuelabels = strdup( IO::Spin::State::valuelabels.data() );
+                        segment.valueunits  = strdup( IO::Spin::State::valueunits.data() );
+
+                        const IO::Spin::State::Buffer buffer( system_state );
+                        if( append )
+                            IO::OVF_File( spinsFile + ".ovf" )
+                                .append_segment( segment, buffer.data(), static_cast<int>( format ) );
+                        else
+                            IO::OVF_File( spinsFile + ".ovf" )
+                                .write_segment( segment, buffer.data(), static_cast<int>( format ) );
+                        break;
+                    }
+                    case IO::VF_FileFormat::VTK_HDF:
+                    {
+                        // TODO: store this somewhere (e.g. with the method), because creating it is fairly expensive
+                        IO::VTK::UnstructuredGrid vtk_geometry( sys.hamiltonian->get_geometry() );
+                        if( append )
+                            spirit_throw(
+                                Exception_Classifier::Not_Implemented, Log_Level::Error,
+                                "Append not implemented for VTKHDF format!" );
+                        else
+                            IO::HDF5::write_fields(
+                                spinsFile + ".vtkhdf", vtk_geometry,
+                                { IO::VTK::FieldDescriptor{ "spins", &get<Field::Spin>( *sys.state ) } } );
+                        break;
+                    }
+                    case IO::VF_FileFormat::VTK_XML_TEXT:
+                    case IO::VF_FileFormat::VTK_XML_BIN:
+                    {
+                        // TODO: store this somewhere (e.g. with the method), because creating it is fairly expensive
+                        IO::VTK::UnstructuredGrid vtk_geometry( sys.hamiltonian->get_geometry() );
+                        if( append )
+                            spirit_throw(
+                                Exception_Classifier::Not_Implemented, Log_Level::Error,
+                                "Append not implemented for VTK format!" );
+                        else
+                            IO::XML::write_fields(
+                                spinsFile + ".vtu", vtk_geometry, format,
+                                { IO::VTK::FieldDescriptor{ "spins", &get<Field::Spin>( *sys.state ) } } );
+                        break;
+                    }
+                    default:
+                        spirit_throw(
+                            Exception_Classifier::Not_Implemented, Log_Level::Error,
+                            fmt::format(
+                                "\"writeOutputConfiguration()\" not implemented for file format: {}", str( format ) ) );
+                }
+            }
+            catch( ... )
+            {
+                spirit_handle_exception_core( "LLG output failed" );
+            }
+        };
+
+        IO::Flags flags;
+        if( sys.llg_parameters->output_energy_divide_by_nspins )
+            flags |= IO::Flag::Normalize_by_nos;
+        if( sys.llg_parameters->output_energy_add_readability_lines )
+            flags |= IO::Flag::Readability;
+        auto writeOutputEnergy = [&sys, flags, preEnergyFile, iteration]( const std::string & suffix, bool append )
+        {
+            // File name
+            std::string energyFile        = preEnergyFile + suffix + ".txt";
+            std::string energyFilePerSpin = preEnergyFile + "-perSpin" + suffix + ".txt";
+
+            // Energy
+            if( append )
+            {
+                // Check if Energy File exists and write Header if it doesn't
+                std::ifstream f( energyFile );
+                if( !f.good() )
+                    IO::Write_Energy_Header(
+                        sys.E, energyFile, { "iteration", "E_tot" }, IO::Flag::Contributions | flags );
+                // Append Energy to File
+                IO::Append_Image_Energy( sys.E, sys.hamiltonian->get_geometry(), iteration, energyFile, flags );
+            }
+            else
+            {
+                IO::Write_Energy_Header( sys.E, energyFile, { "iteration", "E_tot" }, IO::Flag::Contributions | flags );
+                IO::Append_Image_Energy( sys.E, sys.hamiltonian->get_geometry(), iteration, energyFile, flags );
+                if( sys.llg_parameters->output_energy_spin_resolved )
+                {
+                    // Gather the data
+                    Data::vectorlabeled<scalarfield> contributions_spins( 0 );
+                    sys.update_energy();
+                    sys.hamiltonian->Energy_Contributions_per_Spin( *sys.state, sys.E.per_interaction_per_spin );
+
+                    IO::Write_Image_Energy_Contributions(
+                        sys.E, sys.hamiltonian->get_geometry(), energyFilePerSpin,
+                        sys.llg_parameters->output_vf_filetype );
+                }
+            }
+        };
+
+        // Initial image before simulation
+        if( initial && this->parameters->output_initial )
+        {
+            writeOutputConfiguration( "-initial", false );
+            writeOutputEnergy( "-initial", false );
+        }
+        // Final image after simulation
+        else if( final && this->parameters->output_final )
+        {
+            writeOutputConfiguration( "-final", false );
+            writeOutputEnergy( "-final", false );
+        }
+
+        // Single file output
+        if( sys.llg_parameters->output_configuration_step )
+        {
+            writeOutputConfiguration( "_" + s_iter, false );
+        }
+        if( sys.llg_parameters->output_energy_step )
+        {
+            writeOutputEnergy( "_" + s_iter, false );
+        }
+
+        // Archive file output (appending)
+        if( sys.llg_parameters->output_configuration_archive )
+        {
+            writeOutputConfiguration( "-archive", true );
+        }
+        if( sys.llg_parameters->output_energy_archive )
+        {
+            writeOutputEnergy( "-archive", true );
+        }
+
+        // Save Log
+        Log.Append_to_File();
+    }
 }
 
 // Method name as string
