@@ -130,6 +130,7 @@ void Method_MC<MC_Algorithm::Metropolis>::Step( StateType & state, Hamiltonian &
         const scalar beta;
         const scalar cone_angle;
         scalar gammaE_avg;
+        vectorfield ddi_field;
     };
 
     SharedData shared = SharedData{ /*n_rejected=*/0,
@@ -138,7 +139,8 @@ void Method_MC<MC_Algorithm::Metropolis>::Step( StateType & state, Hamiltonian &
                                     /*distribution_idx=*/std::uniform_int_distribution<>( 0, this->nos - 1 ),
                                     /*beta=*/scalar( 1.0 ) / ( Constants::k_B * this->parameters_mc->temperature ),
                                     /*cone_angle=*/this->cone_angle,
-                                    this->gammaE_avg };
+                                    this->gammaE_avg,
+                                    this->system->M.ddi_field };
 
     // One Metropolis step for each spin
     // Loop over NOS samples (on average every spin should be hit once per Metropolis step)

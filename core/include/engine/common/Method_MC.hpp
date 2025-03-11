@@ -100,6 +100,9 @@ void trial_spin( const int idx, StateType & state, Hamiltonian & hamiltonian, Sh
     float B_mag;
     float normal[3];
 
+    //Variables for quantum tunneling of internal (dipole-dipole) transverse fields
+    float Bx2,By2,B_internal;
+
     if ( shared.parameters_mc.tunneling_use_tunneling )
     {
         const auto * data = hamiltonian.template data<Engine::Spin::Interaction::Zeeman>();
@@ -119,7 +122,14 @@ void trial_spin( const int idx, StateType & state, Hamiltonian & hamiltonian, Sh
             normal[1]  = 0;
             normal[2]  = 1;
         }
+        //External transverse field
         gamma_E = (normal[0]*normal[0] + normal[1]*normal[1])*B_mag*B_mag*shared.parameters_mc.tunneling_gamma;
+
+        //Internal (dipole-dipole) transverse contributions
+        Bx2 = shared.ddi_field[ispin][0]*shared.ddi_field[ispin][0];
+        By2 = shared.ddi_field[ispin][1]*shared.ddi_field[ispin][1];
+        B_internal = (Bx2 + By2)/(Utility::Constants::mu_B*Utility::Constants::mu_B);
+        gamma_E += B_internal * shared.parameters_mc.tunneling_gamma;        
     }
 
 
