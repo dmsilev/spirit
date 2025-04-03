@@ -299,7 +299,7 @@ Data::Geometry Geometry_from_Config( const std::string & config_file_name )
     intfield defect_types( 0 );
     int n_atom_types = 0;
     std::random_device random;
-    int rng_seed = random();
+    cell_composition.rng_seed = random();
 
     // Utility 1D array to build vectors and use Vectormath
     Vector3 build_array = { 0, 0, 0 };
@@ -417,6 +417,7 @@ Data::Geometry Geometry_from_Config( const std::string & config_file_name )
                 }
 
                 // Disorder
+
                 config_file_handle.Read_Single(cell_composition.rng_seed, "lattice_rng_seed" );
                 if( config_file_handle.Find( "atom_types" ) )
                 {
