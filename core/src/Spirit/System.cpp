@@ -80,7 +80,7 @@ catch( ... )
     return nullptr;
 }
 
-void System_Set_DDI_Field(State * state, int idx_image, int idx_chain, int n_atoms, float * ddi_fields  ) noexcept
+void System_Set_DDI_Field(State * state, int idx_image, int idx_chain, int n_atoms, const scalar * ddi_fields  ) noexcept
 try
 {
     if( ddi_fields == nullptr )
@@ -89,7 +89,6 @@ try
             Utility::Exception_Classifier::System_not_Initialized, Utility::Log_Level::Error,
             "Got passed a null pointer for 'ddi_fields'" );
     }
-
 
     // Fetch correct indices and pointers
     auto [image, chain] = from_indices( state, idx_image, idx_chain );

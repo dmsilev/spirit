@@ -199,6 +199,20 @@ catch( ... )
     spirit_handle_exception_api( idx_image, idx_chain );
 }
 
+void Parameters_MC_Set_Metropolis_SpinFlip( State * state, scalar spin_flip, int idx_image, int idx_chain ) noexcept
+try
+{
+
+    // Fetch correct indices and pointers
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+
+    image->mc_parameters->metropolis_spin_flip = spin_flip;
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+}
+
 void Parameters_MC_Set_Random_Sample( State * state, bool random_sample, int idx_image, int idx_chain ) noexcept
 try
 {
@@ -207,6 +221,34 @@ try
     auto [image, chain] = from_indices( state, idx_image, idx_chain );
 
     image->mc_parameters->metropolis_random_sample = random_sample;
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+}
+
+void Parameters_MC_Set_Use_Tunneling( State * state, bool use_tunneling, int idx_image, int idx_chain ) noexcept
+try
+{
+
+    // Fetch correct indices and pointers
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+
+    image->mc_parameters->tunneling_use_tunneling = use_tunneling;
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+}
+
+void Parameters_MC_Set_Tunneling_Gamma( State * state, float tunneling_gamma, int idx_image, int idx_chain ) noexcept
+try
+{
+
+    // Fetch correct indices and pointers
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+
+    image->mc_parameters->tunneling_gamma = tunneling_gamma;
 }
 catch( ... )
 {
@@ -353,6 +395,51 @@ try
 catch( ... )
 {
     spirit_handle_exception_api( idx_image, idx_chain );
+}
+
+scalar Parameters_MC_Get_Metropolis_SpinFlip( State * state, int idx_image , int idx_chain ) noexcept
+try
+{
+
+    // Fetch correct indices and pointers
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+
+    return image->mc_parameters->metropolis_spin_flip;
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+    return 0;
+}
+
+bool Parameters_MC_Get_Use_Tunneling( State * state, int idx_image, int idx_chain ) noexcept
+try
+{
+
+    // Fetch correct indices and pointers
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+
+    return image->mc_parameters->tunneling_use_tunneling;
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+    return 0;
+}
+
+scalar Parameters_MC_Get_Tunneling_Gamma( State * state, int idx_image, int idx_chain ) noexcept
+try
+{
+
+    // Fetch correct indices and pointers
+    auto [image, chain] = from_indices( state, idx_image, idx_chain );
+
+    return image->mc_parameters->tunneling_gamma;
+}
+catch( ... )
+{
+    spirit_handle_exception_api( idx_image, idx_chain );
+    return 0;
 }
 
 bool Parameters_MC_Get_Random_Sample( State * state, int idx_image, int idx_chain ) noexcept

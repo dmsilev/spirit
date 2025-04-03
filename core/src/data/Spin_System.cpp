@@ -37,7 +37,7 @@ try : hamiltonian( std::move( hamiltonian ) ), llg_parameters( std::move( llg_pa
 
     // ...
     this->E = System_Energy{ 0, vectorlabeled<scalar>( 0 ), vectorlabeled<scalarfield>( 0 ) };
-    this->M = System_Magnetization{ Vector3{ 0, 0, 0 }, vectorfield( this->nos ) };
+    this->M = System_Magnetization{ Vector3{ 0, 0, 0 }, vectorfield( this->nos ), vectorfield( this->nos ) };
 }
 catch( ... )
 {
