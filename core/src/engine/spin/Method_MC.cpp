@@ -57,6 +57,8 @@ Method_MC<algorithm>::Method_MC( std::shared_ptr<system_t> system, int idx_img, 
     this->acceptance_ratio_current = this->parameters_mc->acceptance_ratio_target;
     this->gammaE_avg = 0;
 
+    this->system->hamiltonian.Update_Interactions();
+
     // fix current magnetization direction
     if constexpr( algorithm == MC_Algorithm::Metropolis_MDC )
     {

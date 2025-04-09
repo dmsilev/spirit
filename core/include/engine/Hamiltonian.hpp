@@ -28,6 +28,7 @@ public:
      * contribution is now non-zero or vice versa.
      */
     virtual void Update_Energy_Contributions();
+    virtual void Update_Interactions();
 
     /*
      * Calculate the Hessian matrix of a spin configuration.

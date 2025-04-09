@@ -24,6 +24,14 @@ void Hamiltonian::Update_Energy_Contributions()
         "Tried to use  Hamiltonian::Update_Energy_Contributions() of the Hamiltonian base class!" );
 }
 
+void Hamiltonian::Update_Interactions();
+{
+    // Not Implemented!
+    spirit_throw(
+        Exception_Classifier::Not_Implemented, Log_Level::Error,
+        "Tried to use  Hamiltonian::Update_Interactions() of the Hamiltonian base class!" );
+}
+
 void Hamiltonian::Hessian( const vectorfield & spins, MatrixX & hessian )
 {
     this->Hessian_FD( spins, hessian );

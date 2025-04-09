@@ -561,6 +561,7 @@ void Hamiltonian_Heisenberg::E_Quadruplet( const vectorfield & spins, scalarfiel
 scalar Hamiltonian_Heisenberg::Energy_Single_Spin( int ispin, const vectorfield & spins )
 {
     scalar Energy = 0;
+    this->Update_Interactions();
     if( check_atom_type( this->geometry->atom_types[ispin] ) )
     {
         int icell   = ispin / this->geometry->n_cell_atoms;

@@ -47,7 +47,7 @@ public:
         bool ddi_pb_zero_padding, scalar ddi_radius, quadrupletfield quadruplets, scalarfield quadruplet_magnitudes,
         std::shared_ptr<Data::Geometry> geometry, intfield boundary_conditions );
 
-    void Update_Interactions();
+    void Update_Interactions() override;
 
     void Update_Energy_Contributions() override;
 
