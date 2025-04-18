@@ -49,6 +49,8 @@ Method_MC::Method_MC( std::shared_ptr<Data::Spin_System> system, int idx_img, in
     this->acceptance_ratio_current = this->parameters_mc->acceptance_ratio_target;
 
     this->gammaE_avg = 0;
+    this->Bx = 0;
+    this->By = 0;
 }
 
 // This implementation is mostly serial as parallelization is nontrivial
@@ -176,7 +178,7 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
             scalar gamma_E = 0.0;
             float B_mag;
             float normal[3];
-            float Bx,By; 
+//            float Bx,By; 
             float B_int;  //Square of transverse component of the internal dipole-dipole vector field
 
             if (this->parameters_mc->tunneling_use_tunneling)
@@ -189,9 +191,9 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
                 B_mag = (float)ham->external_field_magnitude / Constants::mu_B;
                 gamma_E = (normal[0]*normal[0] + normal[1]*normal[1])*B_mag*B_mag * this->parameters_mc->tunneling_gamma;
 
-                Bx = this->systems[0]->ddi_field_external[ispin][0];
-                By = this->systems[0]->ddi_field_external[ispin][1];
-                B_int = ( Bx*Bx + By*By ) / (Constants::mu_B*Constants::mu_B);
+                this->Bx = this->systems[0]->ddi_field_external[ispin][0];
+                this->By = this->systems[0]->ddi_field_external[ispin][1];
+                B_int = ( this->Bx*this->Bx + this->By*this->By ) / (Constants::mu_B*Constants::mu_B);
                 gamma_E += B_int*this->parameters_mc->tunneling_gamma;
            }
 

@@ -58,6 +58,7 @@ private:
     int nos_nonvacant;
 
     scalar gammaE_avg;
+    scalar Bx,By;
 
     // Random vector array
     vectorfield xi;
