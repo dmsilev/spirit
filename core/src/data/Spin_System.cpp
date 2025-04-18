@@ -38,7 +38,7 @@ try : iteration_allowed( iteration_allowed ), singleshot_allowed( false ), hamil
     this->M               = Vector3{ 0, 0, 0 };
     this->effective_field = vectorfield( this->nos );
     this->ddi_field       = vectorfield( this->nos );
-
+    this->ddi_field_external       = vectorfield( this->nos );
 }
 catch( ... )
 {

@@ -78,6 +78,7 @@ public:
     // Total effective field of the spins [3][nos]
     vectorfield effective_field;
     vectorfield ddi_field;
+    vectorfield ddi_field_external;
 
 private:
     // FIFO mutex for thread-safety

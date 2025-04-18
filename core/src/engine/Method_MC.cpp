@@ -176,7 +176,7 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
             scalar gamma_E = 0.0;
             float B_mag;
             float normal[3];
-            float Bx2,By2; 
+            float Bx,By; 
             float B_int;  //Square of transverse component of the internal dipole-dipole vector field
 
             if (this->parameters_mc->tunneling_use_tunneling)
@@ -189,16 +189,20 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
                 B_mag = (float)ham->external_field_magnitude / Constants::mu_B;
                 gamma_E = (normal[0]*normal[0] + normal[1]*normal[1])*B_mag*B_mag * this->parameters_mc->tunneling_gamma;
 
-                Bx2 = this->systems[0]->ddi_field[ispin][0]*this->systems[0]->ddi_field[ispin][0];
-                By2 = this->systems[0]->ddi_field[ispin][1]*this->systems[0]->ddi_field[ispin][1];
-                B_int = (Bx2+By2) / (Constants::mu_B*Constants::mu_B);
+                Bx = this->systems[0]->ddi_field_external[ispin][0];
+                By = this->systems[0]->ddi_field_external[ispin][1];
+                B_int = ( Bx*Bx + By*By ) / (Constants::mu_B*Constants::mu_B);
                 gamma_E += B_int*this->parameters_mc->tunneling_gamma;
            }
 
-            // Metropolis criterion: reject the step if energy rose
+            // Metropolis criterion: potentially reject the step if energy rose
             if( Ediff > 1e-14 )
             {
-                if( (this->parameters_mc->temperature < 1e-12) && (Ediff>gamma_E) )
+                if ( Ediff<gamma_E )  //If we pass the quantum tunneling test, we keep the step regardless
+                { 
+                    ++this->gammaE_avg;
+                }                
+                else if( this->parameters_mc->temperature < 1e-12  )
                 {
                     // Restore the spin
                     spins_new[ispin] = spins_old[ispin];
@@ -212,18 +216,14 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
                     // Metropolis random number
                     scalar x_metropolis = distribution( this->parameters_mc->prng );
 
-                    // Only reject if random number is larger than exponential and energy difference is greater than tunneling term
-                    if( (exp_ediff < x_metropolis) && (Ediff>gamma_E) )
+                    // Only reject if random number is larger than exponential
+                    if( exp_ediff < x_metropolis )
                     {
                         // Restore the spin
                         spins_new[ispin] = spins_old[ispin];
                         // Counter for the number of rejections
                         ++this->n_rejected;
                     }
-                    else if (Ediff<gamma_E)
-                    {
-                        ++this->gammaE_avg;
-                    }    
                 }
             }
         }

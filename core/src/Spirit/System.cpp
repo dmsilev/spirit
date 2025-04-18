@@ -75,7 +75,7 @@ try
 
     // Fetch correct indices and pointers
     from_indices( state, idx_image, idx_chain, image, chain );
-    return image->ddi_field[0].data();
+    return image->ddi_field_external[0].data();
 }
 catch( ... )
 {
@@ -102,9 +102,9 @@ try
 
     for( std::size_t i = 0; i < static_cast<std::size_t>( n_atoms ); ++i )
     {
-        image->ddi_field[i][0] = ddi_fields[3*i+0];        
-        image->ddi_field[i][1] = ddi_fields[3*i+1];        
-        image->ddi_field[i][2] = ddi_fields[3*i+2];        
+        image->ddi_field_external[i][0] = ddi_fields[3*i+0];        
+        image->ddi_field_external[i][1] = ddi_fields[3*i+1];        
+        image->ddi_field_external[i][2] = ddi_fields[3*i+2];        
     }    
 }
 catch( ... )
