@@ -167,9 +167,10 @@ PREFIX bool Parameters_MC_Get_Random_Sample( State * state, int idx_image = -1, 
 
 // Quantum Tunneling parameters. Use_Tunneling is whether it's enabled or disabled.
 // Gamma is a phenomenological scale factor between transverse field (squared) and tunneling energy threshold
+// Spin Flip is the count of trial moves that were accepted because of quantum tunneling (in a single Metropolis round)
 PREFIX bool Parameters_MC_Get_Use_Tunneling( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
 PREFIX float Parameters_MC_Get_Tunneling_Gamma( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
-
+PREFIX int Parameters_MC_Get_Tunneling_Spin_Flip( State * state, int idx_image = -1, int idx_chain = -1 ) SUFFIX;
 
 #include "DLL_Undefine_Export.h"
 #endif

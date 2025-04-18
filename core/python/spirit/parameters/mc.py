@@ -458,13 +458,32 @@ _MC_Get_Tunneling_Gamma.argtypes = [
     ctypes.c_int,
     ctypes.c_int,
 ]
-_MC_Get_Metropolis_SpinFlip.restype = ctypes.c_float
+_MC_Get_Tunneling_Gamma.restype = ctypes.c_float
 
 def get_tunneling_gamma(p_state, idx_image=-1, idx_chain=-1):
     """Returns gamma, the energy scale factor connecting transverse field to tunneling rates
     """
     return float(
     _MC_Get_Tunneling_Gamma(
+        ctypes.c_void_p(p_state),
+        ctypes.c_int(idx_image),
+        ctypes.c_int(idx_chain),
+    )
+   )
+
+_MC_Get_Tunneling_Spin_Flip = _spirit.Parameters_MC_Get_Tunneling_Spin_Flip
+_MC_Get_Tunneling_Spin_Flip.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_int,
+]
+_MC_Get_Tunneling_Spin_Flip.restype = ctypes.c_int
+
+def get_tunneling_spin_flip(p_state, idx_image=-1, idx_chain=-1):
+    """Returns the number of spin flips accepted via quantum tunneling in the most recent Metropolis iteration
+    """
+    return int(
+    _MC_Get_Tunneling_Spin_Flip(
         ctypes.c_void_p(p_state),
         ctypes.c_int(idx_image),
         ctypes.c_int(idx_chain),

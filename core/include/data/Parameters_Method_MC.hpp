@@ -39,7 +39,7 @@ struct Parameters_Method_MC : public Parameters_Method
     //Quantum tunneling parameters. Initially, use the quadratic approximation for tunneling strength/acceptance probability
     bool tunneling_use_tunneling = true;   //On by default
     scalar tunneling_gamma = 2.7e-1;    //Energy scale of quadratic term of Gamma in LiHoF, K/T^2
-
+    int tunneling_spin_flip_count;      //Number of spin flips allowed due to quantum tunneling after each pass through the Metropolis loop.
 
     // ----------------- Output --------------
     // Energy output settings

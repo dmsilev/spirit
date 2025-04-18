@@ -228,6 +228,7 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
             }
         }
     }
+    this->parameters_mc->tunneling_spin_flip_count = gammaE_avg;
 }
 
 // TODO:
