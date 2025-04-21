@@ -180,6 +180,7 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
             float normal[3];
 //            float Bx,By; 
             float B_int;  //Square of transverse component of the internal dipole-dipole vector field
+            bool tunnel_flag = false;  //True if a given spin flip attempt is enabled via tunneling
 
             if (this->parameters_mc->tunneling_use_tunneling)
             {    
@@ -200,18 +201,25 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
             // Metropolis criterion: potentially reject the step if energy rose
             if( Ediff > 1e-14 )
             {
-                if ( Ediff<gamma_E )  //If we pass the quantum tunneling test, we keep the step regardless
-                { 
-                    ++this->gammaE_avg;
-                }                
-                else if( this->parameters_mc->temperature < 1e-12  )
+                if ( gamma_E > 1e-14 )  //Tunneling is a possibility
+                {   
+                    scalar exp_egamma = std::exp( -Ediff / gamma_E );  //Quantum exponential factor
+                    scalar x_metropolis_gamma = distribution( this->parameters_mc->prng );
+                    if (exp_egamma > x_metropolis_gamma )  //Keep the move, skip the thermal test
+                    {
+                        ++this->gammaE_avg;
+                        tunnel_flag = true;
+                    }
+                }
+                                
+                if( this->parameters_mc->temperature < 1e-12 && !tunnel_flag )
                 {
                     // Restore the spin
                     spins_new[ispin] = spins_old[ispin];
                     // Counter for the number of rejections
                     ++this->n_rejected;
                 }
-                else
+                else if (!tunnel_flag)
                 {
                     // Exponential factor
                     scalar exp_ediff = std::exp( -Ediff / kB_T );
