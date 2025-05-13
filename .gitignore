@@ -556,3 +556,4 @@ core/test_api
 core/test_anisotropy
 *.cfg
 input/input.cfg
+compile_commands.json
