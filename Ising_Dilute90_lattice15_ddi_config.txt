@@ -1,0 +1,9 @@
+Temperature: 1.0
+Basis Cell size: 4
+Lattice size: 4, 4, 4
+Lattice constant: 1.0
+Standard spin moment: 0.0
+Uniaxial anisotropy magnitude: 6.0
+Uniaxial anisotropy vector: 0.0, 0.0, 1.0
+Applied field magnitude: 5.0
+Applied field vector: 0.0, 0.0, 1.0

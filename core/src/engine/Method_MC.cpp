@@ -178,56 +178,48 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
             scalar gamma_E = 0.0;
             float B_mag;
             float normal[3];
-//            float Bx,By; 
+//            float Bx,By;
             float B_int;  //Square of transverse component of the internal dipole-dipole vector field
             bool tunnel_flag = false;  //True if a given spin flip attempt is enabled via tunneling
 
             if (this->parameters_mc->tunneling_use_tunneling)
-            {    
+            {
                 auto * ham = dynamic_cast<Engine::Hamiltonian_Heisenberg *>( this->systems[0]->hamiltonian.get() );
 
+//                normal[0] = (float)ham->external_field_normal[0];
+//                normal[1] = (float)ham->external_field_normal[1];
+//                //normal[2] = (float)ham->external_field_normal[2];
+//                B_mag = (float)ham->external_field_magnitude / Constants::mu_B;
+//                gamma_E = (normal[0]*normal[0] + normal[1]*normal[1])*B_mag*B_mag * this->parameters_mc->tunneling_gamma;
+//
+//                this->Bx = this->systems[0]->ddi_field_external[ispin][0];
+//                this->By = this->systems[0]->ddi_field_external[ispin][1];
+//                B_int = ( this->Bx*this->Bx + this->By*this->By ) / (Constants::mu_B*Constants::mu_B);
+//                gamma_E += B_int*this->parameters_mc->tunneling_gamma;
+
+                B_mag = (float)ham->external_field_magnitude;
                 normal[0] = (float)ham->external_field_normal[0];
                 normal[1] = (float)ham->external_field_normal[1];
-                normal[2] = (float)ham->external_field_normal[2];
-                B_mag = (float)ham->external_field_magnitude / Constants::mu_B;
-                gamma_E = (normal[0]*normal[0] + normal[1]*normal[1])*B_mag*B_mag * this->parameters_mc->tunneling_gamma;
-
                 this->Bx = this->systems[0]->ddi_field_external[ispin][0];
                 this->By = this->systems[0]->ddi_field_external[ispin][1];
-                B_int = ( this->Bx*this->Bx + this->By*this->By ) / (Constants::mu_B*Constants::mu_B);
-                gamma_E += B_int*this->parameters_mc->tunneling_gamma;
+                gamma_E = (((normal[0]*B_mag + this->Bx) * (normal[0]*B_mag + this->Bx) + (normal[1]*B_mag + this->By) * (normal[1]*B_mag + this->By)) *this->parameters_mc->tunneling_gamma) / (Constants::mu_B*Constants::mu_B);
+
+               // The Bohr Magneton [meV/T] mu_B = 0.057883817555; tunneling_gamma = 2.7e-1
            }
 
             // Metropolis criterion: potentially reject the step if energy rose
             if( Ediff > 1e-14 )
             {
                 if ( gamma_E > 1e-14 )  //Tunneling is a possibility
-                {   
-                    scalar exp_egamma = std::exp( -Ediff / gamma_E );  //Quantum exponential factor
+                {    //moved gamma_E outside exponent, since off-diagonal terms proportional to gamma_E?
+                    scalar exp_egamma = std::exp( -Ediff / gamma_E);  //Quantum exponential factor
                     scalar x_metropolis_gamma = distribution( this->parameters_mc->prng );
                     if (exp_egamma > x_metropolis_gamma )  //Keep the move, skip the thermal test
                     {
                         ++this->gammaE_avg;
                         tunnel_flag = true;
                     }
-                }
-                                
-                if( this->parameters_mc->temperature < 1e-12 && !tunnel_flag )
-                {
-                    // Restore the spin
-                    spins_new[ispin] = spins_old[ispin];
-                    // Counter for the number of rejections
-                    ++this->n_rejected;
-                }
-                else if (!tunnel_flag)
-                {
-                    // Exponential factor
-                    scalar exp_ediff = std::exp( -Ediff / kB_T );
-                    // Metropolis random number
-                    scalar x_metropolis = distribution( this->parameters_mc->prng );
-
-                    // Only reject if random number is larger than exponential
-                    if( exp_ediff < x_metropolis )
+                    else //reject the move
                     {
                         // Restore the spin
                         spins_new[ispin] = spins_old[ispin];
@@ -235,6 +227,30 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
                         ++this->n_rejected;
                     }
                 }
+
+//                if( this->parameters_mc->temperature < 1e-12 && !tunnel_flag )
+//                {
+//                    // Restore the spin
+//                    spins_new[ispin] = spins_old[ispin];
+//                    // Counter for the number of rejections
+//                    ++this->n_rejected;
+//                }
+//                else if (!tunnel_flag)
+//                {
+//                    // Exponential factor
+//                    scalar exp_ediff = std::exp( -Ediff / kB_T );
+//                    // Metropolis random number
+//                    scalar x_metropolis = distribution( this->parameters_mc->prng );
+//
+//                    // Only reject if random number is larger than exponential
+//                    if( exp_ediff < x_metropolis )
+//                    {
+//                        // Restore the spin
+//                        spins_new[ispin] = spins_old[ispin];
+//                        // Counter for the number of rejections
+//                        ++this->n_rejected;
+//                    }
+//                }
             }
         }
     }
@@ -330,7 +346,7 @@ void Method_MC::Message_Step()
     {
        block.emplace_back( fmt::format(
             "   Tunneling spin flips: {:>6.3f}", this->gammaE_avg) );
-    }    
+    }
 
     block.emplace_back( fmt::format( "    Total energy:             {:20.10f}", this->systems[0]->E ) );
     Log.SendBlock( Log_Level::All, this->SenderName, block, this->idx_image, this->idx_chain );
@@ -386,21 +402,21 @@ void Method_MC::Message_End()
     {
        block.emplace_back( fmt::format(
             "    Tunneling Spin Flips: {:>6.3f}", this->gammaE_avg) );
-    }    
+    }
 
     block.emplace_back( fmt::format( "    Total energy:     {:20.10f}", this->systems[0]->E ) );
     block.emplace_back( "-----------------------------------------------------" );
     Log.SendBlock( Log_Level::All, this->SenderName, block, this->idx_image, this->idx_chain );
 }
 
-void Method_MC::Save_Current( std::string starttime, int iteration, bool initial, bool final ) 
+void Method_MC::Save_Current( std::string starttime, int iteration, bool initial, bool final )
 {
     // History save
     this->history_iteration.push_back( this->iteration );
     this->history_max_torque.push_back( this->max_torque );
     this->history_energy.push_back( this->systems[0]->E );
 
- 
+
     // File save
     if( this->parameters->output_any )
     {
@@ -576,7 +592,7 @@ void Method_MC::Save_Current( std::string starttime, int iteration, bool initial
 
         // Save Log
         Log.Append_to_File();
-    }    
+    }
 }
 
 // Method name as string

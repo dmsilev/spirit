@@ -320,12 +320,21 @@ def set_tunneling_gamma(
     - Gamma sets a transverse field to energy conversion, E = Gamma * H_t^2 (K/T^2)
     - Default is the physical value in LiHoYF4
      """
-    _MC_Set_Metropolis_SpinFlip(
+    # _MC_Set_Metropolis_SpinFlip(
+    #     p_state,
+    #     ctypes.c_float(tunneling_gamma),
+    #     idx_image,
+    #     idx_chain,
+    # )
+
+    _MC_Set_Tunneling_Gamma(
         p_state,
         ctypes.c_float(tunneling_gamma),
         idx_image,
         idx_chain,
     )
+
+
 
 
 ## ---------------------------------- Get ----------------------------------

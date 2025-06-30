@@ -392,6 +392,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Plots
+*.png
+
+#DDI interaction matrices
+dipolar_interaction_matrices_reordered/
+
 # C extensions
 *.so
 
