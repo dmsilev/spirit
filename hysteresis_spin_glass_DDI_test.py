@@ -3,12 +3,13 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 import multiprocessing as mp
+import plotly.graph_objects as go
 
-Hmax = 15
+Hmax = 20
 Hstep_coarse = 0.125
 Hstep_fine = 0.05
-Hfine1 = 2
-Hfine2 = -3
+Hfine1 = 15
+Hfine2 = -15
 fields = np.arange(Hmax,Hfine1,-1*Hstep_coarse,dtype=float)
 fields = np.append(fields,np.arange(Hfine1,Hfine2,-1*Hstep_fine,dtype=float))
 fields = np.append(fields,np.arange(Hfine2,-1*Hmax,-1*Hstep_coarse,dtype=float))
@@ -147,19 +148,32 @@ if __name__ == '__main__':
 
     # Assuming fields_hyst and mz are already defined
 
-    plt.figure(figsize=(8, 5))
-
     with mp.Pool(processes=5) as pool:
         results = pool.map(plot_loop, spin_concentrations)
 
-    for fields, m_per_spin, conc in results:
-        plt.plot(fields, m_per_spin, label=str(conc))
+    # Create an interactive figure
+    fig = go.Figure()
 
-    plt.xlabel('Magnetic Field')
-    plt.ylabel('Avg Magnetization Per Spin')
-    plt.title('Hysteresis Curve')
-    plt.grid(True)
-    plt.legend()
-    plt.tight_layout()
-    #plt.show()
-    plt.savefig(f'hysteresis_loop_tunnel_{dim}_new_gamma.png')
+    for fields, m_per_spin, conc in results:
+        fig.add_trace(
+            go.Scatter(
+                x=fields,
+                y=m_per_spin,
+                mode='lines',
+                name=str(conc)
+            )
+        )
+
+    # Set layout
+    fig.update_layout(
+        title="Hysteresis Curve",
+        xaxis_title="Magnetic Field",
+        yaxis_title="Avg Magnetization Per Spin",
+        legend_title="Concentration",
+        template="plotly_white",
+        width=800,
+        height=500,
+    )
+
+    fig.write_html(f'hysteresis_loop_tunnel_{dim}_new_gamma_Ht_{Ht}.html')
+    # plt.savefig(f'hysteresis_loop_tunnel_{dim}_new_gamma.png')
