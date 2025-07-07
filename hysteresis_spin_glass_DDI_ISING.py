@@ -4,37 +4,34 @@ import os
 import matplotlib.pyplot as plt
 import multiprocessing as mp
 import plotly.graph_objects as go
+import plotly.express as px
 import pandas as pd
 
-Hmax = 20
-Hstep_coarse = 0.125
-Hstep_fine = 0.01
-Hfine1 = 15
-Hfine2 = -15
+Hmax = 10
+H_step = 0.1
+iterations_per_step = 1  # Take this many Metropolis iterationss per lattice site between each check for convergence
+#Now is Ht transverse fields, max is  = 1T
 
-fields = np.arange(Hmax,Hfine1,-1*Hstep_coarse,dtype=float)
-fields = np.append(fields,np.arange(Hfine1,Hfine2,-1*Hstep_fine,dtype=float))
-fields = np.append(fields,np.arange(Hfine2,-1*Hmax,-1*Hstep_coarse,dtype=float))
-fields_hyst = np.append(fields,-1*fields)
+# fields = np.arange(Hmax,Hfine1,-1*Hstep_coarse,dtype=float)
+# fields = np.append(fields,np.arange(Hfine1,Hfine2,-1*Hstep_fine,dtype=float))
+# fields = np.append(fields,np.arange(Hfine2,-1*Hmax,-1*Hstep_coarse,dtype=float))
+# fields_hyst = np.append(fields,-1*fields)
 # fields_hyst = np.tile(fields_hyst, n_cycles)
 
-Ht = 1  #Transverse field
-
+Hz = 0.0  #Longitudinal field
 output_interval = 2 #Interval at which spin configuration files are saved
 fn = "dipolar_arr"
 prefix = "DDI_exp_14_G0p00005_Ht10p0"
 
-iterations_per_step = 1 #Take this many Metropolis iterationss per lattice site between each check for convergence
-converge_threshold = 0.01 #Fractional change in magnetization between steps to accept convergence
-converge_max = 20 #Maximum number of steps to take before moving on
 mu = 7
-dim = 10
-concentration = 55
+dim = 4
+concentration = 25
 
 #with state.State("input/test_Ising_largelattice.cfg") as p_state:
 
 
-def plot_loop(concentration):
+def plot_loop(H_relax):
+
     with state.State(f"input/LHF_DDI_glass_14_{concentration}_tunnel_{dim}.cfg") as p_state:
         types = geometry.get_atom_types(p_state)
         nos = types.size
@@ -43,8 +40,8 @@ def plot_loop(concentration):
         np.savetxt("output/"+prefix+"atom_locs.csv",locs,delimiter=",")
         np.savetxt("output/"+prefix+"atom_types.csv",types,delimiter=",")
     #    write_config(p_state,prefix)
-        parameters.mc.set_metropolis_cone(p_state,use_cone=True,cone_angle=30,use_adaptive_cone=True)
-        parameters.mc.set_metropolis_spinflip(p_state,False)
+        parameters.mc.set_metropolis_cone(p_state,use_cone=True,cone_angle=0.00000001,use_adaptive_cone=False)
+        parameters.mc.set_metropolis_spinflip(p_state,True)
         parameters.mc.set_tunneling_gamma(p_state, tunneling_gamma=0.00012)
 
         #We'll evaluate convergence after enough Metropolis steps to hit each site twitce on average
@@ -80,8 +77,10 @@ def plot_loop(concentration):
         locs[:,1][vacancies_idx] = 0
         locs[:,2][vacancies_idx] = 0
 
-        for i,Hz in enumerate(fields_hyst):
-            print(f'{Hz:.3f}', concentration)
+        Hz = 0.0
+        Hts = np.arange(Hmax, H_relax, -1 * H_step, dtype=float)
+        for i,Ht in enumerate(Hts):
+            print(f'{Ht:.3f}', concentration)
 
             Hmag = np.sqrt(Hz*Hz + Ht*Ht)
             hamiltonian.set_field(p_state,Hmag,(Ht,0,Hz)) #Inside set_field, the vector is normalized, so we don't have to do that here
@@ -103,8 +102,23 @@ def plot_loop(concentration):
             # print(f"Y: mean: {np.mean(DDI_field_y):.4e} Std. Dev: {np.std(DDI_field_y):.4e}")
             print(f"Z: mean: {np.mean(DDI_field_z):.4e} Std. Dev: {np.std(DDI_field_z):.4e}")
 
+            ####Less strict convergence check conditions to simulate spin glass not relaxing to equilibrium state
+            # converge_threshold = 0.01 #Fractional change in magnetization between steps to accept convergence
+            converge_threshold = 0.01  # Fractional change in magnetization between steps to accept convergence
+            # converge_max = 20 #Maximum number of steps to take before moving on
+            converge_max = 10  # Maximum number of steps to take before moving on
+
+            # Stricter convergence check for relaxation step
+            converge_threshold_relax = 0.001
+            converge_max_relax = 80
+
+            #For relaxing at H_relax
+            if Ht == H_relax:
+                converge_max = converge_max_relax
+                converge_threshold = converge_threshold_relax
+
             #Check convergence, same as old hysteresis_loop. But METHOD_MC now uses tunnelling since we set tunnel flag to 1 in cfg files
-            for j in range(converge_max) :
+            for j in range(converge_max):
                 simulation.start(p_state, simulation.METHOD_MC, single_shot=False) #solver_type=simulation.MC_ALGORITHM_METROPOLIS
                 simulation.stop(p_state)
                 if j == 0 :
@@ -118,80 +132,56 @@ def plot_loop(concentration):
                     if ratio<converge_threshold :
                         break
 
+        spins = system.get_spin_directions(p_state)  # Get the current spin state to update the DDI fields from the Ewald sum
+        spins[:, 2][vacancies_idx] = 0  # For LHF, we only care about Sz, but zero out the moments for vacancy site
+        DDI_field_x = np.matmul(DDI_interaction_x, spins[:, 2]) * 7 / 1e4
+        DDI_field_y = np.matmul(DDI_interaction_y, spins[:, 2]) * 7 / 1e4
+        DDI_field_z = np.matmul(DDI_interaction_z, spins[:, 2]) * 7 / 1e4
+        DDI_field_trans = np.sqrt(DDI_field_x ** 2 + DDI_field_y ** 2)
 
-            # if output_interval>0: #Output the spin configuration.
-            #     #TODO: Use system.get_spin_directions to pull the configuration array into Python, and then save out as an npy or similar
-            #     if (i % output_interval == 0):
-            #         tag = prefix+f'N{i:d}_H{Hz:.3f}'
-            #         name = "output/" + tag + "_Image-00_Spins_0.ovf" #To match the internally-generated naming format
-            #         io.image_write(p_state,filename=name)
-
-            #Using tunneling, so set tunneling flag in cfg files to 1
-            if i == 0:
-                # mx = quantities.get_magnetization(p_state)[0]
-                # my = quantities.get_magnetization(p_state)[1]
-                mz = m_temp
-                iter_count = j
-                spin_flip_count = parameters.mc.get_tunneling_spin_flip(p_state)
-            else:
-                # mx = np.vstack( (mx,quantities.get_magnetization(p_state)[0]) )
-                # my = np.vstack( (my,quantities.get_magnetization(p_state)[1]) )
-                mz = np.vstack( (mz,m_temp) )
-                iter_count = np.vstack( (iter_count,j) )
-                spin_flip_count = np.vstack((spin_flip_count,parameters.mc.get_tunneling_spin_flip(p_state)) )
-
-    #np.savetxt("output/"+prefix+"mh.csv",np.transpose((fields_hyst, mz[:,0],iter_count[:,0],spin_flip_count[:,0])),delimiter=',')
-    arr = np.transpose((fields_hyst, mz[:, 0]))
-    df = pd.DataFrame(
-        arr,
-        columns=['B_Field', 'M_z']
-    )
-    return df
-
-    # df.to_csv(f"Bfield_Mz_{concentration}_{dim}_{dim}_{dim}_Ht_{Ht}_ncycles_{n_cycles}.csv", index=False)
-    #
-    #     # plt.plot(fields_hyst, mz[:, 0] /concentration, label=str(concentration))
-    #     # print(parameters.mc.get_tunneling_gamma(p_state))
-    # return fields_hyst, mz[:, 0] /concentration, concentration
-
+    return pd.DataFrame({
+    'Ht': Ht * np.ones_like(DDI_field_z),
+    'DDI_field_z': DDI_field_z,
+    'DDI_field_trans': DDI_field_trans
+})
 
 
 if __name__ == '__main__':
-    # spin_concentrations = [85, 95, 15, 25, 35, 45, 55, 65, 75]
-    n_cycles = 8
-    spin_concentrations = [55] * n_cycles
 
     # Assuming fields_hyst and mz are already defined
+    n_cycles = 8
+    H_relaxes = [0, 1, 5, 7, 9, 0.25, 0.5, 0.1]
+    H_relaxes = H_relaxes * n_cycles
 
     with mp.Pool(processes=mp.cpu_count()) as pool:
-        results = pool.map(plot_loop, spin_concentrations)
+        results = pool.map(plot_loop, H_relaxes)
 
     df_all = pd.concat(results, ignore_index=True)
-    df_all.to_csv(f"Bfield_Mz_{concentration}_{dim}_{dim}_{dim}_Ht_{Ht}_ncycles_{n_cycles}.csv", index=False)
+    df_all.to_csv(f'B_z_distribution_ISING_{dim}_trial.csv', index=False)
 
-    # Create an interactive figure
+    hist_data = {}
+
+    for Ht in df_all["Ht"].unique():
+        data = df_all[df_all["Ht"] == Ht]["DDI_field_z"]
+        counts, bin_edges = np.histogram(data, bins=50)
+        bin_centers = 0.5 * (bin_edges[:-1] + bin_edges[1:])
+        hist_data[Ht] = (bin_centers, counts)
+
     fig = go.Figure()
 
-    for fields, m_per_spin, conc in results:
-        fig.add_trace(
-            go.Scatter(
-                x=fields,
-                y=m_per_spin,
-                mode='lines',
-                name=str(conc)
-            )
-        )
+    for Ht, (x, y) in hist_data.items():
+        fig.add_trace(go.Scatter(
+            x=x,
+            y=y,
+            mode="markers+lines",
+            name=f"Ht={Ht}",
+            marker=dict(size=6)
+        ))
 
-        # Set layout
-        fig.update_layout(
-            title="Hysteresis Curve",
-            xaxis_title="Magnetic Field",
-            yaxis_title="Avg Magnetization Per Spin",
-            legend_title="Concentration",
-            template="plotly_white",
-            width=800,
-            height=500,
-        )
+    fig.update_layout(
+        title="DDI_field_z Distribution (as points) for different Ht",
+        xaxis_title="DDI_field_z (T)",
+        yaxis_title="Density",
+    )
 
-        fig.write_html(f'Bfield_Mz_{conc}_{dim}_{dim}_{dim}_Ht_{Ht}_ncycles_{n_cycles}.html')
-        # plt.savefig(f'hysteresis_loop_tunnel_{dim}_new_gamma.png')
+    fig.write_html(f'B_z_distribution_ISING_{dim}_{n_cycles}_trial.html')

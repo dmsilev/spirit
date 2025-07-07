@@ -395,6 +395,10 @@ __pycache__/
 # Plots
 *.png
 
+# spin states
+*.ovf
+*.html
+*.csv
 #DDI interaction matrices
 dipolar_interaction_matrices_reordered/
 

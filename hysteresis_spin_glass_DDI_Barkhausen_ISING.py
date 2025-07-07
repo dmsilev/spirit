@@ -4,13 +4,14 @@ import os
 import matplotlib.pyplot as plt
 import multiprocessing as mp
 import plotly.graph_objects as go
+import plotly.express as px
 import pandas as pd
 
-Hmax = 20
-Hstep_coarse = 0.125
+Hmax = 6
+Hstep_coarse = 0.1
 Hstep_fine = 0.01
-Hfine1 = 15
-Hfine2 = -15
+Hfine1 = 5
+Hfine2 = -5
 
 fields = np.arange(Hmax,Hfine1,-1*Hstep_coarse,dtype=float)
 fields = np.append(fields,np.arange(Hfine1,Hfine2,-1*Hstep_fine,dtype=float))
@@ -18,7 +19,7 @@ fields = np.append(fields,np.arange(Hfine2,-1*Hmax,-1*Hstep_coarse,dtype=float))
 fields_hyst = np.append(fields,-1*fields)
 # fields_hyst = np.tile(fields_hyst, n_cycles)
 
-Ht = 1  #Transverse field
+Ht = 0.0  #Transverse field
 
 output_interval = 2 #Interval at which spin configuration files are saved
 fn = "dipolar_arr"
@@ -29,7 +30,7 @@ converge_threshold = 0.01 #Fractional change in magnetization between steps to a
 converge_max = 20 #Maximum number of steps to take before moving on
 mu = 7
 dim = 10
-concentration = 55
+concentration = 25
 
 #with state.State("input/test_Ising_largelattice.cfg") as p_state:
 
@@ -43,8 +44,8 @@ def plot_loop(concentration):
         np.savetxt("output/"+prefix+"atom_locs.csv",locs,delimiter=",")
         np.savetxt("output/"+prefix+"atom_types.csv",types,delimiter=",")
     #    write_config(p_state,prefix)
-        parameters.mc.set_metropolis_cone(p_state,use_cone=True,cone_angle=30,use_adaptive_cone=True)
-        parameters.mc.set_metropolis_spinflip(p_state,False)
+        parameters.mc.set_metropolis_cone(p_state,use_cone=True,cone_angle=0.00000001,use_adaptive_cone=False)
+        parameters.mc.set_metropolis_spinflip(p_state,True)
         parameters.mc.set_tunneling_gamma(p_state, tunneling_gamma=0.00012)
 
         #We'll evaluate convergence after enough Metropolis steps to hit each site twitce on average
@@ -158,40 +159,22 @@ def plot_loop(concentration):
 
 if __name__ == '__main__':
     # spin_concentrations = [85, 95, 15, 25, 35, 45, 55, 65, 75]
-    n_cycles = 8
-    spin_concentrations = [55] * n_cycles
+    n_cycles = 3
+    conc = 55
+    spin_concentrations = [conc] * n_cycles
 
     # Assuming fields_hyst and mz are already defined
 
-    with mp.Pool(processes=mp.cpu_count()) as pool:
+    with mp.Pool(processes=n_cycles) as pool:
         results = pool.map(plot_loop, spin_concentrations)
 
     df_all = pd.concat(results, ignore_index=True)
-    df_all.to_csv(f"Bfield_Mz_{concentration}_{dim}_{dim}_{dim}_Ht_{Ht}_ncycles_{n_cycles}.csv", index=False)
+    df_all.to_csv(f"Bfield_Mz_{concentration}_{dim}_{dim}_{dim}_Ht_{Ht}_ncycles_{n_cycles}_ISING.csv", index=False)
 
-    # Create an interactive figure
-    fig = go.Figure()
 
-    for fields, m_per_spin, conc in results:
-        fig.add_trace(
-            go.Scatter(
-                x=fields,
-                y=m_per_spin,
-                mode='lines',
-                name=str(conc)
-            )
-        )
+    fig = px.line(df_all, x='B_Field', y='M_z', markers=True,
+                  labels={'B_Field': 'B Field', 'M_z': 'M_z'},
+                  title='M_z vs. B Field')
 
-        # Set layout
-        fig.update_layout(
-            title="Hysteresis Curve",
-            xaxis_title="Magnetic Field",
-            yaxis_title="Avg Magnetization Per Spin",
-            legend_title="Concentration",
-            template="plotly_white",
-            width=800,
-            height=500,
-        )
-
-        fig.write_html(f'Bfield_Mz_{conc}_{dim}_{dim}_{dim}_Ht_{Ht}_ncycles_{n_cycles}.html')
-        # plt.savefig(f'hysteresis_loop_tunnel_{dim}_new_gamma.png')
+    fig.write_html(f'Bfield_Mz_{conc}_{dim}_{dim}_{dim}_Ht_{Ht}_ncycles_{n_cycles}_ISING.html')
+    # plt.savefig(f'hysteresis_loop_tunnel_{dim}_new_gamma.png')

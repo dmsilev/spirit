@@ -3,22 +3,21 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 import multiprocessing as mp
-import plotly.graph_objects as go
 import pandas as pd
+import plotly.graph_objects as go
+import plotly.express as px
 
-Hmax = 20
+Hmax = 15
 Hstep_coarse = 0.125
-Hstep_fine = 0.01
-Hfine1 = 15
-Hfine2 = -15
-
+Hstep_fine = 0.05
+Hfine1 = 2
+Hfine2 = -3
 fields = np.arange(Hmax,Hfine1,-1*Hstep_coarse,dtype=float)
 fields = np.append(fields,np.arange(Hfine1,Hfine2,-1*Hstep_fine,dtype=float))
 fields = np.append(fields,np.arange(Hfine2,-1*Hmax,-1*Hstep_coarse,dtype=float))
 fields_hyst = np.append(fields,-1*fields)
-# fields_hyst = np.tile(fields_hyst, n_cycles)
 
-Ht = 1  #Transverse field
+Ht = 10.0  #Transverse field
 
 output_interval = 2 #Interval at which spin configuration files are saved
 fn = "dipolar_arr"
@@ -28,13 +27,20 @@ iterations_per_step = 1 #Take this many Metropolis iterationss per lattice site 
 converge_threshold = 0.01 #Fractional change in magnetization between steps to accept convergence
 converge_max = 20 #Maximum number of steps to take before moving on
 mu = 7
-dim = 10
-concentration = 55
+
 
 #with state.State("input/test_Ising_largelattice.cfg") as p_state:
 
+#Apparently gamma = 2.7e-1 is too big, but 2.7e-1*(mu_B)^4 is too small
+mu_B = 0.057883817555
+gamma_0 = 0.0005000000237487257
 
-def plot_loop(concentration):
+# concentration = 95
+concentration = 55
+
+dim = 4
+
+def plot_loop(gamma):
     with state.State(f"input/LHF_DDI_glass_14_{concentration}_tunnel_{dim}.cfg") as p_state:
         types = geometry.get_atom_types(p_state)
         nos = types.size
@@ -43,9 +49,10 @@ def plot_loop(concentration):
         np.savetxt("output/"+prefix+"atom_locs.csv",locs,delimiter=",")
         np.savetxt("output/"+prefix+"atom_types.csv",types,delimiter=",")
     #    write_config(p_state,prefix)
-        parameters.mc.set_metropolis_cone(p_state,use_cone=True,cone_angle=30,use_adaptive_cone=True)
-        parameters.mc.set_metropolis_spinflip(p_state,False)
-        parameters.mc.set_tunneling_gamma(p_state, tunneling_gamma=0.00012)
+        parameters.mc.set_metropolis_cone(p_state,use_cone=True,cone_angle=0.0000001,use_adaptive_cone=False)
+        parameters.mc.set_metropolis_spinflip(p_state,True)
+
+        parameters.mc.set_tunneling_gamma(p_state, gamma)
 
         #We'll evaluate convergence after enough Metropolis steps to hit each site twitce on average
         parameters.mc.set_iterations(p_state,iterations_per_step*types.size,iterations_per_step*types.size)
@@ -99,8 +106,8 @@ def plot_loop(concentration):
             #Pass into SPIRIT
             DDI_field_interleave = np.ravel(np.column_stack((DDI_field_x,DDI_field_y,DDI_field_z)))
             system.set_DDI_field(p_state,n_atoms=nos,ddi_fields=DDI_field_interleave)
-            # print(f"X: mean: {np.mean(DDI_field_x):.4e} Std. Dev: {np.std(DDI_field_x):.4e}")
-            # print(f"Y: mean: {np.mean(DDI_field_y):.4e} Std. Dev: {np.std(DDI_field_y):.4e}")
+            print(f"X: mean: {np.mean(DDI_field_x):.4e} Std. Dev: {np.std(DDI_field_x):.4e}")
+            print(f"Y: mean: {np.mean(DDI_field_y):.4e} Std. Dev: {np.std(DDI_field_y):.4e}")
             print(f"Z: mean: {np.mean(DDI_field_z):.4e} Std. Dev: {np.std(DDI_field_z):.4e}")
 
             #Check convergence, same as old hysteresis_loop. But METHOD_MC now uses tunnelling since we set tunnel flag to 1 in cfg files
@@ -119,28 +126,31 @@ def plot_loop(concentration):
                         break
 
 
-            # if output_interval>0: #Output the spin configuration.
-            #     #TODO: Use system.get_spin_directions to pull the configuration array into Python, and then save out as an npy or similar
-            #     if (i % output_interval == 0):
-            #         tag = prefix+f'N{i:d}_H{Hz:.3f}'
-            #         name = "output/" + tag + "_Image-00_Spins_0.ovf" #To match the internally-generated naming format
-            #         io.image_write(p_state,filename=name)
+            if output_interval>0: #Output the spin configuration.
+                #TODO: Use system.get_spin_directions to pull the configuration array into Python, and then save out as an npy or similar
+                if (i % output_interval == 0):
+                    tag = prefix+f'N{i:d}_H{Hz:.3f}'
+                    name = "output/" + tag + "_Image-00_Spins_0.ovf" #To match the internally-generated naming format
+                    io.image_write(p_state,filename=name)
 
             #Using tunneling, so set tunneling flag in cfg files to 1
             if i == 0:
-                # mx = quantities.get_magnetization(p_state)[0]
-                # my = quantities.get_magnetization(p_state)[1]
+                mx = quantities.get_magnetization(p_state)[0]
+                my = quantities.get_magnetization(p_state)[1]
                 mz = m_temp
                 iter_count = j
                 spin_flip_count = parameters.mc.get_tunneling_spin_flip(p_state)
             else:
-                # mx = np.vstack( (mx,quantities.get_magnetization(p_state)[0]) )
-                # my = np.vstack( (my,quantities.get_magnetization(p_state)[1]) )
+                mx = np.vstack( (mx,quantities.get_magnetization(p_state)[0]) )
+                my = np.vstack( (my,quantities.get_magnetization(p_state)[1]) )
                 mz = np.vstack( (mz,m_temp) )
                 iter_count = np.vstack( (iter_count,j) )
                 spin_flip_count = np.vstack((spin_flip_count,parameters.mc.get_tunneling_spin_flip(p_state)) )
 
-    #np.savetxt("output/"+prefix+"mh.csv",np.transpose((fields_hyst, mz[:,0],iter_count[:,0],spin_flip_count[:,0])),delimiter=',')
+    #np.savetxt("output/"+prefix+"mh.csv",np.transpose((fields_hyst,mx[:,0],my[:,0],mz[:,0],iter_count[:,0],spin_flip_count[:,0])),delimiter=',')
+
+        #plt.plot(fields_hyst, mz[:, 0] /concentration, label=str(gamma))
+        # return fields_hyst, mz[:, 0] /concentration, parameters.mc.get_tunneling_gamma(p_state)
     arr = np.transpose((fields_hyst, mz[:, 0]))
     df = pd.DataFrame(
         arr,
@@ -148,50 +158,39 @@ def plot_loop(concentration):
     )
     return df
 
-    # df.to_csv(f"Bfield_Mz_{concentration}_{dim}_{dim}_{dim}_Ht_{Ht}_ncycles_{n_cycles}.csv", index=False)
-    #
-    #     # plt.plot(fields_hyst, mz[:, 0] /concentration, label=str(concentration))
-    #     # print(parameters.mc.get_tunneling_gamma(p_state))
-    # return fields_hyst, mz[:, 0] /concentration, concentration
-
-
 
 if __name__ == '__main__':
     # spin_concentrations = [85, 95, 15, 25, 35, 45, 55, 65, 75]
-    n_cycles = 8
-    spin_concentrations = [55] * n_cycles
+    # spin_concentrations = [95, 15]
+    #gamma_0 = 0.0005000000237487257
+    # gammas = [gamma_0, gamma_0 * pow(mu_B, 1), gamma_0 * pow(mu_B, 2)]
+    # gammas = [gamma_0 * pow(mu_B, n) for n in [0, 0.001, 0.1, 1, 10, 100]]
+    gammas = [gamma_0 * pow(mu_B, n) for n in [0.001, 0.5, 1, 2, 3, 10, 50, 100]]
+
+
+    # Apparently gamma = 2.7e-1 is too big, but 2.7e-1*(mu_B)^4 is too small
 
     # Assuming fields_hyst and mz are already defined
 
-    with mp.Pool(processes=mp.cpu_count()) as pool:
-        results = pool.map(plot_loop, spin_concentrations)
+    plt.figure(figsize=(8, 5))
 
-    df_all = pd.concat(results, ignore_index=True)
-    df_all.to_csv(f"Bfield_Mz_{concentration}_{dim}_{dim}_{dim}_Ht_{Ht}_ncycles_{n_cycles}.csv", index=False)
+    with mp.Pool(processes=6) as pool:
+        results = pool.map(plot_loop, gammas)
 
-    # Create an interactive figure
     fig = go.Figure()
 
-    for fields, m_per_spin, conc in results:
-        fig.add_trace(
-            go.Scatter(
-                x=fields,
-                y=m_per_spin,
-                mode='lines',
-                name=str(conc)
-            )
-        )
+    for gamma, df in zip(gammas, results):
+        fig.add_trace(go.Scatter(
+            x=df['B_Field'],
+            y=df['M_z'],
+            mode='lines',
+            name=f"gamma={gamma}"
+        ))
 
-        # Set layout
-        fig.update_layout(
-            title="Hysteresis Curve",
-            xaxis_title="Magnetic Field",
-            yaxis_title="Avg Magnetization Per Spin",
-            legend_title="Concentration",
-            template="plotly_white",
-            width=800,
-            height=500,
-        )
+    fig.update_layout(
+        xaxis_title="B_Field",
+        yaxis_title="M_z",
+        title="M_z vs B_Field for each gamma",
+    )
 
-        fig.write_html(f'Bfield_Mz_{conc}_{dim}_{dim}_{dim}_Ht_{Ht}_ncycles_{n_cycles}.html')
-        # plt.savefig(f'hysteresis_loop_tunnel_{dim}_new_gamma.png')
+    fig.write_html(f'hysteresis_loop_tunnel_{4}_gamma_new_ISING_{concentration}.html')
