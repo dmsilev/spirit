@@ -50,8 +50,6 @@ def get_susceptibility(p_state_file, H_relax, Ht):
     with state.State(f"input/LHF_DDI_glass_14_{concentration}_tunnel_{dim}.cfg") as p_state_1:
         #For a given state vary longitudinal H to get dc susceptibility
         io.image_read(p_state_1, p_state_file)
-
-
         types = geometry.get_atom_types(p_state_1)
         nos = types.size
         # print(f"Sites: {nos}  Spins: {nos + np.sum(types)}")
@@ -59,13 +57,13 @@ def get_susceptibility(p_state_file, H_relax, Ht):
         np.savetxt("output/" + prefix + "atom_locs.csv", locs, delimiter=",")
         np.savetxt("output/" + prefix + "atom_types.csv", types, delimiter=",")
         #    write_config(p_state_1,prefix)
-        parameters.mc.set_metropolis_cone(p_state_1, use_cone=True, cone_angle=0.00000001, use_adaptive_cone=False)
+        parameters.mc.set_metropolis_cone(p_state_1, use_cone=True, cone_angle=0.1, use_adaptive_cone=False)
         parameters.mc.set_metropolis_spinflip(p_state_1, True)
-        parameters.mc.set_tunneling_gamma(p_state_1, tunneling_gamma=0.00012)
+        # parameters.mc.set_tunneling_gamma(p_state_1, tunneling_gamma=0.00012)
 
         # For trying without tunneling and at base temperature ~0K
-        # parameters.mc.set_use_tunneling(p_state_1, False)
-        # parameters.mc.set_temperature(p_state_1, 0.0000000001)
+        parameters.mc.set_use_tunneling(p_state_1, False)
+        parameters.mc.set_temperature(p_state_1, 0.0000000001)
 
         # We'll evaluate convergence after enough Metropolis steps to hit each site twitce on average
         parameters.mc.set_iterations(p_state_1, iterations_per_step * types.size, iterations_per_step * types.size)
@@ -93,7 +91,8 @@ def get_susceptibility(p_state_file, H_relax, Ht):
         locs[:, 1][vacancies_idx] = 0
         locs[:, 2][vacancies_idx] = 0
 
-        Bfields = [0.0, 0.01, 0.02, 0.03, 0.04, 0.05]
+        # Bfields = [0.0, 0.01, 0.02, 0.03, 0.04, 0.05]
+        Bfields = np.arange(0, 0.1, 0.01)
         for i, Hz in enumerate(Bfields):
             # print(f'Hz: {Hz:.3f}', concentration)
 
@@ -158,20 +157,22 @@ def plot_loop(H_relax):
         np.savetxt("output/"+prefix+"atom_locs.csv",locs,delimiter=",")
         np.savetxt("output/"+prefix+"atom_types.csv",types,delimiter=",")
     #    write_config(p_state,prefix)
-        parameters.mc.set_metropolis_cone(p_state,use_cone=True,cone_angle=0.00000001,use_adaptive_cone=False)
+        parameters.mc.set_metropolis_cone(p_state,use_cone=True,cone_angle=0.1,use_adaptive_cone=False)
         parameters.mc.set_metropolis_spinflip(p_state,True)
 
         # parameters.mc.set_tunneling_gamma(p_state, tunneling_gamma=0.00012)
 
         #For trying without tunneling and at base temperature ~0K
         parameters.mc.set_use_tunneling(p_state, False)
-        parameters.mc.set_temperature(p_state, 0.0000000001)
+        parameters.mc.set_temperature(p_state, 0.000035)
 
         #We'll evaluate convergence after enough Metropolis steps to hit each site twitce on average
         parameters.mc.set_iterations(p_state,iterations_per_step*types.size,iterations_per_step*types.size)
 
         #Initialize in the saturated state
-        configuration.plus_z(p_state)
+        # configuration.plus_z(p_state)
+        #Initialize from unordered state
+        configuration.random(p_state)
 
 
     #Filter out any vacant sites
@@ -182,11 +183,21 @@ def plot_loop(H_relax):
 
         Hz = 0.0
         Hmax = 1
-        H_step = 0.005
+        H_step = 0.01
         Hts = np.arange(Hmax, H_relax, -1 * H_step, dtype=float)
         chis = []
+        #Check susceptibility every 5th Ht datapoint
         for i,Ht in enumerate(Hts):
             print(f'Ht: {Ht:.3f}', concentration)
+
+            #To randomise field, set very high temperature
+            if i % output_interval == 0 :
+                tag = prefix+f'N{i:d}_H{Ht:.3f}'
+                parameters.llg.set_output_tag(p_state,tag)
+                parameters.llg.set_temperature(p_state, 1000000)
+                simulation.start(p_state, simulation.METHOD_LLG,simulation.SOLVER_DEPONDT, single_shot=False)
+                simulation.stop(p_state)
+                parameters.llg.set_temperature(p_state, 0.000035)
 
             Hmag = np.sqrt(Hz*Hz + Ht*Ht)
             hamiltonian.set_field(p_state,Hmag,(Ht,0,Hz)) #Inside set_field, the vector is normalized, so we don't have to do that here
@@ -210,13 +221,13 @@ def plot_loop(H_relax):
 
             ####Less strict convergence check conditions to simulate spin glass not relaxing to equilibrium state
             # converge_threshold = 0.01 #Fractional change in magnetization between steps to accept convergence
-            converge_threshold = 0.01  # Fractional change in magnetization between steps to accept convergence
+            converge_threshold = 0.05  # Fractional change in magnetization between steps to accept convergence
             # converge_max = 20 #Maximum number of steps to take before moving on
             converge_max = 10  # Maximum number of steps to take before moving on
 
             # Stricter convergence check for relaxation step
-            converge_threshold_relax = 0.001
-            converge_max_relax = 80
+            converge_threshold_relax = 0.01
+            converge_max_relax = 40
 
             #For relaxing at H_relax
             if Ht == H_relax:
@@ -235,44 +246,49 @@ def plot_loop(H_relax):
                     m_temp = quantities.get_magnetization(p_state)[2]
      #               ratio = abs((m_temp-m_prev)/m_prev)
                     ratio = abs((m_temp-m_prev)/mu)
-                    # print(f"Iteration: {j:d}, Convergence: {ratio:.4f}, M_z: {m_temp:.4f}")
+
+                    print(f"Iteration: {j:d}, Convergence: {ratio:.4f}, M_z: {m_temp:.4f}")
                     if ratio<converge_threshold :
+                        print(f'++++++++++++++++++++++++++++++++Number of iterations needed for ratio<convergence_threshold: {j}++++++++++++++++++++++++++++++++')
                         break
 
-            filename = f'state_configs/p_state_{Ht:.3f}_Hrelax_{H_relax:.3f}.ovf'
-            io.image_write(p_state, filename)
-            chi = get_susceptibility(filename, H_relax, Ht)
+            if i%5 ==0:
+                filename = f'state_configs/p_state_{Ht:.3f}_Hrelax_{H_relax:.3f}.ovf'
+                io.image_write(p_state, filename)
+                chi = get_susceptibility(filename, H_relax, Ht)
 
-            chis.append(chi)
+                chis.append((H_relax, Ht, chi))
 
-    return pd.DataFrame({
-        'H_relax': H_relax * np.ones_like(Hts),
-        'Ht': Hts,
-        'chi': chis,
-    })
+    return chis
 
 
 if __name__ == '__main__':
 
     # Assuming fields_hyst and mz are already defined
-    n_cycles = 1
-    H_relaxes = [0, 0.25, 0.5]*n_cycles
+    n_cycles = 16
+    H_relaxes = [0]*n_cycles
 
 
-    with mp.Pool(processes=3) as pool:
+    with mp.Pool(processes=mp.cpu_count()) as pool:
         results = pool.map(plot_loop, H_relaxes)
 
-    df_all = pd.concat(results, ignore_index=True)
-    df_all.to_csv(f'Susceptibility_ISING_{dim}_{n_cycles}.csv', index=False)
+    # flatten results
+    flat = [item for sublist in results for item in sublist]
 
+    # make dataframe
+    df_all = pd.DataFrame(flat, columns=["H_relax", "Ht", "chi"])
+    df_avg = (
+        df_all.groupby(["H_relax", "Ht"], as_index=False)
+        .agg({"chi": "mean"})
+    )
     fig = px.line(
-        df_all,
+        df_avg,
         x="Ht",
         y="chi",
-        color="H_relax",  # use H_relax to distinguish colors
+        color="H_relax",
         markers=True,
         labels={"Ht": "Ht (T)", "chi": "Susceptibility χ"},
         title="Susceptibility χ vs Ht for different H_relax"
     )
 
-    fig.write_html(f'Susceptibility_ISING_{dim}_{n_cycles}.html')
+    fig.write_html(f'Susceptibility_ISING_{dim}_{n_cycles}_{concentration}.html')
