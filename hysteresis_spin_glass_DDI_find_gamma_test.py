@@ -3,12 +3,13 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 import multiprocessing as mp
+import plotly.graph_objects as go
 
 Hmax = 15
 Hstep_coarse = 0.125
 Hstep_fine = 0.05
-Hfine1 = 2
-Hfine2 = -3
+Hfine1 = 10
+Hfine2 = -10
 fields = np.arange(Hmax,Hfine1,-1*Hstep_coarse,dtype=float)
 fields = np.append(fields,np.arange(Hfine1,Hfine2,-1*Hstep_fine,dtype=float))
 fields = np.append(fields,np.arange(Hfine2,-1*Hmax,-1*Hstep_coarse,dtype=float))
@@ -32,8 +33,8 @@ mu = 7
 mu_B = 0.057883817555
 gamma_0 = 0.0005000000237487257
 
-concentration = 95
-dim = 4
+concentration = 45
+dim = 10
 
 def plot_loop(gamma):
     with state.State(f"input/LHF_DDI_glass_14_{concentration}_tunnel_{dim}.cfg") as p_state:
@@ -152,26 +153,42 @@ if __name__ == '__main__':
     # spin_concentrations = [95, 15]
     #gamma_0 = 0.0005000000237487257
     # gammas = [gamma_0, gamma_0 * pow(mu_B, 1), gamma_0 * pow(mu_B, 2)]
-    gammas = [gamma_0 * pow(mu_B, n) for n in [0, 0.1, 0.2, 0.3, 0.4, 0.5, 2, 5, 10]]
+    # gammas = [gamma_0 * pow(mu_B, n) for n in [0, 0.1, 0.2, 0.3, 0.4, 0.5, 2, 5, 10]]
+    gammas = [0.000282, 0.000376, 0.00012, 0.0005, 0.0007, 0.001, 0.002, 0.00001]
+    gammas = np.sort(gammas)
 
-    # Apparently gamma = 2.7e-1 is too big, but 2.7e-1*(mu_B)^4 is too small
 
     # Assuming fields_hyst and mz are already defined
 
-    plt.figure(figsize=(8, 5))
+    # plt.figure(figsize=(8, 5))
+    fig = go.Figure()
 
-    with mp.Pool(processes=5) as pool:
+    with mp.Pool(processes=8) as pool:
         results = pool.map(plot_loop, gammas)
 
     for fields, m_per_spin, gamma1 in results:
         print(gamma1)
-        plt.plot(fields, m_per_spin, label=str(gamma1))
+        # plt.plot(fields, m_per_spin, label=str(gamma1))
+        fig.add_trace(go.Scatter(x=fields, y=m_per_spin, mode='lines', name=f'γ={gamma1}'))
 
-    plt.xlabel('Magnetic Field')
-    plt.ylabel('Avg Magnetization Per Spin')
-    plt.title('Hysteresis Curve')
-    plt.grid(True)
-    plt.legend()
-    plt.tight_layout()
-    #plt.show()
-    plt.savefig(f'hysteresis_loop_tunnel_{4}_gamma_new.png')
+    # plt.xlabel('Magnetic Field')
+    # plt.ylabel('Avg Magnetization Per Spin')
+    # plt.title('Hysteresis Curve')
+    # plt.grid(True)
+    # plt.legend()
+    # plt.tight_layout()
+    # #plt.show()
+    # plt.savefig(f'hysteresis_loop_tunnel_{4}_gamma_new.png')
+
+    fig.update_layout(
+        title='Hysteresis Curve',
+        xaxis_title='Magnetic Field',
+        yaxis_title='Avg Magnetization Per Spin',
+        legend_title='Gamma',
+        template='plotly_white',
+        width=800,
+        height=500
+    )
+
+    # To save as HTML (for interactive viewing in browser)
+    fig.write_html(f'hysteresis_loop_tunnel_{dim}_gamma_new_concentration_{concentration}.html')

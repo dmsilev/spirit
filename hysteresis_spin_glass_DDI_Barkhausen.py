@@ -6,11 +6,11 @@ import multiprocessing as mp
 import plotly.graph_objects as go
 import pandas as pd
 
-Hmax = 20
+Hmax = 5
 Hstep_coarse = 0.125
 Hstep_fine = 0.01
-Hfine1 = 15
-Hfine2 = -15
+Hfine1 = 4
+Hfine2 = -4
 
 fields = np.arange(Hmax,Hfine1,-1*Hstep_coarse,dtype=float)
 fields = np.append(fields,np.arange(Hfine1,Hfine2,-1*Hstep_fine,dtype=float))
@@ -18,7 +18,7 @@ fields = np.append(fields,np.arange(Hfine2,-1*Hmax,-1*Hstep_coarse,dtype=float))
 fields_hyst = np.append(fields,-1*fields)
 # fields_hyst = np.tile(fields_hyst, n_cycles)
 
-Ht = 1  #Transverse field
+Ht = 2  #Transverse field
 
 output_interval = 2 #Interval at which spin configuration files are saved
 fn = "dipolar_arr"
@@ -29,7 +29,7 @@ converge_threshold = 0.01 #Fractional change in magnetization between steps to a
 converge_max = 20 #Maximum number of steps to take before moving on
 mu = 7
 dim = 10
-concentration = 55
+concentration = 45
 
 #with state.State("input/test_Ising_largelattice.cfg") as p_state:
 
@@ -45,7 +45,8 @@ def plot_loop(concentration):
     #    write_config(p_state,prefix)
         parameters.mc.set_metropolis_cone(p_state,use_cone=True,cone_angle=30,use_adaptive_cone=True)
         parameters.mc.set_metropolis_spinflip(p_state,False)
-        parameters.mc.set_tunneling_gamma(p_state, tunneling_gamma=0.00012)
+        # parameters.mc.set_tunneling_gamma(p_state, tunneling_gamma=0.00012)
+        parameters.mc.set_tunneling_gamma(p_state, tunneling_gamma=0.0003)
 
         #We'll evaluate convergence after enough Metropolis steps to hit each site twitce on average
         parameters.mc.set_iterations(p_state,iterations_per_step*types.size,iterations_per_step*types.size)
@@ -92,16 +93,26 @@ def plot_loop(concentration):
             #Calculate the DDI field components, and then send to the SPIRIT engine. DDI interaction calculations are in Oe, SPIRIT
             #uses T, so need to scale accordingly.
             #Get the field at each spin. Only care about DDI due to z-spin so use spins[:,2]
-            DDI_field_x = np.matmul(DDI_interaction_x,spins[:,2]) *7/1e4
-            DDI_field_y = np.matmul(DDI_interaction_y,spins[:,2]) *7/1e4
-            DDI_field_z = np.matmul(DDI_interaction_z,spins[:,2]) *7/1e4
+            DDI_field_x_from_z = np.matmul(DDI_interaction_x, spins[:, 2]) * 7 / 1e4  # V_xz
+            DDI_field_y_from_z = np.matmul(DDI_interaction_y, spins[:, 2]) * 7 / 1e4  # V_yz
+            DDI_field_z_from_z = np.matmul(DDI_interaction_z, spins[:, 2]) * 7 / 1e4  # V_zz
 
-            #Pass into SPIRIT
-            DDI_field_interleave = np.ravel(np.column_stack((DDI_field_x,DDI_field_y,DDI_field_z)))
+            # DDI_field_x_from_y = np.matmul(DDI_interaction_x, spins[:, 1]) * 7 / 1e4 #V_xy
+            # DDI_field_y_from_y = np.matmul(DDI_interaction_y, spins[:, 1]) * 7 / 1e4 #V_yy
+            DDI_field_z_from_y = np.matmul(DDI_interaction_y.T, spins[:, 1]) * 7 / 1e4  # V_zy
+
+            # DDI_field_x_from_x = np.matmul(DDI_interaction_x, spins[:, 0]) * 7 / 1e4 #V_xx
+            # DDI_field_y_from_x = np.matmul(DDI_interaction_y, spins[:, 0]) * 7 / 1e4 #V_yx
+            DDI_field_z_from_x = np.matmul(DDI_interaction_x.T, spins[:, 0]) * 7 / 1e4  # V_zx
+
+            DDI_field_z_total = DDI_field_z_from_z + DDI_field_z_from_y + DDI_field_z_from_x
+
+            # Pass into SPIRIT
+            DDI_field_interleave = np.ravel(np.column_stack((DDI_field_x_from_z, DDI_field_y_from_z, DDI_field_z_total)))
             system.set_DDI_field(p_state,n_atoms=nos,ddi_fields=DDI_field_interleave)
             # print(f"X: mean: {np.mean(DDI_field_x):.4e} Std. Dev: {np.std(DDI_field_x):.4e}")
             # print(f"Y: mean: {np.mean(DDI_field_y):.4e} Std. Dev: {np.std(DDI_field_y):.4e}")
-            print(f"Z: mean: {np.mean(DDI_field_z):.4e} Std. Dev: {np.std(DDI_field_z):.4e}")
+            # print(f"Z: mean: {np.mean(DDI_field_z):.4e} Std. Dev: {np.std(DDI_field_z):.4e}")
 
             #Check convergence, same as old hysteresis_loop. But METHOD_MC now uses tunnelling since we set tunnel flag to 1 in cfg files
             for j in range(converge_max) :
@@ -119,12 +130,12 @@ def plot_loop(concentration):
                         break
 
 
-            # if output_interval>0: #Output the spin configuration.
-            #     #TODO: Use system.get_spin_directions to pull the configuration array into Python, and then save out as an npy or similar
-            #     if (i % output_interval == 0):
-            #         tag = prefix+f'N{i:d}_H{Hz:.3f}'
-            #         name = "output/" + tag + "_Image-00_Spins_0.ovf" #To match the internally-generated naming format
-            #         io.image_write(p_state,filename=name)
+            if output_interval>0: #Output the spin configuration.
+                #TODO: Use system.get_spin_directions to pull the configuration array into Python, and then save out as an npy or similar
+                if (i % output_interval == 0):
+                    tag = prefix+f'N{i:d}_H{Hz:.3f}'
+                    name = "output/" + tag + "_Image-00_Spins_0.ovf" #To match the internally-generated naming format
+                    io.image_write(p_state,filename=name)
 
             #Using tunneling, so set tunneling flag in cfg files to 1
             if i == 0:
@@ -158,12 +169,12 @@ def plot_loop(concentration):
 
 if __name__ == '__main__':
     # spin_concentrations = [85, 95, 15, 25, 35, 45, 55, 65, 75]
-    n_cycles = 8
-    spin_concentrations = [55] * n_cycles
+    n_cycles = 18
+    spin_concentrations = [concentration] * n_cycles
 
     # Assuming fields_hyst and mz are already defined
 
-    with mp.Pool(processes=mp.cpu_count()) as pool:
+    with mp.Pool(processes=6) as pool:
         results = pool.map(plot_loop, spin_concentrations)
 
     df_all = pd.concat(results, ignore_index=True)
