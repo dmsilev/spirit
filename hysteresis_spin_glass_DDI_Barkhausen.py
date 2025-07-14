@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 import multiprocessing as mp
 import plotly.graph_objects as go
 import pandas as pd
+from tqdm import tqdm
+import time
+from datetime import timedelta
 
 Hmax = 5
 Hstep_coarse = 0.125
@@ -18,7 +21,7 @@ fields = np.append(fields,np.arange(Hfine2,-1*Hmax,-1*Hstep_coarse,dtype=float))
 fields_hyst = np.append(fields,-1*fields)
 # fields_hyst = np.tile(fields_hyst, n_cycles)
 
-Ht = 2  #Transverse field
+Ht = 1  #Transverse field
 
 output_interval = 2 #Interval at which spin configuration files are saved
 fn = "dipolar_arr"
@@ -30,15 +33,15 @@ converge_max = 20 #Maximum number of steps to take before moving on
 mu = 7
 dim = 10
 concentration = 45
-
+gamma = 0.0003
 #with state.State("input/test_Ising_largelattice.cfg") as p_state:
 
 
 def plot_loop(concentration):
-    with state.State(f"input/LHF_DDI_glass_14_{concentration}_tunnel_{dim}.cfg") as p_state:
+    with (state.State(f"input/LHF_DDI_glass_14_{concentration}_tunnel_{dim}.cfg", quiet = True) as p_state):
         types = geometry.get_atom_types(p_state)
         nos = types.size
-        print(f"Sites: {nos}  Spins: {nos+np.sum(types)}")
+        tqdm.write(f"Sites: {nos}  Spins: {nos+np.sum(types)}")
         locs = geometry.get_positions(p_state)
         np.savetxt("output/"+prefix+"atom_locs.csv",locs,delimiter=",")
         np.savetxt("output/"+prefix+"atom_types.csv",types,delimiter=",")
@@ -46,7 +49,7 @@ def plot_loop(concentration):
         parameters.mc.set_metropolis_cone(p_state,use_cone=True,cone_angle=30,use_adaptive_cone=True)
         parameters.mc.set_metropolis_spinflip(p_state,False)
         # parameters.mc.set_tunneling_gamma(p_state, tunneling_gamma=0.00012)
-        parameters.mc.set_tunneling_gamma(p_state, tunneling_gamma=0.0003)
+        parameters.mc.set_tunneling_gamma(p_state, tunneling_gamma=gamma)
 
         #We'll evaluate convergence after enough Metropolis steps to hit each site twitce on average
         parameters.mc.set_iterations(p_state,iterations_per_step*types.size,iterations_per_step*types.size)
@@ -62,19 +65,27 @@ def plot_loop(concentration):
         path_arr_y = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn +"_y.npy")
         path_arr_z = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn +"_z.npy")
 
-        if os.path.exists(path_arr_x) and os.path.exists(path_arr_y) and os.path.exists(path_arr_z):
-            print("loading DDI interaction data.")
+        path_arr_x_x = os.path.join(f"dipolar_interaction_matrices_reordered_x/{dim}_{dim}_{dim}/", fn + "_x_x.npy")
+        path_arr_y_x = os.path.join(f"dipolar_interaction_matrices_reordered_x/{dim}_{dim}_{dim}/", fn + "_y_x.npy")
+
+        if os.path.exists(path_arr_x) and os.path.exists(path_arr_y) and os.path.exists(path_arr_z) and os.path.exists(path_arr_x_x) and os.path.exists(path_arr_y_x):
+            tqdm.write("loading DDI interaction data.")
             DDI_interaction_x = np.load(path_arr_x)
             DDI_interaction_y = np.load(path_arr_y)
             DDI_interaction_z = np.load(path_arr_z)
+
+            DDI_interaction_x_x = np.load(path_arr_x_x)
+            DDI_interaction_y_x = np.load(path_arr_y_x)
+
         else:
-            print("DDI files not found")
+            tqdm.write("DDI files not found")
     #        break
 
     #Check that the size of the DDI arrays matches NOS (extracted from the types array above).
-        if (nos != DDI_interaction_x.shape[0]) or (nos != DDI_interaction_y.shape[0]) or (nos != DDI_interaction_z.shape[0]) :
-            print("Size mismatch between DDI and spin array")
-    #        break
+        if (nos != DDI_interaction_x.shape[0]) or (nos != DDI_interaction_y.shape[0]) or (nos != DDI_interaction_z.shape[0]) or (nos != DDI_interaction_x_x.shape[0]) or (nos != DDI_interaction_y_x.shape[0]) \
+            or (nos != DDI_interaction_x.shape[1]) or (nos != DDI_interaction_y.shape[1]) or (nos != DDI_interaction_z.shape[1]) or (nos != DDI_interaction_x_x.shape[1]) or (nos != DDI_interaction_y_x.shape[1]):
+            tqdm.write("Size mismatch between DDI and spin array")
+            # break
     #Filter out any vacant sites
         vacancies_idx = np.where(types == -1)
         locs[:,0][vacancies_idx] = 0
@@ -82,7 +93,7 @@ def plot_loop(concentration):
         locs[:,2][vacancies_idx] = 0
 
         for i,Hz in enumerate(fields_hyst):
-            print(f'{Hz:.3f}', concentration)
+            tqdm.write(f'Hz: {Hz:.3f}, Concentration: {concentration}')
 
             Hmag = np.sqrt(Hz*Hz + Ht*Ht)
             hamiltonian.set_field(p_state,Hmag,(Ht,0,Hz)) #Inside set_field, the vector is normalized, so we don't have to do that here
@@ -97,22 +108,26 @@ def plot_loop(concentration):
             DDI_field_y_from_z = np.matmul(DDI_interaction_y, spins[:, 2]) * 7 / 1e4  # V_yz
             DDI_field_z_from_z = np.matmul(DDI_interaction_z, spins[:, 2]) * 7 / 1e4  # V_zz
 
-            # DDI_field_x_from_y = np.matmul(DDI_interaction_x, spins[:, 1]) * 7 / 1e4 #V_xy
-            # DDI_field_y_from_y = np.matmul(DDI_interaction_y, spins[:, 1]) * 7 / 1e4 #V_yy
-            DDI_field_z_from_y = np.matmul(DDI_interaction_y.T, spins[:, 1]) * 7 / 1e4  # V_zy
 
-            # DDI_field_x_from_x = np.matmul(DDI_interaction_x, spins[:, 0]) * 7 / 1e4 #V_xx
-            # DDI_field_y_from_x = np.matmul(DDI_interaction_y, spins[:, 0]) * 7 / 1e4 #V_yx
+            DDI_field_z_from_y = np.matmul(DDI_interaction_y.T, spins[:, 1]) * 7 / 1e4  # V_zy
             DDI_field_z_from_x = np.matmul(DDI_interaction_x.T, spins[:, 0]) * 7 / 1e4  # V_zx
 
+            DDI_field_x_from_x = np.matmul(DDI_interaction_x_x, spins[:, 0]) * 7 / 1e4
+            DDI_field_y_from_x = np.matmul(DDI_interaction_y_x, spins[:, 0]) * 7 / 1e4
+
+            DDI_field_x_from_y = np.matmul(DDI_interaction_y_x.T, spins[:, 1]) * 7 / 1e4
+
             DDI_field_z_total = DDI_field_z_from_z + DDI_field_z_from_y + DDI_field_z_from_x
+            DDI_field_x_total = DDI_field_x_from_z + DDI_field_x_from_x + DDI_field_x_from_y
+            DDI_field_y_total = DDI_field_y_from_z + DDI_field_y_from_x
+
 
             # Pass into SPIRIT
-            DDI_field_interleave = np.ravel(np.column_stack((DDI_field_x_from_z, DDI_field_y_from_z, DDI_field_z_total)))
+            DDI_field_interleave = np.ravel(np.column_stack((DDI_field_x_total, DDI_field_y_total, DDI_field_z_total)))
             system.set_DDI_field(p_state,n_atoms=nos,ddi_fields=DDI_field_interleave)
-            # print(f"X: mean: {np.mean(DDI_field_x):.4e} Std. Dev: {np.std(DDI_field_x):.4e}")
-            # print(f"Y: mean: {np.mean(DDI_field_y):.4e} Std. Dev: {np.std(DDI_field_y):.4e}")
-            # print(f"Z: mean: {np.mean(DDI_field_z):.4e} Std. Dev: {np.std(DDI_field_z):.4e}")
+            # tqdm.write(f"X: mean: {np.mean(DDI_field_x):.4e} Std. Dev: {np.std(DDI_field_x):.4e}")
+            # tqdm.write(f"Y: mean: {np.mean(DDI_field_y):.4e} Std. Dev: {np.std(DDI_field_y):.4e}")
+            # tqdm.write(f"Z: mean: {np.mean(DDI_field_z):.4e} Std. Dev: {np.std(DDI_field_z):.4e}")
 
             #Check convergence, same as old hysteresis_loop. But METHOD_MC now uses tunnelling since we set tunnel flag to 1 in cfg files
             for j in range(converge_max) :
@@ -125,7 +140,7 @@ def plot_loop(concentration):
                     m_temp = quantities.get_magnetization(p_state)[2]
      #               ratio = abs((m_temp-m_prev)/m_prev)
                     ratio = abs((m_temp-m_prev)/mu)
-                    print(f"Iteration: {j:d}, Convergence: {ratio:.4f}, M_z: {m_temp:.4f}")
+                    tqdm.write(f"Iteration: {j:d}, Convergence: {ratio:.4f}, M_z: {m_temp:.4f}")
                     if ratio<converge_threshold :
                         break
 
@@ -159,50 +174,56 @@ def plot_loop(concentration):
     )
     return df
 
-    # df.to_csv(f"Bfield_Mz_{concentration}_{dim}_{dim}_{dim}_Ht_{Ht}_ncycles_{n_cycles}.csv", index=False)
-    #
-    #     # plt.plot(fields_hyst, mz[:, 0] /concentration, label=str(concentration))
-    #     # print(parameters.mc.get_tunneling_gamma(p_state))
-    # return fields_hyst, mz[:, 0] /concentration, concentration
-
 
 
 if __name__ == '__main__':
+    start = time.time()  # ⏱️ Start timing
     # spin_concentrations = [85, 95, 15, 25, 35, 45, 55, 65, 75]
     n_cycles = 18
     spin_concentrations = [concentration] * n_cycles
 
     # Assuming fields_hyst and mz are already defined
 
+    #~7hrs for 18 cycles 6 cpus
     with mp.Pool(processes=6) as pool:
-        results = pool.map(plot_loop, spin_concentrations)
-
-    df_all = pd.concat(results, ignore_index=True)
-    df_all.to_csv(f"Bfield_Mz_{concentration}_{dim}_{dim}_{dim}_Ht_{Ht}_ncycles_{n_cycles}.csv", index=False)
-
-    # Create an interactive figure
-    fig = go.Figure()
-
-    for fields, m_per_spin, conc in results:
-        fig.add_trace(
-            go.Scatter(
-                x=fields,
-                y=m_per_spin,
-                mode='lines',
-                name=str(conc)
+        # results = pool.map(plot_loop, spin_concentrations)
+        # imap returns an iterator, allowing tqdm to track progress
+        results = list(
+            tqdm(
+                pool.imap(plot_loop, spin_concentrations),
+                total=len(spin_concentrations),
             )
         )
 
-        # Set layout
-        fig.update_layout(
-            title="Hysteresis Curve",
-            xaxis_title="Magnetic Field",
-            yaxis_title="Avg Magnetization Per Spin",
-            legend_title="Concentration",
-            template="plotly_white",
-            width=800,
-            height=500,
-        )
+    df_all = pd.concat(results, ignore_index=True)
+    df_all.to_csv(f"Bfield_Mz_{concentration}_{dim}_{dim}_{dim}_Ht_{Ht}_ncycles_{n_cycles}_with_Vx_gamma_{gamma}.csv", index=False)
 
-        fig.write_html(f'Bfield_Mz_{conc}_{dim}_{dim}_{dim}_Ht_{Ht}_ncycles_{n_cycles}.html')
+    # # Create an interactive figure
+    # fig = go.Figure()
+    #
+    # for fields, m_per_spin, conc in results:
+    #     fig.add_trace(
+    #         go.Scatter(
+    #             x=fields,
+    #             y=m_per_spin,
+    #             mode='lines',
+    #             name=str(conc)
+    #         )
+    #     )
+    #
+    #     # Set layout
+    #     fig.update_layout(
+    #         title="Hysteresis Curve",
+    #         xaxis_title="Magnetic Field",
+    #         yaxis_title="Avg Magnetization Per Spin",
+    #         legend_title="Concentration",
+    #         template="plotly_white",
+    #         width=800,
+    #         height=500,
+    #     )
+    #
+    #     fig.write_html(f'Bfield_Mz_{conc}_{dim}_{dim}_{dim}_Ht_{Ht}_ncycles_{n_cycles}_with_Vx_gamma_{gamma}.html')
         # plt.savefig(f'hysteresis_loop_tunnel_{dim}_new_gamma.png')
+        # ⏱️ End timing
+    end = time.time()
+    tqdm.write(f"Total execution time: {end - start:.2f} seconds")

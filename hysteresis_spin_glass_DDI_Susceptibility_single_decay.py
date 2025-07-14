@@ -8,6 +8,8 @@ import plotly.express as px
 import pandas as pd
 from scipy.stats import linregress
 from tqdm import tqdm
+import time
+from datetime import timedelta
 
 def plot_loop(H_relax):
     iterations_per_step = 1  #Spin glass, Take this many Metropolis iterationss per lattice site between each check for convergence
@@ -24,18 +26,18 @@ def plot_loop(H_relax):
     path_arr_z = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn + "_z.npy")
 
     if os.path.exists(path_arr_x) and os.path.exists(path_arr_y) and os.path.exists(path_arr_z):
-        print("loading DDI interaction data.")
+        tqdm.write("loading DDI interaction data.")
         DDI_interaction_x = np.load(path_arr_x)
         DDI_interaction_y = np.load(path_arr_y)
         DDI_interaction_z = np.load(path_arr_z)
     else:
-        print("DDI files not found")
+        tqdm.write("DDI files not found")
     #        break
 
-    with state.State(f"input/LHF_DDI_glass_14_{concentration}_tunnel_{dim}.cfg") as p_state:
+    with state.State(f"input/LHF_DDI_glass_14_{concentration}_tunnel_{dim}.cfg", quiet = True) as p_state:
         types = geometry.get_atom_types(p_state)
         nos = types.size
-        # print(f"Sites: {nos}  Spins: {nos+np.sum(types)}")
+        # tqdm.write(f"Sites: {nos}  Spins: {nos+np.sum(types)}")
         locs = geometry.get_positions(p_state)
         np.savetxt("output/"+prefix+"atom_locs.csv",locs,delimiter=",")
         np.savetxt("output/"+prefix+"atom_types.csv",types,delimiter=",")
@@ -67,24 +69,27 @@ def plot_loop(H_relax):
 
         Hz = 0.0
         Hmax = 4
-        H_step = 0.1 #Coarser step since there susceptibility not changing much, and also to reduce number of times simulation is ran to simulate spin glass where spins are not flipped that often
+        # H_step = 0.1 #Coarser step since there susceptibility not changing much, and also to reduce number of times simulation is ran to simulate spin glass where spins are not flipped that often
         H_step_fine = 0.01
-        # Boundary between coarse and fine steps
-        H_switch = H_relax + H_step
+        # # Boundary between coarse and fine steps
+        # H_switch = H_relax + H_step
+        #
+        # # Coarse part: from H_max to just above H_switch
+        # H_coarse = np.arange(Hmax, H_switch - 1e-10, -H_step)
+        #
+        # # Fine part: from just below H_switch to around H_relax
+        # H_fine = np.arange(H_switch, H_relax - 1e-10, -H_step_fine)
+        #
+        # # Concatenate both
+        # Hts = np.concatenate([H_coarse, H_fine])
 
-        # Coarse part: from H_max to just above H_switch
-        H_coarse = np.arange(Hmax, H_switch - 1e-10, -H_step)
-
-        # Fine part: from just below H_switch to around H_relax
-        H_fine = np.arange(H_switch, H_relax - 1e-10, -H_step_fine)
-
-        # Concatenate both
-        Hts = np.concatenate([H_coarse, H_fine])
-
+        # Hts = np.arange(Hmax, 0, -H_step)
+        Hts = [H_relax]
         chis = []
 
         for i,Ht in enumerate(Hts):
-            print(f'Ht: {Ht:.3f}', concentration)
+            # print(f'Ht: {Ht:.3f}', concentration)
+            # tqdm.write(f'Ht: {Ht:.3f}, concentration: {concentration}')
 
             Hmag = np.sqrt(Hz*Hz + Ht*Ht)
             hamiltonian.set_field(p_state,Hmag,(Ht,0,Hz)) #Inside set_field, the vector is normalized, so we don't have to do that here
@@ -118,19 +123,10 @@ def plot_loop(H_relax):
 
             ####Less strict convergence check conditions to simulate spin glass not relaxing to equilibrium state
             # converge_threshold = 0.01 #Fractional change in magnetization between steps to accept convergence
-            converge_threshold = 1  #Spin glass, Fractional change in magnetization between steps to accept convergence
+            # converge_threshold = 1  #Spin glass, Fractional change in magnetization between steps to accept convergence
+            converge_threshold = 0.0000000000000000001 #So to fix number of iterations per unit of Ht moved
             # converge_max = 20 #Maximum number of steps to take before moving on
-            converge_max = 1  # Maximum number of steps to take before moving on
-
-            #For relaxing at H_relax
-            if Ht == H_relax:
-                converge_threshold = 0.01
-                converge_max = 20
-                # iterations_per_step = 1
-                # parameters.mc.set_iterations(p_state, iterations_per_step * types.size,
-                #                              iterations_per_step * types.size)
-
-
+            converge_max = 125  # Maximum number of steps to take before moving on
 
             #Check convergence, same as old hysteresis_loop. But METHOD_MC now uses tunnelling since we set tunnel flag to 1 in cfg files
 
@@ -145,27 +141,29 @@ def plot_loop(H_relax):
      #               ratio = abs((m_temp-m_prev)/m_prev)
                     ratio = abs((m_temp-m_prev)/mu)
 
-                    # print(f"Iteration: {j:d}, Convergence: {ratio:.4f}, M_z: {m_temp:.4f}")
+                    tqdm.write(f"Iteration: {j:d}, Convergence: {ratio:.4f}, M_z: {m_temp:.4f}")
                     if ratio<converge_threshold :
-                        # print(f'++++++++++++++++++++++++++++++++Number of iterations needed for ratio<convergence_threshold: {j}++++++++++++++++++++++++++++++++')
+                        # tqdm.write(f'++++++++++++++++++++++++++++++++Number of iterations needed for ratio<convergence_threshold: {j}++++++++++++++++++++++++++++++++')
                         break
 
-            if output_interval>0: #Output the spin configuration.
-                #TODO: Use system.get_spin_directions to pull the configuration array into Python, and then save out as an npy or similar
-                if (i % output_interval == 0):
-                    tag = prefix+f'N{i:d}_H{Ht:.3f}'
-                    name = "output/" + tag + "_Image-00_Spins_0.ovf" #To match the internally-generated naming format
-                    io.image_write(p_state,filename=name)
+            # if output_interval>0: #Output the spin configuration.
+            #     #TODO: Use system.get_spin_directions to pull the configuration array into Python, and then save out as an npy or similar
+            #     if (i % output_interval == 0):
+            #         tag = prefix+f'N{i:d}_H{Ht:.3f}'
+            #         name = "output/" + tag + "_Image-00_Spins_0.ovf" #To match the internally-generated naming format
+            #         io.image_write(p_state,filename=name)
 
             # Check susceptibility every 4th Ht datapoint
-            if i%4 ==0 or Ht <= H_relax + H_step:
+            # if i%4 ==0 or Ht <= H_relax + H_step:
+            # if i % 1 == 0:
+
                 # filename = f'state_configs/p_state_{Ht:.3f}_Hrelax_{H_relax:.3f}.ovf'
                 # io.image_write(p_state, filename)
                 # chi = get_susceptibility(filename, H_relax, Ht)
 
                 Bfields = np.arange(0, 0.03, 0.01)
                 for i, Hz in enumerate(Bfields):
-                    # print(f'Hz: {Hz:.3f}', concentration)
+                    # tqdm.write(f'Hz: {Hz:.3f}', concentration)
 
                     Hmag = np.sqrt(Hz * Hz + Ht * Ht)
                     hamiltonian.set_field(p_state, Hmag, (Ht, 0,
@@ -196,25 +194,26 @@ def plot_loop(H_relax):
                     # Pass into SPIRIT
                     DDI_field_interleave = np.ravel(np.column_stack((DDI_field_x_from_z, DDI_field_y_from_z, DDI_field_z_total)))
                     system.set_DDI_field(p_state, n_atoms=nos, ddi_fields=DDI_field_interleave)
-                    # print(f"X: mean: {np.mean(DDI_field_x_from_z):.4e} Std. Dev: {np.std(DDI_field_x_from_z):.4e}")
-                    # print(f"Y: mean: {np.mean(DDI_field_y_from_z):.4e} Std. Dev: {np.std(DDI_field_y_from_z):.4e}")
-                    # print(f"Z: mean: {np.mean(DDI_field_z_from_z):.4e} Std. Dev: {np.std(DDI_field_z_from_z):.4e}")
+                    # tqdm.write(f"X: mean: {np.mean(DDI_field_x_from_z):.4e} Std. Dev: {np.std(DDI_field_x_from_z):.4e}")
+                    # tqdm.write(f"Y: mean: {np.mean(DDI_field_y_from_z):.4e} Std. Dev: {np.std(DDI_field_y_from_z):.4e}")
+                    # tqdm.write(f"Z: mean: {np.mean(DDI_field_z_from_z):.4e} Std. Dev: {np.std(DDI_field_z_from_z):.4e}")
 
-                    converge_threshold = 0.01  # Fractional change in magnetization between steps to accept convergence
-                    converge_max = 5  # Maximum number of steps to take before moving on
+                    # converge_threshold = 0.01  # Fractional change in magnetization between steps to accept convergence
+                    converge_threshold = 0.000000000000000000000000000001
+                    converge_max_sus = 2  # Maximum number of steps to take before moving on
                     # Check convergence, same as old hysteresis_loop. But METHOD_MC now uses tunnelling since we set tunnel flag to 1 in cfg files
-                    for j in range(converge_max):
+                    for k in range(converge_max_sus):
                         simulation.start(p_state, simulation.METHOD_MC,
                                          single_shot=False)  # solver_type=simulation.MC_ALGORITHM_METROPOLIS
                         simulation.stop(p_state)
-                        if j == 0:
+                        if k == 0:
                             m_temp = quantities.get_magnetization(p_state)[2]
                         else:
                             m_prev = m_temp
                             m_temp = quantities.get_magnetization(p_state)[2]
                             #               ratio = abs((m_temp-m_prev)/m_prev)
                             ratio = abs((m_temp - m_prev) / mu)
-                            print(f"########Susceptibility measurement: Iteration: {j:d}, Convergence: {ratio:.4f}, M_z: {m_temp:.4f}")
+                            tqdm.write(f"########Susceptibility measurement: Iteration: {k:d}, Convergence: {ratio:.4f}, M_z: {m_temp:.4f}")
                             if ratio < converge_threshold:
                                 break
 
@@ -226,47 +225,52 @@ def plot_loop(H_relax):
                 # Fit a straight line
                 chi, intercept, r_value, p_value, std_err = linregress(Bfields, mz[:, 0])
 
-                chis.append((H_relax, Ht, chi))
+                chis.append((chi, j))
 
     return chis
 
 
 if __name__ == '__main__':
+    start_time = time.time()  # Start timer
     mp.set_start_method("spawn", force=True)
-
-    n_cycles = 30
-    H_relaxes = [0,3,6]*n_cycles
+    H_relax = 2
+    n_cycles = 240
+    H_relaxes = [H_relax]*n_cycles
 
     dim = 10
     concentration = 15
 
-    with mp.Pool(processes=6) as pool:
-        results = pool.map(plot_loop, H_relaxes)
-        # results = list(tqdm(pool.imap_unordered(plot_loop, H_relaxes), total=len(H_relaxes)))
-    # flatten results
-    flat = [item for sublist in results for item in sublist]
+    #~12 minutes per cycle
+    with mp.Pool(processes=mp.cpu_count()) as pool:
+        # results = pool.map(plot_loop, H_relaxes)
+        results = list(tqdm(pool.imap_unordered(plot_loop, H_relaxes), total=len(H_relaxes)))
+    # results is a list of lists of (Ht, chi, j) tuples from all processes
+    flat = [item for sublist in results for item in sublist]  # flatten nested list
 
-    # make dataframe
-    df_all = pd.DataFrame(flat, columns=["H_relax", "Ht", "chi"])
-    # Calculate mean and standard deviation
-    df_avg = (
-        df_all.groupby(["H_relax", "Ht"], as_index=False)
-        .agg(chi_mean=("chi", "mean"), chi_std=("chi", "std"))  # <-- Add std here
+    # Create DataFrame
+    df = pd.DataFrame(flat, columns=["chi", "j"])
+
+    df.to_csv(f'MCS_Susceptibility_{dim}_{n_cycles}_{concentration}_anisotropy_0.7.csv', index=False)
+
+    # Group by j and compute mean and std of chi
+    df_avg = df.groupby("j", as_index=False).agg(
+        chi_mean=("chi", "mean"),
+        chi_std=("chi", "std")
     )
 
-    # Plot with error bars
+    # Plot with Plotly
     fig = px.line(
         df_avg,
-        x="Ht",
+        x="j",
         y="chi_mean",
-        error_y="chi_std",  # <-- Add error bars
-        color="H_relax",
+        error_y="chi_std",
         markers=True,
-        labels={
-            "Ht": "Ht (T)",
-            "chi_mean": "Susceptibility χ",
-            "H_relax": "H_relax (T)",
-        },
-        title="Susceptibility χ vs Ht for different H_relax"
+        labels={"j": "Iteration Count (j)", "chi_mean": "Average Susceptibility χ"},
+        title=f"Average Susceptibility χ vs Iteration Count j at Ht = {H_relax}"
     )
-    fig.write_html(f'Susceptibility_{dim}_{n_cycles}_{concentration}_anisotropy_0.7.html')
+    fig.write_html(f'MCS_Susceptibility_{dim}_{n_cycles}_{concentration}_anisotropy_0.7.html')
+
+    # Timer
+    end_time = time.time()
+    elapsed_time = timedelta(seconds=end_time - start_time)
+    tqdm.write(f"\n✅ Finished in {str(elapsed_time)} (hh:mm:ss)")

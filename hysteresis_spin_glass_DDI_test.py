@@ -57,19 +57,27 @@ def plot_loop(concentration):
         path_arr_y = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn +"_y.npy")
         path_arr_z = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn +"_z.npy")
 
-        if os.path.exists(path_arr_x) and os.path.exists(path_arr_y) and os.path.exists(path_arr_z):
+        path_arr_x_x = os.path.join(f"dipolar_interaction_matrices_reordered_x/{dim}_{dim}_{dim}/", fn +"_x_x.npy")
+        path_arr_y_x = os.path.join(f"dipolar_interaction_matrices_reordered_x/{dim}_{dim}_{dim}/", fn +"_y_x.npy")
+
+        if os.path.exists(path_arr_x) and os.path.exists(path_arr_y) and os.path.exists(path_arr_z) and os.path.exists(path_arr_x_x) and os.path.exists(path_arr_y_x):
             print("loading DDI interaction data.")
             DDI_interaction_x = np.load(path_arr_x)
             DDI_interaction_y = np.load(path_arr_y)
             DDI_interaction_z = np.load(path_arr_z)
+            DDI_interaction_x_x = np.load(path_arr_x_x)
+            DDI_interaction_y_x = np.load(path_arr_y_x)
+
+
         else:
             print("DDI files not found")
-    #        break
+            break
 
     #Check that the size of the DDI arrays matches NOS (extracted from the types array above).
-        if (nos != DDI_interaction_x.shape[0]) or (nos != DDI_interaction_y.shape[0]) or (nos != DDI_interaction_z.shape[0]) :
+        if (nos != DDI_interaction_x.shape[0]) or (nos != DDI_interaction_y.shape[0]) or (nos != DDI_interaction_z.shape[0]) or (nos != DDI_interaction_x_x.shape[0]) or (nos != DDI_interaction_y_x.shape[0]) :
             print("Size mismatch between DDI and spin array")
-    #        break
+            break
+
     #Filter out any vacant sites
         vacancies_idx = np.where(types == -1)
         locs[:,0][vacancies_idx] = 0
@@ -91,6 +99,10 @@ def plot_loop(concentration):
             DDI_field_x = np.matmul(DDI_interaction_x,spins[:,2]) *7/1e4
             DDI_field_y = np.matmul(DDI_interaction_y,spins[:,2]) *7/1e4
             DDI_field_z = np.matmul(DDI_interaction_z,spins[:,2]) *7/1e4
+
+            DDI_field_x_x = np.matmul(DDI_interaction_x_x,spins[:,0]) *7/1e4
+            DDI_field_y_x = np.matmul(DDI_interaction_y_x,spins[:,0]) *7/1e4
+
 
             #Pass into SPIRIT
             DDI_field_interleave = np.ravel(np.column_stack((DDI_field_x,DDI_field_y,DDI_field_z)))
