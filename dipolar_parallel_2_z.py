@@ -37,7 +37,7 @@ DIPOLAR_PREFACTOR_LIHO = mu_0_4pi * g_L * mu_B * C_zz
 TOL_DEFAULT = 1e-5
 
 cpu_count = cpu_count()
-
+# cpu_count = 1
 ########################################################################
 # self term
 
@@ -56,7 +56,7 @@ def self_term(field_axis,
 
 	ret = 0.
 
-	if field_axis == 0:
+	if field_axis == 2:
 		ret = (4. * (ewald_factor**3)) / (3. * np.sqrt(np.pi))
 
 	return ret
@@ -112,9 +112,9 @@ def real_space_sum(r_ij,
 				r_n = r_ij + n_vec
 				r_n_mag = np.linalg.norm(r_n)
 
-				term = r_n[0] * r_n[field_axis] * c_fun(r_n_mag, ewald_factor)
+				term = r_n[2] * r_n[field_axis] * c_fun(r_n_mag, ewald_factor)
 
-				if field_axis == 0:
+				if field_axis == 2:
 					term = term - b_fun(r_n_mag, ewald_factor)
 
 				ret = ret + term
@@ -156,7 +156,7 @@ def k_space_sum(r_ij,
 				k_vec = np.array([i, j, k]) * recip_lattice_dims
 				k_mag = np.linalg.norm(k_vec)
 
-				term = -1. * np.exp(-1.*(k_mag**2)/(4.*ewald_factor**2)) * (k_vec[0] * k_vec[field_axis]) * np.cos(np.dot(k_vec, r_ij)) / (k_mag**2)
+				term = -1. * np.exp(-1.*(k_mag**2)/(4.*ewald_factor**2)) * (k_vec[2] * k_vec[field_axis]) * np.cos(np.dot(k_vec, r_ij)) / (k_mag**2)
 				
 				ret = ret + term
 
@@ -277,18 +277,7 @@ def processing_dipolar(params, const):
 						self_int_flag=self_int_flag,
 						dipolar_prefactor=dipolar_prefactor,
 						n_spins = n_spins)
-		
-		# print(f"DDI_value: {DDI_value:.2e}")
-		#print(DDI_value)
-		#dipolar_arr[i,j] = DDI_value
 
-		#if i == 18 and j == 108:
-		#	print(f"DDI_value: {DDI_value:.2e}, dipolar_arr[{i}][{j}]: {X[i][j]}")
-		
-		#if i != j:
-			#dipolar_arr[j,i] = DDI_value
-	# else:
-	# 	DDI_value = 0
 
 	return DDI_value
 ########################################################################
@@ -327,26 +316,12 @@ def calculate_dipolar_arr(pos_arr,
 	n_truncate_r = int(np.ceil( np.sqrt(-1. * np.log(tol)) / (ewald_factor * lattice_dims[0]) ))
 	n_truncate_k = int(np.ceil( (ewald_factor * lattice_dims[0]) * np.sqrt(-1. * np.log(tol)) / (np.pi) ))
 
-	
-	#dipolar_arr = np.empty((n_spins, n_spins))
-	#print(f"init dipolar_arr.shape: {dipolar_arr.shape}")
 
-
-	# X_shape =(n_spins, n_spins)
-	# X = Array('d', n_spins*n_spins)
-	# X_np = np.frombuffer(X).reshape(X_shape)
-	# from console_writer import ConsoleWriter
-	#cw = ConsoleWriter()
-	#cw.init_prog_loop(n_spins*n_spins)
 
 	dipolar_arr = np.zeros((n_spins, n_spins))
 
-
-	i = range(n_spins)
-	j = range(n_spins)
-
-	print(n_spins)
-	print(len(i))
+	# i = range(n_spins)
+	# j = range(n_spins)
 
 	constants = (field_axis,
 		lattice_dims,
@@ -359,10 +334,10 @@ def calculate_dipolar_arr(pos_arr,
 		pos_arr,
 		n_spins)
 
-	paramlist = list(itertools.product(i, j))
+	# paramlist = list(itertools.product(i, j))
 
-	#print(paramlist)
-	#print(len(paramlist))
+	# matrix is symmetric--only calculate upper-triangle
+	paramlist = [(i, j) for i in range(n_spins) for j in range(i, n_spins)]
 
 	with Pool() as pool:
 		# Create a partial function with the constants
@@ -373,103 +348,21 @@ def calculate_dipolar_arr(pos_arr,
 			tqdm(pool.imap(func, paramlist), total=len(paramlist), desc="Processing")
 		)
 
-	#cw.close()
-	#print(f"final dipolar_arr: {dipolar_arr_result}")
+	# Fill upper dipolar_arr, mirror to the lower triangle
+	for (i, j), value in zip(paramlist, dipolar_arr_result):
+		dipolar_arr[i, j] = value
+		if i != j:
+			dipolar_arr[j, i] = value
 
-	#print(f"dipolar_arr[18][108]: {dipolar_arr[18][108]}")
-	#print(dipolar_arr)
-
-	dipolar_arr = np.array(dipolar_arr_result).reshape(n_spins,n_spins)
-	print(dipolar_arr)
-	print(dipolar_arr.shape)
+	# dipolar_arr = np.array(dipolar_arr_result).reshape(n_spins,n_spins)
 
 
-	dipolar_arr_summed = np.sum(dipolar_arr, axis = 1)
-	print(dipolar_arr_summed.size)
-	# hist, bins = np.histogram(dipolar_arr, bins=10)
-	# fig, ax = plt.subplots()
+	# dipolar_arr_summed = np.sum(dipolar_arr, axis = 1) #????
 
-	# ax.plot(bins[:-1], hist)
-	# plt.show()
-	# plt.close(fig)
-
-	return dipolar_arr_summed
-########################################################################
-
-# bare dipolar interaction
-def dipolar_bare(r_ij, 
-				field_axis,
-				dipolar_prefactor=DIPOLAR_PREFACTOR_LIHO):
-	"""
-	calculates the bare dipolar interaction between two spins (no image spins)
-
-	args:
-		r_ij: displacement vector in (nm)
-		field_axis: which field component to calculate (0 == x, 1 == y, 2 == z)
-		dipolar_prefactor: dipolar prefactor = (mu_0 / 4pi) g_L mu_B C_zz in (G nm^3)
-
-	returns:
-		dipolar_int: strength of the dipolar interaction in (G)
-	"""
-
-	r_mag = np.linalg.norm(r_ij)
-
-	ret = 3. * r_ij[0]*r_ij[field_axis]
-
-	if field_axis == 0:
-		ret = ret - (r_mag**2)
-
-	return dipolar_prefactor * ret / (r_mag**5)
-########################################################################
-def calculate_dipolar_arr_bare(pos_arr, 
-							field_axis,
-							lattice_dims=None,
-							dipolar_prefactor=DIPOLAR_PREFACTOR_LIHO,
-							tol=TOL_DEFAULT):
-	"""
-	calculates the dipolar interaction between each spin
-
-	args:
-		pos_arr: (n x 3) array of spin locations (nm)
-		field_axis: which field component to calculate (0 == x, 1 == y, 2 == z)
-		lattice_dims: dimensions of full lattice (not just single unit cell) in (nm)
-		dipolar_prefactor: dipolar prefactor = (mu_0 / 4pi) g_L mu_B C_zz in (G nm^3)
-		tol: tolerance to use for terminating Ewald summation
-
-	returns:
-		dipolar_arr: (n x n) array of dipolar interactions between spins in (G)
-	"""
-
-	n_spins = pos_arr.shape[0]
-
-	dipolar_arr = np.zeros((n_spins, n_spins))
-
-	cw = ConsoleWriter()
-	cw.init_prog_loop(n_spins*n_spins)
-
-	for i in range(n_spins):
-		for j in range(n_spins):
-
-			cw.update_prog_loop("complete...")
-
-			if j <= i:
-				continue
-
-			r_ij = pos_arr[j] - pos_arr[i]
-
-			dipolar_int = dipolar_bare(r_ij=r_ij, 
-								field_axis=field_axis,
-								dipolar_prefactor=dipolar_prefactor)
-
-			print(f"dipolar_int: {dipolar_int:.2e}")
-			# print(dipolar_int)
-
-			dipolar_arr[i][j] = dipolar_int
-			dipolar_arr[j][i] = dipolar_int
-
-	cw.close()
-
+	# return dipolar_arr_summed
 	return dipolar_arr
+########################################################################
+
 ########################################################################
 class ConsoleWriter:
 	"""Object that will print display messages to console while over-writing previous message"""

@@ -11,12 +11,14 @@ from tqdm import tqdm
 import time
 from datetime import timedelta
 
-def plot_loop(H_relax):
+def plot_loop(gamma):
     iterations_per_step = 1  #Spin glass, Take this many Metropolis iterationss per lattice site between each check for convergence
     output_interval = 20  # Interval at which spin configuration files are saved
     fn = "dipolar_arr"
     prefix = "DDI_exp_14_G0p00005_Ht10p0"
 
+    H_relax = 1.2
+    relax_steps = 200
     mu = 7
     dim = 10
     concentration = 20
@@ -45,7 +47,7 @@ def plot_loop(H_relax):
         parameters.mc.set_metropolis_cone(p_state,use_cone=True,cone_angle=30,use_adaptive_cone=True)
         parameters.mc.set_metropolis_spinflip(p_state,False)
 
-        parameters.mc.set_tunneling_gamma(p_state, tunneling_gamma=0.0001)
+        parameters.mc.set_tunneling_gamma(p_state, tunneling_gamma=gamma)
 
         #We'll evaluate convergence after enough Metropolis steps to hit each site twitce on average
         parameters.mc.set_iterations(p_state,iterations_per_step*types.size,iterations_per_step*types.size)
@@ -73,6 +75,7 @@ def plot_loop(H_relax):
         for i,Ht in enumerate(Hts):
             # print(f'Ht: {Ht:.3f}', concentration)
             tqdm.write(f'Ht: {Ht:.3f}, concentration: {concentration}')
+            tqdm.write(str(gamma))
 
             Hmag = Ht
             hamiltonian.set_field(p_state,Hmag,(Ht,0,0)) #Inside set_field, the vector is normalized, so we don't have to do that here
@@ -110,7 +113,7 @@ def plot_loop(H_relax):
             #For relaxing at H_relax
             if abs(Ht - H_relax) < 1e-6:
                 tqdm.write(f"~~~~~~~~~~~~~~~~~~~~~~~Changed converge_max~~~~~~~~~~~~~~~~~~~~~~~")
-                converge_max = 50
+                converge_max = relax_steps
                 # iterations_per_step = 1
                 # parameters.mc.set_iterations(p_state, iterations_per_step * types.size,
                 #                              iterations_per_step * types.size)
@@ -121,6 +124,7 @@ def plot_loop(H_relax):
             #Check convergence, same as old hysteresis_loop. But METHOD_MC now uses tunnelling since we set tunnel flag to 1 in cfg files
 
             for j in range(converge_max):
+                tqdm.write(f'No of iterations: {j+1}')
                 simulation.start(p_state, simulation.METHOD_MC, single_shot=False) #solver_type=simulation.MC_ALGORITHM_METROPOLIS
                 simulation.stop(p_state)
      #            if j == 0:
@@ -222,48 +226,59 @@ if __name__ == '__main__':
     start_time = time.time()  # Start timer
     mp.set_start_method("spawn", force=True)
 
-    n_cycles = 640
-    H_relax = 1.2
-    H_relaxes = [H_relax]*n_cycles
-
+    # Parameters
+    n_cycles = 160
     dim = 10
     concentration = 20
+    H_relax = 1.2
+    relax_steps = 200
+    H_relaxes = [H_relax] * n_cycles
+    gammas_to_test = [0.0001, 0.0002]
 
+    all_results = []
 
-    with mp.Pool(processes=mp.cpu_count()) as pool:
-        # results = pool.map(plot_loop, H_relaxes)
-        results = list(tqdm(pool.imap_unordered(plot_loop, H_relaxes), total=len(H_relaxes)))
-    # flatten results
-    flat = [item for sublist in results for item in sublist]
+    # Loop over different gamma values
+    for gamma in gammas_to_test:
+        gammas = [gamma] * n_cycles  # gamma list for each cycle
 
-    # make dataframe
-    df_all = pd.DataFrame(flat, columns=["H_relax", "Ht", "chi"])
+        with mp.Pool(processes=mp.cpu_count()) as pool:
+            results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=n_cycles))
 
-    # df_all.to_csv(f'Susceptibility_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{50}.csv')
-    # Calculate mean and standard deviation
+        # Flatten and tag with gamma
+        flat = [item + (gamma,) for sublist in results for item in sublist]
+
+        all_results.extend(flat)
+
+    # Make DataFrame
+    df_all = pd.DataFrame(all_results, columns=["H_relax", "Ht", "chi", "gamma"])
+
+    # Save raw data
+    df_all.to_csv(f'Susceptibility_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_relax_step_{relax_steps}_gammas.csv',
+                  index=False)
+
+    # Average over cycles
     df_avg = (
-        df_all.groupby(["H_relax", "Ht"], as_index=False)
-        .agg(chi_mean=("chi", "mean"), chi_std=("chi", "std"))  # <-- Add std here
+        df_all.groupby(["gamma", "Ht"], as_index=False)
+        .agg(chi_mean=("chi", "mean"), chi_std=("chi", "std"))
     )
 
-    df_all.to_csv(f'Susceptibility_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_Hrelax_{H_relax}_relax_step_{50}_reference.csv')
-
-    # Plot with error bars
+    # Plot
     fig = px.line(
         df_avg,
         x="Ht",
         y="chi_mean",
-        error_y="chi_std",  # <-- Add error bars
-        color="H_relax",
+        error_y="chi_std",
+        color="gamma",  # Different color per gamma
         markers=True,
         labels={
             "Ht": "Ht (T)",
             "chi_mean": "Susceptibility χ",
-            "H_relax": "H_relax (T)",
+            "gamma": "Gamma",
         },
-        title="Susceptibility χ vs Ht for different H_relax"
+        title="Susceptibility χ vs Ht for different Γ (gamma)"
     )
-    fig.write_html(f'Susceptibility_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_Hrelax_{H_relax}_relax_step_{50}_reference.html')
+
+    fig.write_html(f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{relax_steps}_gammas.html')
 
     # Timer
     end_time = time.time()

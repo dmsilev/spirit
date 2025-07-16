@@ -9,7 +9,7 @@ import pandas as pd
 from tqdm import tqdm
 
 dim = 10
-concentration = 15
+concentration = 20
 
 def plot_loop(H_relax):
     Hmax = 10

@@ -9,11 +9,11 @@ import pandas as pd
 from tqdm import tqdm
 
 dim = 10
-concentration = 15
+concentration = 20
 
 def plot_loop(H_relax):
-    Hmax = 10
-    H_step = 1
+    Hmax = 1.2
+    H_step = 0.1
     iterations_per_step = 1  # Take this many Metropolis iterationss per lattice site between each check for convergence
     # Now is Ht transverse fields, max is  = 1T
 
@@ -23,7 +23,7 @@ def plot_loop(H_relax):
     # fields_hyst = np.append(fields,-1*fields)
     # fields_hyst = np.tile(fields_hyst, n_cycles)
 
-    output_interval = 1  # Interval at which spin configuration files are saved
+    output_interval = 20  # Interval at which spin configuration files are saved
     fn = "dipolar_arr"
     prefix = "DDI_exp_14_G0p00005_Ht10p0"
 

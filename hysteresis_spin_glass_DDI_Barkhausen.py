@@ -11,7 +11,7 @@ from datetime import timedelta
 
 Hmax = 5
 Hstep_coarse = 0.125
-Hstep_fine = 0.01
+Hstep_fine = 0.005
 Hfine1 = 4
 Hfine2 = -4
 
@@ -21,9 +21,9 @@ fields = np.append(fields,np.arange(Hfine2,-1*Hmax,-1*Hstep_coarse,dtype=float))
 fields_hyst = np.append(fields,-1*fields)
 # fields_hyst = np.tile(fields_hyst, n_cycles)
 
-Ht = 1  #Transverse field
+Ht = 0  #Transverse field
 
-output_interval = 2 #Interval at which spin configuration files are saved
+output_interval = 5 #Interval at which spin configuration files are saved
 fn = "dipolar_arr"
 prefix = "DDI_exp_14_G0p00005_Ht10p0"
 
@@ -33,7 +33,9 @@ converge_max = 20 #Maximum number of steps to take before moving on
 mu = 7
 dim = 10
 concentration = 45
-gamma = 0.0003
+
+#0.0003 is around the max, hysteresis curve almost closing
+gamma = 0.00012
 #with state.State("input/test_Ising_largelattice.cfg") as p_state:
 
 
@@ -78,8 +80,7 @@ def plot_loop(concentration):
             DDI_interaction_y_x = np.load(path_arr_y_x)
 
         else:
-            tqdm.write("DDI files not found")
-    #        break
+            raise FileNotFoundError("Expected DDI data files are missing.")
 
     #Check that the size of the DDI arrays matches NOS (extracted from the types array above).
         if (nos != DDI_interaction_x.shape[0]) or (nos != DDI_interaction_y.shape[0]) or (nos != DDI_interaction_z.shape[0]) or (nos != DDI_interaction_x_x.shape[0]) or (nos != DDI_interaction_y_x.shape[0]) \
@@ -100,6 +101,8 @@ def plot_loop(concentration):
 
             spins = system.get_spin_directions(p_state)  #Get the current spin state to update the DDI fields from the Ewald sum
             spins[:,2][vacancies_idx] = 0   #For LHF, we only care about Sz, but zero out the moments for vacancy site
+            spins[:, 1][vacancies_idx] = 0
+            spins[:, 0][vacancies_idx] = 0
 
             #Calculate the DDI field components, and then send to the SPIRIT engine. DDI interaction calculations are in Oe, SPIRIT
             #uses T, so need to scale accordingly.
@@ -179,13 +182,13 @@ def plot_loop(concentration):
 if __name__ == '__main__':
     start = time.time()  # ⏱️ Start timing
     # spin_concentrations = [85, 95, 15, 25, 35, 45, 55, 65, 75]
-    n_cycles = 18
+    n_cycles = 7
     spin_concentrations = [concentration] * n_cycles
 
     # Assuming fields_hyst and mz are already defined
 
     #~7hrs for 18 cycles 6 cpus
-    with mp.Pool(processes=6) as pool:
+    with mp.Pool(processes=7) as pool:
         # results = pool.map(plot_loop, spin_concentrations)
         # imap returns an iterator, allowing tqdm to track progress
         results = list(

@@ -54,11 +54,11 @@ def run_DDI_calculation(fn, atom_locs_file = "", lattice_dims_file=""): # Filter
 		np.save(folder + fn + "_DDI_x.npy", DDI_interaction_x)
 		np.save(folder + fn + "_DDI_y.npy", DDI_interaction_y)
 		# np.save(fn + "_DDI_z.npy", DDI_interaction_z)
-
 		# pd.DataFrame({"DDI_x": DDI_interaction_x, "DDI_y": DDI_interaction_y, "DDI_Z": DDI_interaction_z}).to_csv(os.path.join(path_data, path_arr), index=False, sep = ',')
 
 		return DDI_interaction_x, DDI_interaction_y  # , DDI_interaction_z
 
 
 if __name__ == "__main__":
-    run_DDI_calculation("LHF_10", "LHF_10_HPC_atom_locs.csv", "LHF_10_HPC_lattice_dims.csv")
+	dim = 4
+	run_DDI_calculation(f"LHF_{dim}", f"LHF_{dim}_HPC_atom_locs.csv", f"LHF_{dim}_HPC_lattice_dims.csv")

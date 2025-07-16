@@ -36,8 +36,8 @@ DIPOLAR_PREFACTOR_LIHO = mu_0_4pi * g_L * mu_B * C_zz
 # tolerance to terminate Ewald summation
 TOL_DEFAULT = 1e-5
 
-cpu_count = cpu_count()
-
+# cpu_count = cpu_count()
+cpu_count = 1
 ########################################################################
 # self term
 
@@ -354,7 +354,7 @@ def calculate_dipolar_arr(pos_arr,
 		if i != j:
 			dipolar_arr[j, i] = value
 
-	dipolar_arr = np.array(dipolar_arr_result).reshape(n_spins,n_spins)
+	# dipolar_arr = np.array(dipolar_arr_result).reshape(n_spins,n_spins)
 
 
 	# dipolar_arr_summed = np.sum(dipolar_arr, axis = 1) #????

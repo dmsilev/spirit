@@ -19,7 +19,7 @@ def plot_loop(H_relax):
 
     mu = 7
     dim = 10
-    concentration = 15
+    concentration = 20
     path_arr_x = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/",
                               fn + "_x.npy")  # fn = dipolar_arr
     path_arr_y = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn + "_y.npy")
@@ -67,21 +67,6 @@ def plot_loop(H_relax):
         locs[:,1][vacancies_idx] = 0
         locs[:,2][vacancies_idx] = 0
 
-        Hz = 0.0
-        Hmax = 4
-        # H_step = 0.1 #Coarser step since there susceptibility not changing much, and also to reduce number of times simulation is ran to simulate spin glass where spins are not flipped that often
-        H_step_fine = 0.01
-        # # Boundary between coarse and fine steps
-        # H_switch = H_relax + H_step
-        #
-        # # Coarse part: from H_max to just above H_switch
-        # H_coarse = np.arange(Hmax, H_switch - 1e-10, -H_step)
-        #
-        # # Fine part: from just below H_switch to around H_relax
-        # H_fine = np.arange(H_switch, H_relax - 1e-10, -H_step_fine)
-        #
-        # # Concatenate both
-        # Hts = np.concatenate([H_coarse, H_fine])
 
         # Hts = np.arange(Hmax, 0, -H_step)
         Hts = [H_relax]
@@ -91,8 +76,8 @@ def plot_loop(H_relax):
             # print(f'Ht: {Ht:.3f}', concentration)
             # tqdm.write(f'Ht: {Ht:.3f}, concentration: {concentration}')
 
-            Hmag = np.sqrt(Hz*Hz + Ht*Ht)
-            hamiltonian.set_field(p_state,Hmag,(Ht,0,Hz)) #Inside set_field, the vector is normalized, so we don't have to do that here
+            Hmag = Ht
+            hamiltonian.set_field(p_state,Hmag,(Ht,0,0)) #Inside set_field, the vector is normalized, so we don't have to do that here
 
             spins = system.get_spin_directions(p_state)  #Get the current spin state to update the DDI fields from the Ewald sum
             spins[:,2][vacancies_idx] = 0   #For LHF, we only care about Sz, but zero out the moments for vacancy site
@@ -126,7 +111,7 @@ def plot_loop(H_relax):
             # converge_threshold = 1  #Spin glass, Fractional change in magnetization between steps to accept convergence
             converge_threshold = 0.0000000000000000001 #So to fix number of iterations per unit of Ht moved
             # converge_max = 20 #Maximum number of steps to take before moving on
-            converge_max = 125  # Maximum number of steps to take before moving on
+            converge_max = 35  # Maximum number of steps to take before moving on
 
             #Check convergence, same as old hysteresis_loop. But METHOD_MC now uses tunnelling since we set tunnel flag to 1 in cfg files
 
@@ -161,7 +146,13 @@ def plot_loop(H_relax):
                 # io.image_write(p_state, filename)
                 # chi = get_susceptibility(filename, H_relax, Ht)
 
-                Bfields = np.arange(0, 0.03, 0.01)
+                # Define both options
+                Bfields_positive = np.arange(0, 0.3, 0.1)
+                Bfields_negative = np.arange(0, -0.3, -0.1)
+
+                # Randomly choose one, to avoid always polarising spins in one direction
+                Bfields = Bfields_positive if np.random.rand() < 0.5 else Bfields_negative
+
                 for i, Hz in enumerate(Bfields):
                     # tqdm.write(f'Hz: {Hz:.3f}', concentration)
 
@@ -169,10 +160,10 @@ def plot_loop(H_relax):
                     hamiltonian.set_field(p_state, Hmag, (Ht, 0,
                                                             Hz))  # Inside set_field, the vector is normalized, so we don't have to do that here
 
-                    spins = system.get_spin_directions(
-                        p_state)  # Get the current spin p_state to update the DDI fields from the Ewald sum
-                    spins[:, 2][
-                        vacancies_idx] = 0  # For LHF, we only care about Sz, but zero out the moments for vacancy site
+                    spins = system.get_spin_directions(p_state)  # Get the current spin p_state to update the DDI fields from the Ewald sum
+                    spins[:, 2][vacancies_idx] = 0  # For LHF, we only care about Sz, but zero out the moments for vacancy site
+                    spins[:, 1][vacancies_idx] = 0
+                    spins[:, 0][vacancies_idx] = 0
 
                     # Calculate the DDI field components, and then send to the SPIRIT engine. DDI interaction calculations are in Oe, SPIRIT
                     # uses T, so need to scale accordingly.
@@ -181,12 +172,8 @@ def plot_loop(H_relax):
                     DDI_field_y_from_z = np.matmul(DDI_interaction_y, spins[:, 2]) * 7 / 1e4  # V_yz
                     DDI_field_z_from_z = np.matmul(DDI_interaction_z, spins[:, 2]) * 7 / 1e4  # V_zz
 
-                    # DDI_field_x_from_y = np.matmul(DDI_interaction_x, spins[:, 1]) * 7 / 1e4 #V_xy
-                    # DDI_field_y_from_y = np.matmul(DDI_interaction_y, spins[:, 1]) * 7 / 1e4 #V_yy
                     DDI_field_z_from_y = np.matmul(DDI_interaction_y.T, spins[:, 1]) * 7 / 1e4  # V_zy
 
-                    # DDI_field_x_from_x = np.matmul(DDI_interaction_x, spins[:, 0]) * 7 / 1e4 #V_xx
-                    # DDI_field_y_from_x = np.matmul(DDI_interaction_y, spins[:, 0]) * 7 / 1e4 #V_yx
                     DDI_field_z_from_x = np.matmul(DDI_interaction_x.T, spins[:, 0]) * 7 / 1e4  # V_zx
 
                     DDI_field_z_total = DDI_field_z_from_z + DDI_field_z_from_y + DDI_field_z_from_x
@@ -200,25 +187,26 @@ def plot_loop(H_relax):
 
                     # converge_threshold = 0.01  # Fractional change in magnetization between steps to accept convergence
                     converge_threshold = 0.000000000000000000000000000001
-                    converge_max_sus = 2  # Maximum number of steps to take before moving on
+                    converge_max_sus = 1  # Maximum number of steps to take before moving on
                     # Check convergence, same as old hysteresis_loop. But METHOD_MC now uses tunnelling since we set tunnel flag to 1 in cfg files
-                    for k in range(converge_max_sus):
-                        simulation.start(p_state, simulation.METHOD_MC,
-                                         single_shot=False)  # solver_type=simulation.MC_ALGORITHM_METROPOLIS
-                        simulation.stop(p_state)
-                        if k == 0:
-                            m_temp = quantities.get_magnetization(p_state)[2]
-                        else:
-                            m_prev = m_temp
-                            m_temp = quantities.get_magnetization(p_state)[2]
-                            #               ratio = abs((m_temp-m_prev)/m_prev)
-                            ratio = abs((m_temp - m_prev) / mu)
-                            tqdm.write(f"########Susceptibility measurement: Iteration: {k:d}, Convergence: {ratio:.4f}, M_z: {m_temp:.4f}")
-                            if ratio < converge_threshold:
-                                break
+                    if i != 0: #i = 0 state already went through one round of convergence before entering susceptibility loop
+                        for k in range(converge_max_sus):
+                            simulation.start(p_state, simulation.METHOD_MC,
+                                             single_shot=False)  # solver_type=simulation.MC_ALGORITHM_METROPOLIS
+                            simulation.stop(p_state)
+                            if k == 0:
+                                m_temp = quantities.get_magnetization(p_state)[2]
+                            else:
+                                m_prev = m_temp
+                                m_temp = quantities.get_magnetization(p_state)[2]
+
+                                ratio = abs((m_temp - m_prev) / mu)
+                                tqdm.write(f"########Susceptibility measurement: Iteration: {k:d}, Convergence: {ratio:.4f}, M_z: {m_temp:.4f}")
+                                if ratio < converge_threshold:
+                                    break
 
                     if i == 0:
-                        mz = m_temp
+                        mz = quantities.get_magnetization(p_state)[2]
                     else:
                         mz = np.vstack((mz, m_temp))
 
@@ -233,12 +221,12 @@ def plot_loop(H_relax):
 if __name__ == '__main__':
     start_time = time.time()  # Start timer
     mp.set_start_method("spawn", force=True)
-    H_relax = 2
-    n_cycles = 240
+    H_relax = 1
+    n_cycles = 140
     H_relaxes = [H_relax]*n_cycles
 
     dim = 10
-    concentration = 15
+    concentration = 20
 
     #~12 minutes per cycle
     with mp.Pool(processes=mp.cpu_count()) as pool:
@@ -268,7 +256,7 @@ if __name__ == '__main__':
         labels={"j": "Iteration Count (j)", "chi_mean": "Average Susceptibility χ"},
         title=f"Average Susceptibility χ vs Iteration Count j at Ht = {H_relax}"
     )
-    fig.write_html(f'MCS_Susceptibility_{dim}_{n_cycles}_{concentration}_anisotropy_0.7.html')
+    fig.write_html(f'MCS_Susceptibility_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_easier_susceptibility.html')
 
     # Timer
     end_time = time.time()
