@@ -18,7 +18,7 @@ def plot_loop(H_relax):
     prefix = "DDI_exp_14_G0p00005_Ht10p0"
 
     mu = 7
-    dim = 10
+    dim = 4
     concentration = 20
     path_arr_x = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/",
                               fn + "_x.npy")  # fn = dipolar_arr
@@ -45,7 +45,7 @@ def plot_loop(H_relax):
         parameters.mc.set_metropolis_cone(p_state,use_cone=True,cone_angle=30,use_adaptive_cone=True)
         parameters.mc.set_metropolis_spinflip(p_state,False)
 
-        parameters.mc.set_tunneling_gamma(p_state, tunneling_gamma=0.0001)
+        parameters.mc.set_tunneling_gamma(p_state, tunneling_gamma=0.0002)
 
         #We'll evaluate convergence after enough Metropolis steps to hit each site twitce on average
         parameters.mc.set_iterations(p_state,iterations_per_step*types.size,iterations_per_step*types.size)
@@ -110,7 +110,7 @@ def plot_loop(H_relax):
             #For relaxing at H_relax
             if abs(Ht - H_relax) < 1e-6:
                 tqdm.write(f"~~~~~~~~~~~~~~~~~~~~~~~Changed converge_max~~~~~~~~~~~~~~~~~~~~~~~")
-                converge_max = 50
+                converge_max = 10000
                 # iterations_per_step = 1
                 # parameters.mc.set_iterations(p_state, iterations_per_step * types.size,
                 #                              iterations_per_step * types.size)
@@ -222,11 +222,11 @@ if __name__ == '__main__':
     start_time = time.time()  # Start timer
     mp.set_start_method("spawn", force=True)
 
-    n_cycles = 640
+    n_cycles = 160
     H_relax = 1.2
     H_relaxes = [H_relax]*n_cycles
 
-    dim = 10
+    dim = 4
     concentration = 20
 
 
@@ -246,7 +246,7 @@ if __name__ == '__main__':
         .agg(chi_mean=("chi", "mean"), chi_std=("chi", "std"))  # <-- Add std here
     )
 
-    df_all.to_csv(f'Susceptibility_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_Hrelax_{H_relax}_relax_step_{50}_reference.csv')
+    df_all.to_csv(f'Susceptibility_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_Hrelax_{H_relax}_relax_step_{50}.csv')
 
     # Plot with error bars
     fig = px.line(
@@ -263,7 +263,7 @@ if __name__ == '__main__':
         },
         title="Susceptibility χ vs Ht for different H_relax"
     )
-    fig.write_html(f'Susceptibility_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_Hrelax_{H_relax}_relax_step_{50}_reference.html')
+    fig.write_html(f'Susceptibility_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_Hrelax_{H_relax}_relax_step_{50}.html')
 
     # Timer
     end_time = time.time()

@@ -22,7 +22,7 @@ def plot_loop(gamma):
     mu = 7
     dim = 10
     concentration = 20
-    H_relax_steps = 400
+    H_relax_steps = 2
     path_arr_x = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/",
                               fn + "_x.npy")  # fn = dipolar_arr
     path_arr_y = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn + "_y.npy")
@@ -232,15 +232,15 @@ if __name__ == '__main__':
     start_time = time.time()  # Start timer
     mp.set_start_method("spawn", force=True)
 
-    n_cycles = 240
+    n_cycles = 160
     # H_relax = 1.2
     H_relax = 0.8
     # H_relax_steps = 200
-    H_relax_steps = 400
+    H_relax_steps = 2
     dim = 10
     concentration = 20
-    gamma = 0.000001
-    gammas = [gamma]
+
+    gammas = [0.0000001]
 
     all_results = []
 
@@ -261,7 +261,7 @@ if __name__ == '__main__':
 
     # Save raw data
     df_all.to_csv(
-        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_{-5}_relax_0.8_gamma_{gamma}.csv',
+        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_{-5}_relax_0.8_reff.csv',
         index=False)
 
     # Average over cycles, std divided by sqrt(n_cycles)
@@ -290,7 +290,7 @@ if __name__ == '__main__':
     )
 
     fig.write_html(
-        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_0.8_gamma_{gamma}.html')
+        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_0.8_reff.html')
 
     # Timer
     end_time = time.time()

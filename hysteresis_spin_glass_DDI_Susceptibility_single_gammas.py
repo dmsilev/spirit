@@ -227,7 +227,7 @@ if __name__ == '__main__':
     mp.set_start_method("spawn", force=True)
 
     # Parameters
-    n_cycles = 160
+    n_cycles = 240
     dim = 10
     concentration = 20
     H_relax = 1.2
@@ -253,7 +253,7 @@ if __name__ == '__main__':
     df_all = pd.DataFrame(all_results, columns=["H_relax", "Ht", "chi", "gamma"])
 
     # Save raw data
-    df_all.to_csv(f'Susceptibility_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_relax_step_{relax_steps}_gammas.csv',
+    df_all.to_csv(f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_relax_step_{relax_steps}_gammas.csv',
                   index=False)
 
     # Average over cycles
