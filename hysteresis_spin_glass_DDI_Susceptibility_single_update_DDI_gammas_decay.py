@@ -22,7 +22,7 @@ def plot_loop(gamma):
     mu = 7
     dim = 10
     concentration = 20
-    H_relax_steps = 400
+    H_relax_steps = 100
     path_arr_x = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/",
                               fn + "_x.npy")  # fn = dipolar_arr
     path_arr_y = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn + "_y.npy")
@@ -64,45 +64,17 @@ def plot_loop(gamma):
         locs[:,2][vacancies_idx] = 0
 
 
-        Hmax = 1.0
-        H_step = 0.1
-        # Sweep down to just above H_relax (exclusive)
-        Hts_above = np.arange(Hmax, H_relax - 1e-8, -H_step)
-        Hts_above = np.repeat(Hts_above, 2)  # repeat each value twice
+        Hts = [H_relax]*H_relax_steps
 
-        # Insert H_relax multiple times
-        H_relax_insert = np.full(H_relax_steps, H_relax)
+        chis = []
 
-        # Sweep just below H_relax down to just above 0 (inclusive)
-        Hts_below = np.arange(H_relax - H_step, -H_step, -H_step)
-        Hts_below = np.repeat(Hts_below, 2)  # repeat each value twice
-
-        # Combine all
-        Hts = np.concatenate((Hts_above, H_relax_insert, Hts_below))
-
-        # Sort in descending order
-        Hts = np.sort(Hts)[::-1]
-
-        # Get all unique values and the *first* indices where they occur
-        unique_vals, first_indices = np.unique(Hts, return_index=True)
-
-        # Compute the last index of each group: next first - 1
-        # For the last group, just use the last index in Hts
-        last_indices = np.append(first_indices[1:] - 1, len(Hts) - 1)
-
-        chis = {}
         count = 0
+        for k,Ht in enumerate(Hts):
+            count+=1
+            tqdm.write(f'Ht: {Ht:.3f}, count: {count} gamma: {gamma} concentration: {concentration}')
 
-        for i,Ht in enumerate(Hts):
 
-            if abs(Ht - H_relax) < 1e-6:
-                count += 1
-                tqdm.write(f'Ht: {Ht:.3f}, count: {count} concentration: {concentration}')
-            else:
-                tqdm.write(f'Ht: {Ht:.3f}, concentration: {concentration}')
-
-            Hmag = Ht
-            hamiltonian.set_field(p_state,Hmag,(Ht,0,0)) #Inside set_field, the vector is normalized, so we don't have to do that here
+            hamiltonian.set_field(p_state,H_relax,(H_relax,0,0)) #Inside set_field, the vector is normalized, so we don't have to do that here
 
             spins = system.get_spin_directions(p_state)  #Get the current spin state to update the DDI fields from the Ewald sum
             spins[:,2][vacancies_idx] = 0   #For LHF, we only care about Sz, but zero out the moments for vacancy site
@@ -155,146 +127,132 @@ def plot_loop(gamma):
             # Check susceptibility every 4th Ht datapoint
             # if i%4 ==0 or Ht <= H_relax + H_step:
             # if i % 1 == 0:
-            if i in last_indices: #Only calculate chi if it's last iteration of each unique Ht
+            # if i in last_indices: #Only calculate chi if it's last iteration of each unique Ht
 
-                # Define both options
-                Bfields_positive = np.arange(0, 0.3, 0.1)
-                Bfields_negative = np.arange(0, -0.3, -0.1)
+            # Define both options
+            Bfields_positive = np.arange(0, 0.3, 0.1)
+            Bfields_negative = np.arange(0, -0.3, -0.1)
 
-                # Randomly choose one, to avoid always polarising spins in one direction
-                Bfields = Bfields_positive if np.random.rand() < 0.5 else Bfields_negative
+            # Randomly choose one, to avoid always polarising spins in one direction
+            Bfields = Bfields_positive if np.random.rand() < 0.5 else Bfields_negative
 
-                for i, HzB in enumerate(Bfields):
-                    # tqdm.write(f'Hz: {Hz:.3f}', concentration)
+            for i, HzB in enumerate(Bfields):
+                # tqdm.write(f'Hz: {Hz:.3f}', concentration)
 
-                    Hmag = np.sqrt(HzB * HzB + Ht * Ht)
-                    hamiltonian.set_field(p_state, Hmag, (Ht, 0,
-                                                            HzB))  # Inside set_field, the vector is normalized, so we don't have to do that here
+                Hmag = np.sqrt(HzB * HzB + Ht * Ht)
+                hamiltonian.set_field(p_state, Hmag, (Ht, 0,
+                                                        HzB))  # Inside set_field, the vector is normalized, so we don't have to do that here
 
-                    spins = system.get_spin_directions(
-                        p_state)  # Get the current spin p_state to update the DDI fields from the Ewald sum
-                    spins[:, 2][vacancies_idx] = 0  # For LHF, we only care about Sz, but zero out the moments for vacancy site
-                    spins[:, 1][vacancies_idx] = 0
-                    spins[:, 0][vacancies_idx] = 0
+                spins = system.get_spin_directions(
+                    p_state)  # Get the current spin p_state to update the DDI fields from the Ewald sum
+                spins[:, 2][vacancies_idx] = 0  # For LHF, we only care about Sz, but zero out the moments for vacancy site
+                spins[:, 1][vacancies_idx] = 0
+                spins[:, 0][vacancies_idx] = 0
 
-                    # Calculate the DDI field components, and then send to the SPIRIT engine. DDI interaction calculations are in Oe, SPIRIT
-                    # uses T, so need to scale accordingly.
-                    # Get the field at each spin.
-                    DDI_field_x_from_z = np.matmul(DDI_interaction_x, spins[:, 2]) * 7 / 1e4  # V_xz
-                    DDI_field_y_from_z = np.matmul(DDI_interaction_y, spins[:, 2]) * 7 / 1e4  # V_yz
-                    DDI_field_z_from_z = np.matmul(DDI_interaction_z, spins[:, 2]) * 7 / 1e4  # V_zz
+                # Calculate the DDI field components, and then send to the SPIRIT engine. DDI interaction calculations are in Oe, SPIRIT
+                # uses T, so need to scale accordingly.
+                # Get the field at each spin.
+                DDI_field_x_from_z = np.matmul(DDI_interaction_x, spins[:, 2]) * 7 / 1e4  # V_xz
+                DDI_field_y_from_z = np.matmul(DDI_interaction_y, spins[:, 2]) * 7 / 1e4  # V_yz
+                DDI_field_z_from_z = np.matmul(DDI_interaction_z, spins[:, 2]) * 7 / 1e4  # V_zz
 
-                    DDI_field_z_from_y = np.matmul(DDI_interaction_y.T, spins[:, 1]) * 7 / 1e4  # V_zy
+                DDI_field_z_from_y = np.matmul(DDI_interaction_y.T, spins[:, 1]) * 7 / 1e4  # V_zy
 
-                    DDI_field_z_from_x = np.matmul(DDI_interaction_x.T, spins[:, 0]) * 7 / 1e4  # V_zx
+                DDI_field_z_from_x = np.matmul(DDI_interaction_x.T, spins[:, 0]) * 7 / 1e4  # V_zx
 
-                    DDI_field_z_total = DDI_field_z_from_z + DDI_field_z_from_y + DDI_field_z_from_x
+                DDI_field_z_total = DDI_field_z_from_z + DDI_field_z_from_y + DDI_field_z_from_x
 
-                    # Pass into SPIRIT
-                    DDI_field_interleave = np.ravel(np.column_stack((DDI_field_x_from_z, DDI_field_y_from_z, DDI_field_z_total)))
-                    system.set_DDI_field(p_state, n_atoms=nos, ddi_fields=DDI_field_interleave)
+                # Pass into SPIRIT
+                DDI_field_interleave = np.ravel(np.column_stack((DDI_field_x_from_z, DDI_field_y_from_z, DDI_field_z_total)))
+                system.set_DDI_field(p_state, n_atoms=nos, ddi_fields=DDI_field_interleave)
 
-                    # converge_threshold = 0.01  # Fractional change in magnetization between steps to accept convergence
-                    converge_threshold = 0.000000001
-                    converge_max = 1  # Maximum number of steps to take before moving on
-                    if i != 0:  # i = 0 state already went through one round of convergence before entering susceptibility loop
-                        # Check convergence, same as old hysteresis_loop. But METHOD_MC now uses tunnelling since we set tunnel flag to 1 in cfg files
-                        for j in range(converge_max):
-                            simulation.start(p_state, simulation.METHOD_MC,
-                                             single_shot=False)  # solver_type=simulation.MC_ALGORITHM_METROPOLIS
-                            simulation.stop(p_state)
-                            if j == 0:
-                                m_temp = quantities.get_magnetization(p_state)[2]
-                            else:
-                                m_prev = m_temp
-                                m_temp = quantities.get_magnetization(p_state)[2]
-                                #               ratio = abs((m_temp-m_prev)/m_prev)
-                                ratio = abs((m_temp - m_prev) / mu)
-                                tqdm.write(f"########Susceptibility measurement: Iteration: {j:d}, Convergence: {ratio:.4f}, M_z: {m_temp:.4f}")
-                                if ratio < converge_threshold:
-                                    break
+                # converge_threshold = 0.01  # Fractional change in magnetization between steps to accept convergence
+                converge_threshold = 0.000000001
+                converge_max = 1  # Maximum number of steps to take before moving on
+                if i != 0:  # i = 0 state already went through one round of convergence before entering susceptibility loop
+                    # Check convergence, same as old hysteresis_loop. But METHOD_MC now uses tunnelling since we set tunnel flag to 1 in cfg files
+                    for j in range(converge_max):
+                        simulation.start(p_state, simulation.METHOD_MC,
+                                         single_shot=False)  # solver_type=simulation.MC_ALGORITHM_METROPOLIS
+                        simulation.stop(p_state)
+                        if j == 0:
+                            m_temp = quantities.get_magnetization(p_state)[2]
+                        else:
+                            m_prev = m_temp
+                            m_temp = quantities.get_magnetization(p_state)[2]
+                            #               ratio = abs((m_temp-m_prev)/m_prev)
+                            ratio = abs((m_temp - m_prev) / mu)
+                            tqdm.write(f"########Susceptibility measurement: Iteration: {j:d}, Convergence: {ratio:.4f}, M_z: {m_temp:.4f}")
+                            if ratio < converge_threshold:
+                                break
 
-                    if i == 0:
-                        mz = quantities.get_magnetization(p_state)[2]
-                    else:
-                        mz = np.vstack((mz, m_temp))
+                if i == 0:
+                    mz = quantities.get_magnetization(p_state)[2]
+                else:
+                    mz = np.vstack((mz, m_temp))
 
-                # Fit a straight line
-                chi, intercept, r_value, p_value, std_err = linregress(Bfields, mz[:, 0])
+            # Fit a straight line
+            chi, intercept, r_value, p_value, std_err = linregress(Bfields, mz[:, 0])
 
 
-                chis[(H_relax, Ht)] = chi  # replaces existing entry with same key
+            chis.append((k, chi))
 
-    return chis
+    return pd.DataFrame(chis, columns=["i", "chi"]).assign(gamma=gamma)
 
 
 if __name__ == '__main__':
     start_time = time.time()  # Start timer
     mp.set_start_method("spawn", force=True)
 
-    n_cycles = 240
+    n_cycles = 88
     # H_relax = 1.2
     H_relax = 0.8
     # H_relax_steps = 200
-    H_relax_steps = 400
+    H_relax_steps = 100
     dim = 10
     concentration = 20
-    gamma = 0.000001
-    gammas = [gamma]
+    # gamma = 0.000001
+    gammas = [0.0001, 0.00001, 0.00005, 0.000001]*n_cycles
 
-    all_results = []
+    with mp.Pool(processes=mp.cpu_count()) as pool:
+        results = list(tqdm(pool.imap(plot_loop, gammas), total=len(gammas), desc="Running simulations"))
 
-    # Loop over different gamma values
-    for gamma in gammas:
-        gammas = [gamma] * n_cycles  # gamma list for each cycle
+    df_all = pd.concat(results, ignore_index=True)
+    df_all.to_csv(f"MCS_decay_gammas_dim_{dim}_with_SEM_errorbars.csv", index = False)
 
-        with mp.Pool(processes=mp.cpu_count()) as pool:
-            results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=n_cycles))
+    grouped = df_all.groupby(['gamma', 'i']).agg(
+        chi_mean=('chi', 'mean'),
+        chi_std=('chi', 'std')
+    ).reset_index()
 
-        # Flatten and tag with gamma
-        flat = [(round(k[0], 2), round(k[1], 2), v, gamma) for result in results for k, v in result.items()]
+    grouped['chi_sem'] = grouped['chi_std'] / (n_cycles ** 0.5)
 
-        all_results.extend(flat)
+    fig = go.Figure()
 
-    # Make DataFrame
-    df_all = pd.DataFrame(all_results, columns=["H_relax", "Ht", "chi", "gamma"])
+    unique_gammas = grouped['gamma'].unique()
+    for gamma in unique_gammas:
+        df_gamma = grouped[grouped['gamma'] == gamma]
 
-    # Save raw data
-    df_all.to_csv(
-        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_{-5}_relax_0.8_gamma_{gamma}.csv',
-        index=False)
+        fig.add_trace(go.Scatter(
+            x=df_gamma['i'],
+            y=df_gamma['chi_mean'],
+            mode='lines+markers',
+            name=f"γ = {gamma:.1e}",
+            error_y=dict(
+                type='data',
+                array=df_gamma['chi_sem'],
+                visible=True
+            )
+        ))
 
-    # Average over cycles, std divided by sqrt(n_cycles)
-    df_avg = (
-        df_all.groupby(["gamma", "Ht"], as_index=False)
-        .agg(
-            chi_mean=("chi", "mean"),
-            chi_std=("chi", lambda x: x.std(ddof=1) / np.sqrt(n_cycles))
-        )
+    fig.update_layout(
+        title="Average Susceptibility χ vs i for different γ (with SEM error bars)",
+        xaxis_title="MCS (step index i)",
+        yaxis_title="χ (chi)",
+        legend_title="Tunneling γ",
+        template="plotly_white",
+        width=900,
+        height=600
     )
 
-    # Plot
-    fig = px.line(
-        df_avg,
-        x="Ht",
-        y="chi_mean",
-        error_y="chi_std",
-        color="gamma",  # Different color per gamma
-        markers=True,
-        labels={
-            "Ht": "Ht (T)",
-            "chi_mean": "Susceptibility χ",
-            "gamma": "Gamma",
-        },
-        title="Susceptibility χ vs Ht for different Γ (gamma)"
-    )
-
-    fig.write_html(
-        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_0.8_gamma_{gamma}.html')
-
-    # Timer
-    end_time = time.time()
-    elapsed_time = timedelta(seconds=end_time - start_time)
-    tqdm.write(f"\n✅ Finished in {str(elapsed_time)} (hh:mm:ss)")
-
-    #2:31:36.733138 for 160 cycles 8 cpus, 10x10x10, H_relax_steps = 50
+    fig.write_html(f"MCS_decay_gammas_dim_{dim}_with_SEM_errorbars.html")

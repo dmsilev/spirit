@@ -80,15 +80,22 @@ def plot_loop(gamma):
         # Combine all
         Hts = np.concatenate((Hts_above, H_relax_insert, Hts_below))
 
+
         # Sort in descending order
         Hts = np.sort(Hts)[::-1]
 
+        Hts = np.round(Hts, decimals=3)
+        print('Hts', Hts, len(Hts))
+
         # Get all unique values and the *first* indices where they occur
         unique_vals, first_indices = np.unique(Hts, return_index=True)
+        print('first_indices', first_indices, len(first_indices))
+        print('unique_vals', unique_vals, len(unique_vals))
 
         # Compute the last index of each group: next first - 1
         # For the last group, just use the last index in Hts
-        last_indices = np.append(first_indices[1:] - 1, len(Hts) - 1)
+        last_indices = np.append(first_indices[:-1] - 1, len(Hts) - 1)
+        print('last indices:', last_indices)
 
         chis = {}
         count = 0
@@ -239,7 +246,7 @@ if __name__ == '__main__':
     H_relax_steps = 400
     dim = 10
     concentration = 20
-    gamma = 0.000001
+    gamma = 0.0001
     gammas = [gamma]
 
     all_results = []
