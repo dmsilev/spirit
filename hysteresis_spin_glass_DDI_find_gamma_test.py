@@ -5,38 +5,39 @@ import matplotlib.pyplot as plt
 import multiprocessing as mp
 import plotly.graph_objects as go
 
-Hmax = 15
-Hstep_coarse = 0.125
-Hstep_fine = 0.05
-Hfine1 = 10
-Hfine2 = -10
-fields = np.arange(Hmax,Hfine1,-1*Hstep_coarse,dtype=float)
-fields = np.append(fields,np.arange(Hfine1,Hfine2,-1*Hstep_fine,dtype=float))
-fields = np.append(fields,np.arange(Hfine2,-1*Hmax,-1*Hstep_coarse,dtype=float))
-fields_hyst = np.append(fields,-1*fields)
 
-Ht = 10.0  #Transverse field
-
-output_interval = 2 #Interval at which spin configuration files are saved
-fn = "dipolar_arr"
-prefix = "DDI_exp_14_G0p00005_Ht10p0"
-
-iterations_per_step = 1 #Take this many Metropolis iterationss per lattice site between each check for convergence
-converge_threshold = 0.01 #Fractional change in magnetization between steps to accept convergence
-converge_max = 20 #Maximum number of steps to take before moving on
-mu = 7
-
-
-#with state.State("input/test_Ising_largelattice.cfg") as p_state:
-
-#Apparently gamma = 2.7e-1 is too big, but 2.7e-1*(mu_B)^4 is too small
-mu_B = 0.057883817555
-gamma_0 = 0.0005000000237487257
-
-concentration = 45
-dim = 10
 
 def plot_loop(gamma):
+    Hmax = 5
+    Hstep_coarse = 0.125
+    Hstep_fine = 0.01
+    Hfine1 = 4
+    Hfine2 = -4
+    fields = np.arange(Hmax, Hfine1, -1 * Hstep_coarse, dtype=float)
+    fields = np.append(fields, np.arange(Hfine1, Hfine2, -1 * Hstep_fine, dtype=float))
+    fields = np.append(fields, np.arange(Hfine2, -1 * Hmax, -1 * Hstep_coarse, dtype=float))
+    fields_hyst = np.append(fields, -1 * fields)
+
+    Ht = 2.0  # Transverse field
+
+    output_interval = 2  # Interval at which spin configuration files are saved
+    fn = "dipolar_arr"
+    prefix = "DDI_exp_14_G0p00005_Ht10p0"
+
+    iterations_per_step = 1  # Take this many Metropolis iterationss per lattice site between each check for convergence
+    converge_threshold = 0.01  # Fractional change in magnetization between steps to accept convergence
+    converge_max = 20  # Maximum number of steps to take before moving on
+    mu = 7
+
+    # with state.State("input/test_Ising_largelattice.cfg") as p_state:
+
+    # Apparently gamma = 2.7e-1 is too big, but 2.7e-1*(mu_B)^4 is too small
+    mu_B = 0.057883817555
+    gamma_0 = 0.0005000000237487257
+
+    concentration = 20
+    dim = 4
+
     with state.State(f"input/LHF_DDI_glass_14_{concentration}_tunnel_{dim}.cfg") as p_state:
         types = geometry.get_atom_types(p_state)
         nos = types.size
@@ -95,16 +96,23 @@ def plot_loop(gamma):
             #Calculate the DDI field components, and then send to the SPIRIT engine. DDI interaction calculations are in Oe, SPIRIT
             #uses T, so need to scale accordingly.
             #Get the field at each spin. Only care about DDI due to z-spin so use spins[:,2]
-            DDI_field_x = np.matmul(DDI_interaction_x,spins[:,2]) *7/1e4
-            DDI_field_y = np.matmul(DDI_interaction_y,spins[:,2]) *7/1e4
-            DDI_field_z = np.matmul(DDI_interaction_z,spins[:,2]) *7/1e4
+            DDI_field_x_from_z = np.matmul(DDI_interaction_x, spins[:, 2]) * 7 / 1e4  # V_xz
+            DDI_field_y_from_z = np.matmul(DDI_interaction_y, spins[:, 2]) * 7 / 1e4  # V_yz
+            DDI_field_z_from_z = np.matmul(DDI_interaction_z, spins[:, 2]) * 7 / 1e4  # V_zz
 
-            #Pass into SPIRIT
-            DDI_field_interleave = np.ravel(np.column_stack((DDI_field_x,DDI_field_y,DDI_field_z)))
-            system.set_DDI_field(p_state,n_atoms=nos,ddi_fields=DDI_field_interleave)
-            print(f"X: mean: {np.mean(DDI_field_x):.4e} Std. Dev: {np.std(DDI_field_x):.4e}")
-            print(f"Y: mean: {np.mean(DDI_field_y):.4e} Std. Dev: {np.std(DDI_field_y):.4e}")
-            print(f"Z: mean: {np.mean(DDI_field_z):.4e} Std. Dev: {np.std(DDI_field_z):.4e}")
+            DDI_field_z_from_y = np.matmul(DDI_interaction_y.T, spins[:, 1]) * 7 / 1e4  # V_zy
+
+            DDI_field_z_from_x = np.matmul(DDI_interaction_x.T, spins[:, 0]) * 7 / 1e4  # V_zx
+
+            DDI_field_z_total = DDI_field_z_from_z + DDI_field_z_from_y + DDI_field_z_from_x
+
+            # Pass into SPIRIT
+            DDI_field_interleave = np.ravel(
+                np.column_stack((DDI_field_x_from_z, DDI_field_y_from_z, DDI_field_z_total)))
+            system.set_DDI_field(p_state, n_atoms=nos, ddi_fields=DDI_field_interleave)
+            # print(f"X: mean: {np.mean(DDI_field_x):.4e} Std. Dev: {np.std(DDI_field_x):.4e}")
+            # print(f"Y: mean: {np.mean(DDI_field_y):.4e} Std. Dev: {np.std(DDI_field_y):.4e}")
+            # print(f"Z: mean: {np.mean(DDI_field_z):.4e} Std. Dev: {np.std(DDI_field_z):.4e}")
 
             #Check convergence, same as old hysteresis_loop. But METHOD_MC now uses tunnelling since we set tunnel flag to 1 in cfg files
             for j in range(converge_max) :
@@ -125,7 +133,7 @@ def plot_loop(gamma):
             if output_interval>0: #Output the spin configuration.
                 #TODO: Use system.get_spin_directions to pull the configuration array into Python, and then save out as an npy or similar
                 if (i % output_interval == 0):
-                    tag = prefix+f'N{i:d}_H{Hz:.3f}'
+                    tag = prefix+f'N{i:d}_H{Hz:.3f}_gamma{gamma}'
                     name = "output/" + tag + "_Image-00_Spins_0.ovf" #To match the internally-generated naming format
                     io.image_write(p_state,filename=name)
 
@@ -149,13 +157,17 @@ def plot_loop(gamma):
         return fields_hyst, mz[:, 0] /concentration, parameters.mc.get_tunneling_gamma(p_state)
 
 if __name__ == '__main__':
+    mp.set_start_method("spawn", force=True)
     # spin_concentrations = [85, 95, 15, 25, 35, 45, 55, 65, 75]
     # spin_concentrations = [95, 15]
     #gamma_0 = 0.0005000000237487257
     # gammas = [gamma_0, gamma_0 * pow(mu_B, 1), gamma_0 * pow(mu_B, 2)]
     # gammas = [gamma_0 * pow(mu_B, n) for n in [0, 0.1, 0.2, 0.3, 0.4, 0.5, 2, 5, 10]]
-    gammas = [0.000282, 0.000376, 0.00012, 0.0005, 0.0007, 0.001, 0.002, 0.00001]
+    gammas = [0.00001, 0.00005, 0.0001, 0.0002, 0.00025]
     gammas = np.sort(gammas)
+    dim = 4
+    concentration = 20
+    Ht = 2
 
 
     # Assuming fields_hyst and mz are already defined
@@ -191,4 +203,4 @@ if __name__ == '__main__':
     )
 
     # To save as HTML (for interactive viewing in browser)
-    fig.write_html(f'hysteresis_loop_tunnel_{dim}_gamma_new_concentration_{concentration}.html')
+    fig.write_html(f'hysteresis_loop_tunnel_{dim}_gamma_new_concentration_{concentration}_Ht_{Ht}.html')
