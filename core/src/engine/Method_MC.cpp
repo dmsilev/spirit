@@ -202,7 +202,7 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
                 normal[1] = (float)ham->external_field_normal[1];
                 this->Bx = this->systems[0]->ddi_field_external[ispin][0];
                 this->By = this->systems[0]->ddi_field_external[ispin][1];
-                gamma_E = (((normal[0]*B_mag + this->Bx) * (normal[0]*xB_mag + this->Bx) + (normal[1]*B_mag + this->By) * (normal[1]*B_mag + this->By)) *this->parameters_mc->tunneling_gamma) / (Constants::mu_B*Constants::mu_B);
+                gamma_E = (((normal[0]*B_mag + this->Bx) * (normal[0]*B_mag + this->Bx) + (normal[1]*B_mag + this->By) * (normal[1]*B_mag + this->By)) *this->parameters_mc->tunneling_gamma) / (Constants::mu_B*Constants::mu_B);
 
                // The Bohr Magneton [meV/T] mu_B = 0.057883817555; tunneling_gamma = 2.7e-1
            }
