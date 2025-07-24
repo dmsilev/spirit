@@ -45,8 +45,8 @@ def plot_loop(gamma):
         nos = types.size
         # tqdm.write(f"Sites: {nos}  Spins: {nos+np.sum(types)}")
         locs = geometry.get_positions(p_state)
-        np.savetxt("output/"+prefix+"atom_locs.csv",locs,delimiter=",")
-        np.savetxt("output/"+prefix+"atom_types.csv",types,delimiter=",")
+        # np.savetxt("output/"+prefix+"atom_locs.csv",locs,delimiter=",")
+        # np.savetxt("output/"+prefix+"atom_types.csv",types,delimiter=",")
     #    write_config(p_state,prefix)
         parameters.mc.set_metropolis_cone(p_state,use_cone=True,cone_angle=30,use_adaptive_cone=True)
         parameters.mc.set_metropolis_spinflip(p_state,False)
@@ -263,7 +263,7 @@ if __name__ == '__main__':
     n_cycles = 120
     dim = 10
     concentration = 20
-    gamma = 0.0001
+    gamma = 0.0002
     gammas = [gamma]
     relax_steps_0 = 50
 
@@ -285,7 +285,7 @@ if __name__ == '__main__':
 
     # Save raw data
     df_all.to_csv(
-        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_gamma_{gamma}_ref.csv',
+        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_gamma_{gamma}_ref_3.csv',
         index=False)
 
     df_avg = (
@@ -313,6 +313,6 @@ if __name__ == '__main__':
     )
 
     fig.write_html(
-        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_gamma_{gamma}_relaxstepzero_{relax_steps_0}ref.html')
+        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_gamma_{gamma}_relaxstepzero_{relax_steps_0}ref_3.html')
 
     #2:31:36.733138 for 160 cycles 8 cpus, 10x10x10, H_relax_steps = 50

@@ -1,6 +1,6 @@
 FROM ubuntu:rolling
 
-MAINTAINER Jens Renè Suckert <jens.suckert@gmail.com>
+#MAINTAINER Jens Renè Suckert <jens.suckert@gmail.com>
 
 RUN apt-get -y update && \
     apt-get install -y --no-install-recommends \
@@ -11,18 +11,20 @@ RUN apt-get -y update && \
         qt5-default \
         libqt5charts5-dev \
         libqt5opengl5-dev \
-        --reinstall ca-certificates 
+        --reinstall ca-certificates
 
-RUN export uid=1000 gid=1000 && \
-    mkdir -p /home/developer && \
-    echo "developer:x:${uid}:${gid}:Developer,,,:/home/developer:/bin/bash" >> /etc/passwd && \
-    echo "developer:x:${uid}:" >> /etc/group && \
-    chown ${uid}:${gid} -R /home/developer
+RUN pip3 install numpy pandas matplotlib tqdm plotly
+
+#RUN export uid=1000 gid=1000 && \
+#    mkdir -p /home/developer && \
+#    echo "developer:x:${uid}:${gid}:Developer,,,:/home/developer:/bin/bash" >> /etc/passwd && \
+#    echo "developer:x:${uid}:" >> /etc/group && \
+#    chown ${uid}:${gid} -R /home/developer
 
 #    echo "developer ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/developer && \
 #    chmod 0440 /etc/sudoers.d/developer && \
 
-USER developer
+#USER developer
 ENV HOME /home/developer
 
 RUN cd $HOME && \
