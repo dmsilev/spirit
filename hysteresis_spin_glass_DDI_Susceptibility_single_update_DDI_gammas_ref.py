@@ -13,6 +13,20 @@ import time
 from datetime import timedelta
 from collections import defaultdict
 
+# Global variable to hold DDI matrices
+DDI_interaction_x = None
+DDI_interaction_y = None
+DDI_interaction_z = None
+
+def init_worker(dim):
+    #To initialize DDI matrix just once and avoid loading npy in each loop
+    global DDI_interaction_x, DDI_interaction_y, DDI_interaction_z
+    fn = "dipolar_arr"
+    base_path = f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/"
+    DDI_interaction_x = np.load(os.path.join(base_path, fn + "_x.npy"))
+    DDI_interaction_y = np.load(os.path.join(base_path, fn + "_y.npy"))
+    DDI_interaction_z = np.load(os.path.join(base_path, fn + "_z.npy"))
+
 def plot_loop(gamma):
     iterations_per_step = 1  #Spin glass, Take this many Metropolis iterationss per lattice site between each check for convergence
     output_interval = 30  # Interval at which spin configuration files are saved
@@ -26,19 +40,19 @@ def plot_loop(gamma):
     relax_steps = 2
     relax_steps_0 = 50
 
-    path_arr_x = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/",
-                              fn + "_x.npy")  # fn = dipolar_arr
-    path_arr_y = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn + "_y.npy")
-    path_arr_z = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn + "_z.npy")
-
-    if os.path.exists(path_arr_x) and os.path.exists(path_arr_y) and os.path.exists(path_arr_z):
-        tqdm.write("loading DDI interaction data.")
-        DDI_interaction_x = np.load(path_arr_x)
-        DDI_interaction_y = np.load(path_arr_y)
-        DDI_interaction_z = np.load(path_arr_z)
-    else:
-        tqdm.write("DDI files not found")
-    #        break
+    # path_arr_x = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/",
+    #                           fn + "_x.npy")  # fn = dipolar_arr
+    # path_arr_y = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn + "_y.npy")
+    # path_arr_z = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn + "_z.npy")
+    #
+    # if os.path.exists(path_arr_x) and os.path.exists(path_arr_y) and os.path.exists(path_arr_z):
+    #     tqdm.write("loading DDI interaction data.")
+    #     DDI_interaction_x = np.load(path_arr_x)
+    #     DDI_interaction_y = np.load(path_arr_y)
+    #     DDI_interaction_z = np.load(path_arr_z)
+    # else:
+    #     tqdm.write("DDI files not found")
+    # #        break
 
     with state.State(f"input/LHF_DDI_glass_14_{concentration}_tunnel_{dim}.cfg", quiet = True) as p_state:
         types = geometry.get_atom_types(p_state)
@@ -104,7 +118,7 @@ def plot_loop(gamma):
 
 
 
-        Hmax = 4.5
+        Hmax = 4.0
         H_step = 0.1
         # Sweep down to just above H_relax (exclusive)
         Hts = np.arange(Hmax, -H_step, -H_step)
@@ -271,8 +285,10 @@ if __name__ == '__main__':
     for gamma in gammas:
         gammas = [gamma] * n_cycles  # gamma list for each cycle
 
-        with mp.Pool(processes=mp.cpu_count()) as pool:
-            results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=n_cycles))
+        # with mp.Pool(processes=mp.cpu_count()) as pool:
+        #     results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=n_cycles))
+        with mp.Pool(processes=mp.cpu_count(), initializer=init_worker, initargs=(dim,)) as pool:
+            results = list(tqdm(pool.imap_unordered(plot_loop, gammas, chunksize = 4), total=n_cycles))
 
     flat = []
 
@@ -285,7 +301,7 @@ if __name__ == '__main__':
 
     # Save raw data
     df_all.to_csv(
-        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_gamma_{gamma}_ref_3.csv',
+        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_gamma_{gamma}_ref_hmax4.csv',
         index=False)
 
     df_avg = (
@@ -313,6 +329,6 @@ if __name__ == '__main__':
     )
 
     fig.write_html(
-        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_gamma_{gamma}_relaxstepzero_{relax_steps_0}ref_3.html')
+        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_gamma_{gamma}_relaxstepzero_{relax_steps_0}ref_hmax4.html')
 
     #2:31:36.733138 for 160 cycles 8 cpus, 10x10x10, H_relax_steps = 50

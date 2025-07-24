@@ -12,9 +12,23 @@ import time
 from datetime import timedelta
 from collections import defaultdict
 
+# Global variable to hold DDI matrices
+DDI_interaction_x = None
+DDI_interaction_y = None
+DDI_interaction_z = None
+
+def init_worker(dim):
+    #To initialize DDI matrix just once and avoid loading npy in each loop
+    global DDI_interaction_x, DDI_interaction_y, DDI_interaction_z
+    fn = "dipolar_arr"
+    base_path = f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/"
+    DDI_interaction_x = np.load(os.path.join(base_path, fn + "_x.npy"))
+    DDI_interaction_y = np.load(os.path.join(base_path, fn + "_y.npy"))
+    DDI_interaction_z = np.load(os.path.join(base_path, fn + "_z.npy"))
+
 def plot_loop(gamma):
     iterations_per_step = 1  #Spin glass, Take this many Metropolis iterationss per lattice site between each check for convergence
-    output_interval = 30  # Interval at which spin configuration files are saved
+    output_interval = 50  # Interval at which spin configuration files are saved
     fn = "dipolar_arr"
     prefix = "DDI_exp_14_G0p00005_Ht10p0"
 
@@ -25,27 +39,27 @@ def plot_loop(gamma):
     H_relax_steps = 400
     relax_steps_0 = 50
 
-    path_arr_x = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/",
-                              fn + "_x.npy")  # fn = dipolar_arr
-    path_arr_y = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn + "_y.npy")
-    path_arr_z = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn + "_z.npy")
-
-    if os.path.exists(path_arr_x) and os.path.exists(path_arr_y) and os.path.exists(path_arr_z):
-        tqdm.write("loading DDI interaction data.")
-        DDI_interaction_x = np.load(path_arr_x)
-        DDI_interaction_y = np.load(path_arr_y)
-        DDI_interaction_z = np.load(path_arr_z)
-    else:
-        tqdm.write("DDI files not found")
-    #        break
+    # path_arr_x = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/",
+    #                           fn + "_x.npy")  # fn = dipolar_arr
+    # path_arr_y = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn + "_y.npy")
+    # path_arr_z = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn + "_z.npy")
+    #
+    # if os.path.exists(path_arr_x) and os.path.exists(path_arr_y) and os.path.exists(path_arr_z):
+    #     tqdm.write("loading DDI interaction data.")
+    #     DDI_interaction_x = np.load(path_arr_x)
+    #     DDI_interaction_y = np.load(path_arr_y)
+    #     DDI_interaction_z = np.load(path_arr_z)
+    # else:
+    #     tqdm.write("DDI files not found")
+    # #        break
 
     with state.State(f"input/LHF_DDI_glass_14_{concentration}_tunnel_{dim}.cfg", quiet = True) as p_state:
         types = geometry.get_atom_types(p_state)
         nos = types.size
         # tqdm.write(f"Sites: {nos}  Spins: {nos+np.sum(types)}")
         locs = geometry.get_positions(p_state)
-        np.savetxt("output/"+prefix+"atom_locs.csv",locs,delimiter=",")
-        np.savetxt("output/"+prefix+"atom_types.csv",types,delimiter=",")
+        # np.savetxt("output/"+prefix+"atom_locs.csv",locs,delimiter=",")
+        # np.savetxt("output/"+prefix+"atom_types.csv",types,delimiter=",")
     #    write_config(p_state,prefix)
         parameters.mc.set_metropolis_cone(p_state,use_cone=True,cone_angle=30,use_adaptive_cone=True)
         parameters.mc.set_metropolis_spinflip(p_state,False)
@@ -359,7 +373,7 @@ if __name__ == '__main__':
     H_relax_steps = 400
     dim = 10
     concentration = 20
-    gamma = 0.0001
+    gamma = 0.0002
     gammas = [gamma]
 
     all_results = []
@@ -368,8 +382,8 @@ if __name__ == '__main__':
     for gamma in gammas:
         gammas = [gamma] * n_cycles  # gamma list for each cycle
 
-        with mp.Pool(processes=mp.cpu_count()) as pool:
-            results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=n_cycles))
+        with mp.Pool(processes=mp.cpu_count(), initializer=init_worker, initargs=(dim,)) as pool:
+            results = list(tqdm(pool.imap_unordered(plot_loop, gammas, chunksize = 4), total=n_cycles))
 
         # Flatten and tag with gamma
         flat = [(round(k[0], 2), round(k[1], 2), v, gamma) for result, _ in results for k, v in result.items()]
@@ -415,7 +429,7 @@ if __name__ == '__main__':
     chi_Hrelax_before_list = [
         {
             "gamma": gamma,
-            "H_relax": H_relax,
+            "Ht": H_relax,
             "chi_Hrelax_before_relax": chi_before
         }
         for _, chi_before in results
