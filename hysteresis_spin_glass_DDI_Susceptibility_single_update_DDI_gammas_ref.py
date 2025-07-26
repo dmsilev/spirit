@@ -118,7 +118,7 @@ def plot_loop(gamma):
 
 
 
-        Hmax = 4.0
+        Hmax = 4.5
         H_step = 0.1
         # Sweep down to just above H_relax (exclusive)
         Hts = np.arange(Hmax, -H_step, -H_step)
@@ -288,7 +288,7 @@ if __name__ == '__main__':
         # with mp.Pool(processes=mp.cpu_count()) as pool:
         #     results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=n_cycles))
         with mp.Pool(processes=mp.cpu_count(), initializer=init_worker, initargs=(dim,)) as pool:
-            results = list(tqdm(pool.imap_unordered(plot_loop, gammas, chunksize = 4), total=n_cycles))
+            results = list(tqdm(pool.imap_unordered(plot_loop, gammas, chunksize = 2), total=n_cycles))
 
     flat = []
 
@@ -301,7 +301,7 @@ if __name__ == '__main__':
 
     # Save raw data
     df_all.to_csv(
-        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_gamma_{gamma}_ref_hmax4.csv',
+        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_gamma_{gamma}_ref_2.csv',
         index=False)
 
     df_avg = (
@@ -329,6 +329,6 @@ if __name__ == '__main__':
     )
 
     fig.write_html(
-        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_gamma_{gamma}_relaxstepzero_{relax_steps_0}ref_hmax4.html')
+        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_gamma_{gamma}_relaxstepzero_{relax_steps_0}ref_2.html')
 
-    #2:31:36.733138 for 160 cycles 8 cpus, 10x10x10, H_relax_steps = 50
+    #120 / 120 [3:53:40 < 00: 00, 116.84s / it] for each relax step 2, up + down, 10x10x10, Hmax = 4.5

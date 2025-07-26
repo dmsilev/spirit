@@ -14,11 +14,11 @@ from collections import defaultdict
 
 def plot_loop(gamma):
     iterations_per_step = 1  #Spin glass, Take this many Metropolis iterationss per lattice site between each check for convergence
-    output_interval = 30  # Interval at which spin configuration files are saved
+    output_interval = 60  # Interval at which spin configuration files are saved
     fn = "dipolar_arr"
     prefix = "DDI_exp_14_G0p00005_Ht10p0"
 
-    H_relax = 0.8
+    H_relax = 2.3
     mu = 7
     dim = 10
     concentration = 20
@@ -99,35 +99,10 @@ def plot_loop(gamma):
             DDI_field_interleave = np.ravel(np.column_stack((DDI_field_x_from_z,DDI_field_y_from_z,DDI_field_z_total)))
             system.set_DDI_field(p_state,n_atoms=nos,ddi_fields=DDI_field_interleave)
 
-            # # For relaxing at H_relax
-            # if abs(Ht - H_relax) < 1e-6:
-            #     tqdm.write(f"~~~~~~~~~~~~~~~~~~~~~~~Changed converge_max~~~~~~~~~~~~~~~~~~~~~~~")
-            #     converge_max = 200
-            #     # iterations_per_step = 1
-            #     # parameters.mc.set_iterations(p_state, iterations_per_step * types.size,
-            #     #                              iterations_per_step * types.size)
-            #
-            # else:
-            #     converge_max = 2
-
-            #Check convergence, same as old hysteresis_loop. But METHOD_MC now uses tunnelling since we set tunnel flag to 1 in cfg files
 
             # for j in range(converge_max):
             simulation.start(p_state, simulation.METHOD_MC, single_shot=False) #solver_type=simulation.MC_ALGORITHM_METROPOLIS
             simulation.stop(p_state)
-
-
-            # if output_interval>0: #Output the spin configuration.
-            #     #TODO: Use system.get_spin_directions to pull the configuration array into Python, and then save out as an npy or similar
-            #     if (i % output_interval == 0):
-            #         tag = prefix+f'N{i:d}_H{Ht:.3f}'
-            #         name = "output/" + tag + "_Image-00_Spins_0.ovf" #To match the internally-generated naming format
-            #         io.image_write(p_state,filename=name)
-
-            # Check susceptibility every 4th Ht datapoint
-            # if i%4 ==0 or Ht <= H_relax + H_step:
-            # if i % 1 == 0:
-            # if i in last_indices: #Only calculate chi if it's last iteration of each unique Ht
 
             # Define both options
             Bfields_positive = np.arange(0, 0.3, 0.1)
@@ -206,16 +181,16 @@ if __name__ == '__main__':
 
     n_cycles = 88
     # H_relax = 1.2
-    H_relax = 0.8
+    H_relax = 2.3
     # H_relax_steps = 200
     H_relax_steps = 100
     dim = 10
     concentration = 20
     # gamma = 0.000001
-    gammas = [0.0001, 0.00001, 0.00005, 0.000001]*n_cycles
+    gammas = [0.0001, 0.0002]*n_cycles
 
     with mp.Pool(processes=mp.cpu_count()) as pool:
-        results = list(tqdm(pool.imap(plot_loop, gammas), total=len(gammas), desc="Running simulations"))
+        results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=len(gammas), desc="Running simulations"))
 
     df_all = pd.concat(results, ignore_index=True)
     df_all.to_csv(f"MCS_decay_gammas_dim_{dim}_with_SEM_errorbars.csv", index = False)
@@ -246,7 +221,7 @@ if __name__ == '__main__':
         ))
 
     fig.update_layout(
-        title="Average Susceptibility χ vs i for different γ (with SEM error bars)",
+        title="Average Susceptibility χ vs i for different γ, relaxed at Ht = 2.3T",
         xaxis_title="MCS (step index i)",
         yaxis_title="χ (chi)",
         legend_title="Tunneling γ",
@@ -255,4 +230,78 @@ if __name__ == '__main__':
         height=600
     )
 
-    fig.write_html(f"MCS_decay_gammas_dim_{dim}_with_SEM_errorbars.html")
+    fig.write_html(f"MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_Ht2.3.html")
+
+    fig_ln = go.Figure()
+
+    for gamma in unique_gammas:
+        df_gamma = grouped[grouped['gamma'] == gamma]
+
+        # Avoid log of zero or negative numbers
+        df_gamma = df_gamma[df_gamma['chi_mean'] > 0]
+
+        fig_ln.add_trace(go.Scatter(
+            x=df_gamma['i'],
+            y=np.log(df_gamma['chi_mean']),
+            mode='lines+markers',
+            name=f"γ = {gamma:.1e}",
+            error_y=dict(
+                type='data',
+                array=df_gamma['chi_sem'] / df_gamma['chi_mean'],  # Propagation of error in log(chi)
+                visible=True
+            )
+        ))
+
+    fig_ln.update_layout(
+        title="ln(χ) vs i for different γ, relaxed at Ht = 2.3T",
+        xaxis_title="MCS (step index i)",
+        yaxis_title="ln(χ)",
+        legend_title="Tunneling γ",
+        template="plotly_white",
+        width=900,
+        height=600
+    )
+
+    fig_ln.write_html(f"ln_MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_Ht2.3.html")
+
+    fig_lnln = go.Figure()
+
+    for gamma in unique_gammas:
+        df_gamma = grouped[grouped['gamma'] == gamma].copy()
+
+        # Filter out invalid values
+        df_gamma = df_gamma[(df_gamma['chi_mean'] > 0) & (np.log(df_gamma['chi_mean']) < 0)]
+
+        # Compute x = ln(i), y = ln(-ln(chi))
+        df_gamma['ln_i'] = np.log(df_gamma['i'])
+        df_gamma['ln_ln_chi'] = np.log(-np.log(df_gamma['chi_mean']))
+
+        # Error propagation
+        df_gamma['ln_ln_chi_sem'] = (
+                np.abs(1 / (np.log(df_gamma['chi_mean']) * df_gamma['chi_mean'])) * df_gamma['chi_sem']
+        )
+
+        fig_lnln.add_trace(go.Scatter(
+            x=df_gamma['ln_i'],
+            y=df_gamma['ln_ln_chi'],
+            mode='lines+markers',
+            name=f"γ = {gamma:.1e}",
+            error_y=dict(
+                type='data',
+                array=df_gamma['ln_ln_chi_sem'],
+                visible=True
+            )
+        ))
+
+    fig_lnln.update_layout(
+        title="ln(-ln(χ)) vs ln(i) for different γ, relaxed at Ht = 2.3T",
+        xaxis_title="ln(MCS step index i)",
+        yaxis_title="ln(-ln(χ))",
+        legend_title="Tunneling γ",
+        template="plotly_white",
+        width=900,
+        height=600
+    )
+
+    fig_lnln.write_html(f"lnln_MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_Ht2.3.html")
+

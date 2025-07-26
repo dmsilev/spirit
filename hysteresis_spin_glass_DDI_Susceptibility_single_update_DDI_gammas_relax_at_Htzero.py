@@ -26,6 +26,13 @@ def init_worker(dim):
     DDI_interaction_y = np.load(os.path.join(base_path, fn + "_y.npy"))
     DDI_interaction_z = np.load(os.path.join(base_path, fn + "_z.npy"))
 
+def sparse_matmul_with_scaling(DDI_matrix, spin_component, scale=7/1e4):
+    nonzero_indices = np.nonzero(spin_component)[0]
+    spin_nonzero = spin_component[nonzero_indices]
+    DDI_submatrix = DDI_matrix[:, nonzero_indices]
+    result = DDI_submatrix @ spin_nonzero * scale
+    return result
+
 def plot_loop(gamma):
     iterations_per_step = 1  #Spin glass, Take this many Metropolis iterationss per lattice site between each check for convergence
     output_interval = 50  # Interval at which spin configuration files are saved
@@ -96,14 +103,16 @@ def plot_loop(gamma):
             # Get the field at each spin.
             # V_xz = V_zx.T etc
 
-            DDI_field_x_from_z = np.matmul(DDI_interaction_x, spins[:, 2]) * 7 / 1e4  # V_xz
-            DDI_field_y_from_z = np.matmul(DDI_interaction_y, spins[:, 2]) * 7 / 1e4  # V_yz
-            DDI_field_z_from_z = np.matmul(DDI_interaction_z, spins[:, 2]) * 7 / 1e4  # V_zz
+            # Now calculate each field using the optimized approach
+            DDI_field_x_from_z = sparse_matmul_with_scaling(DDI_interaction_x, spins[:, 2])
+            DDI_field_y_from_z = sparse_matmul_with_scaling(DDI_interaction_y, spins[:, 2])
+            DDI_field_z_from_z = sparse_matmul_with_scaling(DDI_interaction_z, spins[:, 2])
 
-            DDI_field_z_from_y = np.matmul(DDI_interaction_y.T, spins[:, 1]) * 7 / 1e4  # V_zy
+            # For transposed multiplications, just transpose the matrix first
+            DDI_field_z_from_y = sparse_matmul_with_scaling(DDI_interaction_y.T, spins[:, 1])
+            DDI_field_z_from_x = sparse_matmul_with_scaling(DDI_interaction_x.T, spins[:, 0])
 
-            DDI_field_z_from_x = np.matmul(DDI_interaction_x.T, spins[:, 0]) * 7 / 1e4  # V_zx
-
+            # Sum total z-field contributions
             DDI_field_z_total = DDI_field_z_from_z + DDI_field_z_from_y + DDI_field_z_from_x
 
             # Pass into SPIRIT
@@ -173,14 +182,16 @@ def plot_loop(gamma):
             #Get the field at each spin.
             #V_xz = V_zx.T etc
 
-            DDI_field_x_from_z = np.matmul(DDI_interaction_x,spins[:,2]) *7/1e4 #V_xz
-            DDI_field_y_from_z = np.matmul(DDI_interaction_y,spins[:,2]) *7/1e4 #V_yz
-            DDI_field_z_from_z = np.matmul(DDI_interaction_z,spins[:,2]) *7/1e4 #V_zz
+            # Now calculate each field using the optimized approach
+            DDI_field_x_from_z = sparse_matmul_with_scaling(DDI_interaction_x, spins[:, 2])
+            DDI_field_y_from_z = sparse_matmul_with_scaling(DDI_interaction_y, spins[:, 2])
+            DDI_field_z_from_z = sparse_matmul_with_scaling(DDI_interaction_z, spins[:, 2])
 
-            DDI_field_z_from_y = np.matmul(DDI_interaction_y.T, spins[:, 1]) * 7 / 1e4 #V_zy
+            # For transposed multiplications, just transpose the matrix first
+            DDI_field_z_from_y = sparse_matmul_with_scaling(DDI_interaction_y.T, spins[:, 1])
+            DDI_field_z_from_x = sparse_matmul_with_scaling(DDI_interaction_x.T, spins[:, 0])
 
-            DDI_field_z_from_x = np.matmul(DDI_interaction_x.T, spins[:, 0]) * 7 / 1e4 #V_zx
-
+            # Sum total z-field contributions
             DDI_field_z_total = DDI_field_z_from_z + DDI_field_z_from_y + DDI_field_z_from_x
 
             #Pass into SPIRIT
@@ -240,15 +251,16 @@ def plot_loop(gamma):
 
                     # Calculate the DDI field components, and then send to the SPIRIT engine. DDI interaction calculations are in Oe, SPIRIT
                     # uses T, so need to scale accordingly.
-                    # Get the field at each spin.
-                    DDI_field_x_from_z = np.matmul(DDI_interaction_x, spins[:, 2]) * 7 / 1e4  # V_xz
-                    DDI_field_y_from_z = np.matmul(DDI_interaction_y, spins[:, 2]) * 7 / 1e4  # V_yz
-                    DDI_field_z_from_z = np.matmul(DDI_interaction_z, spins[:, 2]) * 7 / 1e4  # V_zz
+                    # Now calculate each field using the optimized approach
+                    DDI_field_x_from_z = sparse_matmul_with_scaling(DDI_interaction_x, spins[:, 2])
+                    DDI_field_y_from_z = sparse_matmul_with_scaling(DDI_interaction_y, spins[:, 2])
+                    DDI_field_z_from_z = sparse_matmul_with_scaling(DDI_interaction_z, spins[:, 2])
 
-                    DDI_field_z_from_y = np.matmul(DDI_interaction_y.T, spins[:, 1]) * 7 / 1e4  # V_zy
+                    # For transposed multiplications, just transpose the matrix first
+                    DDI_field_z_from_y = sparse_matmul_with_scaling(DDI_interaction_y.T, spins[:, 1])
+                    DDI_field_z_from_x = sparse_matmul_with_scaling(DDI_interaction_x.T, spins[:, 0])
 
-                    DDI_field_z_from_x = np.matmul(DDI_interaction_x.T, spins[:, 0]) * 7 / 1e4  # V_zx
-
+                    # Sum total z-field contributions
                     DDI_field_z_total = DDI_field_z_from_z + DDI_field_z_from_y + DDI_field_z_from_x
 
                     # Pass into SPIRIT
@@ -314,14 +326,16 @@ def plot_loop(gamma):
                     # Calculate the DDI field components, and then send to the SPIRIT engine. DDI interaction calculations are in Oe, SPIRIT
                     # uses T, so need to scale accordingly.
                     # Get the field at each spin.
-                    DDI_field_x_from_z = np.matmul(DDI_interaction_x, spins[:, 2]) * 7 / 1e4  # V_xz
-                    DDI_field_y_from_z = np.matmul(DDI_interaction_y, spins[:, 2]) * 7 / 1e4  # V_yz
-                    DDI_field_z_from_z = np.matmul(DDI_interaction_z, spins[:, 2]) * 7 / 1e4  # V_zz
+                    # Now calculate each field using the optimized approach
+                    DDI_field_x_from_z = sparse_matmul_with_scaling(DDI_interaction_x, spins[:, 2])
+                    DDI_field_y_from_z = sparse_matmul_with_scaling(DDI_interaction_y, spins[:, 2])
+                    DDI_field_z_from_z = sparse_matmul_with_scaling(DDI_interaction_z, spins[:, 2])
 
-                    DDI_field_z_from_y = np.matmul(DDI_interaction_y.T, spins[:, 1]) * 7 / 1e4  # V_zy
+                    # For transposed multiplications, just transpose the matrix first
+                    DDI_field_z_from_y = sparse_matmul_with_scaling(DDI_interaction_y.T, spins[:, 1])
+                    DDI_field_z_from_x = sparse_matmul_with_scaling(DDI_interaction_x.T, spins[:, 0])
 
-                    DDI_field_z_from_x = np.matmul(DDI_interaction_x.T, spins[:, 0]) * 7 / 1e4  # V_zx
-
+                    # Sum total z-field contributions
                     DDI_field_z_total = DDI_field_z_from_z + DDI_field_z_from_y + DDI_field_z_from_x
 
                     # Pass into SPIRIT
@@ -395,7 +409,7 @@ if __name__ == '__main__':
 
     # Save raw data
     df_all.to_csv(
-        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_{-5}_relax_0.8_gamma_{gamma}_relaxed_1.csv',
+        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_{-5}_relax_0.8_gamma_{gamma}_relaxed_2.csv',
         index=False)
 
     # Average over cycles, std divided by sqrt(n_cycles)
@@ -424,7 +438,7 @@ if __name__ == '__main__':
     )
 
     fig.write_html(
-        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_0.8_gamma_{gamma}_relaxed_1.html')
+        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_0.8_gamma_{gamma}_relaxed_2.html')
 
     chi_Hrelax_before_list = [
         {
@@ -439,7 +453,7 @@ if __name__ == '__main__':
     df_chi_before = pd.DataFrame(chi_Hrelax_before_list)
 
     # Save to CSV
-    df_chi_before.to_csv(f"chi_before_relax_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_0.8_gamma_{gamma}.csv", index=False)
+    df_chi_before.to_csv(f"chi_before_relax_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_0.8_gamma_{gamma}_2.csv", index=False)
 
     # Timer
     end_time = time.time()
