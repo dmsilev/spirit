@@ -39,11 +39,13 @@ def plot_loop(gamma):
     fn = "dipolar_arr"
     prefix = "DDI_exp_14_G0p00005_Ht10p0"
 
-    H_relax = 2.3 #around 0.5*H_max
+    # H_relax = 2.3 #around 0.5*H_max
+    H_relax = 1.8 #around 0.4*H_max
+
     mu = 7
     dim = 10
     concentration = 20
-    H_relax_steps = 400
+    H_relax_steps = 200
     relax_steps_0 = 50
 
     # path_arr_x = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/",
@@ -382,9 +384,9 @@ if __name__ == '__main__':
 
     n_cycles = 240
     # H_relax = 1.2
-    H_relax = 2.3
-    # H_relax_steps = 200
-    H_relax_steps = 400
+    H_relax = 1.8
+    # H_relax_steps = 400
+    H_relax_steps = 200
     dim = 10
     concentration = 20
     gamma = 0.0002
@@ -397,7 +399,7 @@ if __name__ == '__main__':
         gammas = [gamma] * n_cycles  # gamma list for each cycle
 
         with mp.Pool(processes=mp.cpu_count(), initializer=init_worker, initargs=(dim,)) as pool:
-            results = list(tqdm(pool.imap_unordered(plot_loop, gammas, chunksize = 4), total=n_cycles))
+            results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=n_cycles))
 
         # Flatten and tag with gamma
         flat = [(round(k[0], 2), round(k[1], 2), v, gamma) for result, _ in results for k, v in result.items()]
@@ -438,7 +440,7 @@ if __name__ == '__main__':
     )
 
     fig.write_html(
-        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_0.8_gamma_{gamma}_relaxed_2.html')
+        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_1.html')
 
     chi_Hrelax_before_list = [
         {
@@ -453,7 +455,7 @@ if __name__ == '__main__':
     df_chi_before = pd.DataFrame(chi_Hrelax_before_list)
 
     # Save to CSV
-    df_chi_before.to_csv(f"chi_before_relax_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_0.8_gamma_{gamma}_2.csv", index=False)
+    df_chi_before.to_csv(f"chi_before_relax_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_1.csv", index=False)
 
     # Timer
     end_time = time.time()
@@ -461,3 +463,5 @@ if __name__ == '__main__':
     tqdm.write(f"\n✅ Finished in {str(elapsed_time)} (hh:mm:ss)")
 
     #240/240 [11:14:04<00:00, 168.52s/it]
+    #240/240 [14:13:15<00:00, 213.32s/it] Hmax = 4.5, 8 cores, H_relax_steps = 400
+    # 240/240 [9:27:13<00:00, 141.81s/it] Hmax = 4.5, 8 cores, H_relax_steps = 200

@@ -274,7 +274,7 @@ if __name__ == '__main__':
 
     mp.set_start_method("spawn", force=True)
 
-    n_cycles = 120
+    n_cycles = 240
     dim = 10
     concentration = 20
     gamma = 0.0002
@@ -287,7 +287,7 @@ if __name__ == '__main__':
 
         # with mp.Pool(processes=mp.cpu_count()) as pool:
         #     results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=n_cycles))
-        with mp.Pool(processes=mp.cpu_count(), initializer=init_worker, initargs=(dim,)) as pool:
+        with mp.Pool(processes=6, initializer=init_worker, initargs=(dim,)) as pool:
             results = list(tqdm(pool.imap_unordered(plot_loop, gammas, chunksize = 2), total=n_cycles))
 
     flat = []
@@ -301,7 +301,7 @@ if __name__ == '__main__':
 
     # Save raw data
     df_all.to_csv(
-        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_gamma_{gamma}_ref_2.csv',
+        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_gamma_{gamma}_ref_5.csv',
         index=False)
 
     df_avg = (
@@ -329,6 +329,6 @@ if __name__ == '__main__':
     )
 
     fig.write_html(
-        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_gamma_{gamma}_relaxstepzero_{relax_steps_0}ref_2.html')
+        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_gamma_{gamma}_relaxstepzero_{relax_steps_0}ref_5.html')
 
     #120 / 120 [3:53:40 < 00: 00, 116.84s / it] for each relax step 2, up + down, 10x10x10, Hmax = 4.5

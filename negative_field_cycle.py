@@ -9,6 +9,7 @@ import pandas as pd
 from scipy.stats import linregress
 from tqdm import tqdm
 import time
+import glob
 from datetime import timedelta
 from collections import defaultdict
 
@@ -22,7 +23,12 @@ def plot_loop(gamma):
     mu = 7
     dim = 10
     concentration = 20
-    H_relax_steps = 100
+    H_steps_1 = 10
+    H_steps_3 = 30
+
+    H_high = 2.3
+    H_low = 1.8
+
     path_arr_x = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/",
                               fn + "_x.npy")  # fn = dipolar_arr
     path_arr_y = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn + "_y.npy")
@@ -64,7 +70,12 @@ def plot_loop(gamma):
         locs[:,2][vacancies_idx] = 0
 
 
-        Hts = [H_relax]*H_relax_steps
+        # Hts = [H_relax]*H_relax_steps
+        H1 = [H_high]*H_steps_1
+        H2 = [H_low]*H_steps_1
+        H3 = [H_high]*H_steps_3
+
+        Hts = H1 + H2 + H3
 
         chis = []
 
@@ -170,20 +181,21 @@ def plot_loop(gamma):
             chi, intercept, r_value, p_value, std_err = linregress(Bfields, mz[:, 0])
 
 
-            chis.append((k, chi))
+            chis.append((k, Ht, chi))
 
-    return pd.DataFrame(chis, columns=["i", "chi"]).assign(gamma=gamma)
+    return pd.DataFrame(chis, columns=["i", "Ht", "chi"])
 
 
 if __name__ == '__main__':
     start_time = time.time()  # Start timer
     mp.set_start_method("spawn", force=True)
 
-    n_cycles = 88*2
-    # H_relax = 1.2
-    H_relax = 1.8
-    # H_relax_steps = 200
-    H_relax_steps = 100
+    n_cycles = 176
+
+
+    H_high = 2.3
+    H_low = 1.8
+
     dim = 10
     concentration = 20
     # gamma = 0.000001
@@ -192,119 +204,116 @@ if __name__ == '__main__':
     with mp.Pool(processes=mp.cpu_count()) as pool:
         results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=len(gammas), desc="Running simulations"))
 
-    df_all = pd.concat(results, ignore_index=True)
-    df_all.to_csv(f"MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_Ht{H_relax}.csv", index = False)
 
-    grouped = df_all.groupby(['gamma', 'i']).agg(
+    #######################Get negative cycle dataframe
+    df_all = pd.concat(results, ignore_index=True)
+    df_all.to_csv(f"MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_H_high{H_high}_H_low{H_low}.csv", index = False)
+
+    grouped = df_all.groupby(['i']).agg(
         chi_mean=('chi', 'mean'),
         chi_std=('chi', 'std')
     ).reset_index()
 
     grouped['chi_sem'] = grouped['chi_std'] / (n_cycles ** 0.5)
 
-    fig = go.Figure()
+    # fig = go.Figure()
 
-    unique_gammas = grouped['gamma'].unique()
-    for gamma in unique_gammas:
-        df_gamma = grouped[grouped['gamma'] == gamma]
+    # fig = px.scatter(
+    #     grouped,
+    #     x="i",
+    #     y="chi_mean",
+    #     error_y="chi_sem",  # or error_y="chi_sem" if using SEM
+    #     color="Ht",
+    #     labels={
+    #         "i": "Index (i)",
+    #         "chi_mean": "Mean Chi",
+    #         "Ht": "Ht"
+    #     },
+    #
+    # )
+    #
+    # fig.update_layout(
+    #     title=f"Mean Chi vs i, H1 = {H_high}, H2 = {H_low}",
+    #     xaxis_title="MCS (step index i)",
+    #     yaxis_title="χ (chi)",
+    #     legend_title="Ht",
+    #     template="plotly_white",
+    #     width=900,
+    #     height=600
+    # )
 
-        fig.add_trace(go.Scatter(
-            x=df_gamma['i'],
-            y=df_gamma['chi_mean'],
-            mode='lines+markers',
-            name=f"γ = {gamma:.1e}",
-            error_y=dict(
-                type='data',
-                array=df_gamma['chi_sem'],
-                visible=True
-            )
-        ))
+    ###########Get reference curve dataframe
+    path = '/Users/jiakai/Desktop/SURF/code/_spirit/'
+    file_pattern = path + "Susceptibility_multi_gammas_10_240_per_gamma_20_anisotropy_0.7_relax_step_400_gammas_-5_relax_0.8_gamma_0.0002_relaxed*.csv"
+
+    # List all matching files
+    csv_files = glob.glob(file_pattern)
+
+    # Print how many files were found
+    print(f"Found {len(csv_files)} reference curve files.")
+    repeats = len(csv_files)
+    for f in csv_files:
+        print(f)
+
+    # Read and concatenate all files
+    df_all_ref = pd.concat([pd.read_csv(f) for f in csv_files], ignore_index=True)
+
+    # Average over cycles, std divided by sqrt(n_cycles)
+    df_avg_ref = (
+        df_all_ref.groupby(["Ht"], as_index=False)
+        .agg(
+            chi_mean=("chi", "mean"),
+            chi_std=("chi", lambda x: x.std(ddof=1) / np.sqrt(n_cycles * repeats))
+        )
+    )
+
+    ###############################Plot
+    # --- First trace: Simulation result (mean ± SEM) ---
+    sim_trace = go.Scatter(
+        x=grouped["i"],
+        y=grouped["chi_mean"],
+        error_y=dict(
+            type="data",
+            array=grouped["chi_sem"],
+            visible=True
+        ),
+        mode="markers",
+        marker=dict(color="blue"),
+        name="Simulation",
+        hovertemplate="i=%{x}<br>chi=%{y:.3f}<extra></extra>"
+    )
+
+    # --- Second trace: Reference curve (mean ± SEM/std) ---
+    ref_trace = go.Scatter(
+        x=df_avg_ref["Ht"],
+        y=df_avg_ref["chi_mean"],
+        error_y=dict(
+            type="data",
+            array=df_avg_ref["chi_std"],  # already divided by sqrt(n)
+            visible=True
+        ),
+        mode="lines+markers",
+        line=dict(color="black", dash="dash"),
+        marker=dict(color="black", symbol="x"),
+        name="Reference",
+        hovertemplate="Ht=%{x}<br>chi=%{y:.3f}<extra></extra>"
+    )
+
+    # --- Combine and plot ---
+    fig = go.Figure([sim_trace, ref_trace])
 
     fig.update_layout(
-        title=f"Average Susceptibility χ vs i for different γ, relaxed at Ht = {H_relax}T",
-        xaxis_title="MCS (step index i)",
-        yaxis_title="χ (chi)",
-        legend_title="Tunneling γ",
-        template="plotly_white",
+        title=f"Chi vs i with Reference Curve, H1 = {H_high}, H2 = {H_low}",
+        xaxis_title="MCS time",
+        yaxis_title="Mean Chi",
+        legend_title="Curve",
+        plot_bgcolor='white',
         width=900,
-        height=600
+        height=500
     )
 
-    fig.write_html(f"MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_Ht{H_relax}.html")
+    fig.write_html(f"MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_H_high{H_high}_H_low{H_low}.html")
 
-    fig_ln = go.Figure()
-
-    for gamma in unique_gammas:
-        df_gamma = grouped[grouped['gamma'] == gamma]
-
-        # Avoid log of zero or negative numbers
-        df_gamma = df_gamma[df_gamma['chi_mean'] > 0]
-
-        fig_ln.add_trace(go.Scatter(
-            x=df_gamma['i'],
-            y=np.log(df_gamma['chi_mean']),
-            mode='lines+markers',
-            name=f"γ = {gamma:.1e}",
-            error_y=dict(
-                type='data',
-                array=df_gamma['chi_sem'] / df_gamma['chi_mean'],  # Propagation of error in log(chi)
-                visible=True
-            )
-        ))
-
-    fig_ln.update_layout(
-        title=f"ln(χ) vs i for different γ, relaxed at Ht = {H_relax}T",
-        xaxis_title="MCS (step index i)",
-        yaxis_title="ln(χ)",
-        legend_title="Tunneling γ",
-        template="plotly_white",
-        width=900,
-        height=600
-    )
-
-    fig_ln.write_html(f"ln_MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_Ht{H_relax}.html")
-
-    fig_lnln = go.Figure()
-
-    for gamma in unique_gammas:
-        df_gamma = grouped[grouped['gamma'] == gamma].copy()
-
-        # Filter out invalid values
-        df_gamma = df_gamma[(df_gamma['chi_mean'] > 0) & (np.log(df_gamma['chi_mean']) < 0)]
-
-        # Compute x = ln(i), y = ln(-ln(chi))
-        df_gamma['ln_i'] = np.log(df_gamma['i'])
-        df_gamma['ln_ln_chi'] = np.log(-np.log(df_gamma['chi_mean']))
-
-        # Error propagation
-        df_gamma['ln_ln_chi_sem'] = (
-                np.abs(1 / (np.log(df_gamma['chi_mean']) * df_gamma['chi_mean'])) * df_gamma['chi_sem']
-        )
-
-        fig_lnln.add_trace(go.Scatter(
-            x=df_gamma['ln_i'],
-            y=df_gamma['ln_ln_chi'],
-            mode='lines+markers',
-            name=f"γ = {gamma:.1e}",
-            error_y=dict(
-                type='data',
-                array=df_gamma['ln_ln_chi_sem'],
-                visible=True
-            )
-        ))
-
-    fig_lnln.update_layout(
-        title=f"ln(-ln(χ)) vs ln(i) for different γ, relaxed at Ht = {H_relax}T",
-        xaxis_title="ln(MCS step index i)",
-        yaxis_title="ln(-ln(χ))",
-        legend_title="Tunneling γ",
-        template="plotly_white",
-        width=900,
-        height=600
-    )
-
-    fig_lnln.write_html(f"lnln_MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_Ht{H_relax}.html")
-
-    #| 40/176 [58:14<1:04:11, 28.32s/it]
+    #| 40/176 [58:14<1:04:11, 28.32s/it] (h_steps = 100)
 
 
