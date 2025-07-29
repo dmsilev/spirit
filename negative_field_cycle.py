@@ -8,6 +8,7 @@ import plotly.express as px
 import pandas as pd
 from scipy.stats import linregress
 from tqdm import tqdm
+import plotly.colors as pc
 import time
 import glob
 from datetime import timedelta
@@ -24,10 +25,10 @@ def plot_loop(gamma):
     dim = 10
     concentration = 20
     H_steps_1 = 10
-    H_steps_3 = 30
+    H_steps_3 = 10
 
-    H_high = 2.3
-    H_low = 1.8
+    H_high = 1
+    H_low = 0.1
 
     path_arr_x = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/",
                               fn + "_x.npy")  # fn = dipolar_arr
@@ -84,8 +85,7 @@ def plot_loop(gamma):
             count+=1
             tqdm.write(f'Ht: {Ht:.3f}, count: {count} gamma: {gamma} concentration: {concentration}')
 
-
-            hamiltonian.set_field(p_state,H_relax,(H_relax,0,0)) #Inside set_field, the vector is normalized, so we don't have to do that here
+            hamiltonian.set_field(p_state,Ht,(Ht,0,0)) #Inside set_field, the vector is normalized, so we don't have to do that here
 
             spins = system.get_spin_directions(p_state)  #Get the current spin state to update the DDI fields from the Ewald sum
             spins[:,2][vacancies_idx] = 0   #For LHF, we only care about Sz, but zero out the moments for vacancy site
@@ -190,16 +190,16 @@ if __name__ == '__main__':
     start_time = time.time()  # Start timer
     mp.set_start_method("spawn", force=True)
 
-    n_cycles = 176
+    n_cycles = 240
 
-
-    H_high = 2.3
-    H_low = 1.8
+    H_high = 1
+    H_low = 0.1
 
     dim = 10
     concentration = 20
     # gamma = 0.000001
-    gammas = [0.0002]*n_cycles
+    gamma = 0.0002
+    gammas = [gamma]*n_cycles
 
     with mp.Pool(processes=mp.cpu_count()) as pool:
         results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=len(gammas), desc="Running simulations"))
@@ -207,9 +207,9 @@ if __name__ == '__main__':
 
     #######################Get negative cycle dataframe
     df_all = pd.concat(results, ignore_index=True)
-    df_all.to_csv(f"MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_H_high{H_high}_H_low{H_low}.csv", index = False)
+    df_all.to_csv(f"negative_field_cycle_dim{dim}_ncycles{n_cycles}_gamma{gamma}_H_high{H_high}_H_low{H_low}.csv", index = False)
 
-    grouped = df_all.groupby(['i']).agg(
+    grouped = df_all.groupby(['i', 'Ht']).agg(
         chi_mean=('chi', 'mean'),
         chi_std=('chi', 'std')
     ).reset_index()
@@ -242,34 +242,12 @@ if __name__ == '__main__':
     #     height=600
     # )
 
-    ###########Get reference curve dataframe
-    path = '/Users/jiakai/Desktop/SURF/code/_spirit/'
-    file_pattern = path + "Susceptibility_multi_gammas_10_240_per_gamma_20_anisotropy_0.7_relax_step_400_gammas_-5_relax_0.8_gamma_0.0002_relaxed*.csv"
-
-    # List all matching files
-    csv_files = glob.glob(file_pattern)
-
-    # Print how many files were found
-    print(f"Found {len(csv_files)} reference curve files.")
-    repeats = len(csv_files)
-    for f in csv_files:
-        print(f)
-
-    # Read and concatenate all files
-    df_all_ref = pd.concat([pd.read_csv(f) for f in csv_files], ignore_index=True)
-
-    # Average over cycles, std divided by sqrt(n_cycles)
-    df_avg_ref = (
-        df_all_ref.groupby(["Ht"], as_index=False)
-        .agg(
-            chi_mean=("chi", "mean"),
-            chi_std=("chi", lambda x: x.std(ddof=1) / np.sqrt(n_cycles * repeats))
-        )
-    )
 
     ###############################Plot
-    # --- First trace: Simulation result (mean ± SEM) ---
-    sim_trace = go.Scatter(
+    # Grouped must already contain: 'i', 'chi_mean', 'chi_sem'
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
         x=grouped["i"],
         y=grouped["chi_mean"],
         error_y=dict(
@@ -277,43 +255,24 @@ if __name__ == '__main__':
             array=grouped["chi_sem"],
             visible=True
         ),
-        mode="markers",
-        marker=dict(color="blue"),
-        name="Simulation",
-        hovertemplate="i=%{x}<br>chi=%{y:.3f}<extra></extra>"
-    )
-
-    # --- Second trace: Reference curve (mean ± SEM/std) ---
-    ref_trace = go.Scatter(
-        x=df_avg_ref["Ht"],
-        y=df_avg_ref["chi_mean"],
-        error_y=dict(
-            type="data",
-            array=df_avg_ref["chi_std"],  # already divided by sqrt(n)
-            visible=True
-        ),
         mode="lines+markers",
-        line=dict(color="black", dash="dash"),
-        marker=dict(color="black", symbol="x"),
-        name="Reference",
-        hovertemplate="Ht=%{x}<br>chi=%{y:.3f}<extra></extra>"
-    )
-
-    # --- Combine and plot ---
-    fig = go.Figure([sim_trace, ref_trace])
+        line=dict(color="blue"),
+        marker=dict(size=5),
+        name="Mean χ",
+        hovertemplate="i=%{x}<br>χ=%{y:.3f}<extra></extra>"
+    ))
 
     fig.update_layout(
-        title=f"Chi vs i with Reference Curve, H1 = {H_high}, H2 = {H_low}",
-        xaxis_title="MCS time",
-        yaxis_title="Mean Chi",
-        legend_title="Curve",
-        plot_bgcolor='white',
+        title="Chi vs MCS Step",
+        xaxis_title="MCS Step (i)",
+        yaxis_title="Mean χ",
+        template="plotly_white",
         width=900,
         height=500
     )
 
-    fig.write_html(f"MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_H_high{H_high}_H_low{H_low}.html")
+    fig.write_html(f"negative_field_cycle_dim{dim}_ncycles{n_cycles}_gamma{gamma}_H_high{H_high}_H_low{H_low}.html")
 
-    #| 40/176 [58:14<1:04:11, 28.32s/it] (h_steps = 100)
+    #240/240 [1:38:33<00:00, 24.64s/it] 10x10x10, steps 10+10+10
 
 

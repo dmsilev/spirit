@@ -39,8 +39,8 @@ def plot_loop(gamma):
     fn = "dipolar_arr"
     prefix = "DDI_exp_14_G0p00005_Ht10p0"
 
-    # H_relax = 2.3 #around 0.5*H_max
-    H_relax = 1.8 #around 0.4*H_max
+    H_relax = 2.3 #around 0.5*H_max
+    # H_relax = 1.8 #around 0.4*H_max
 
     mu = 7
     dim = 10
@@ -225,17 +225,19 @@ def plot_loop(gamma):
             #         name = "output/" + tag + "_Image-00_Spins_0.ovf" #To match the internally-generated naming format
             #         io.image_write(p_state,filename=name)
 
-            # Check susceptibility every 4th Ht datapoint
-            # if i%4 ==0 or Ht <= H_relax + H_step:
-            # if i % 1 == 0:
+            # Define both options
+            Bfields_positive = np.arange(0, 0.3, 0.1)
+            Bfields_negative = np.arange(0, -0.3, -0.1)
+
+            # Randomly choose one, to avoid always polarising spins in one direction
+            Bfields = Bfields_positive if np.random.rand() < 0.5 else Bfields_negative
+
+            #To save point before relaxing
             if i == int((Hmax-H_relax)/H_step * 2 + 1):
 
-                # Define both options
-                Bfields_positive = np.arange(0, 0.3, 0.1)
-                Bfields_negative = np.arange(0, -0.3, -0.1)
-
-                # Randomly choose one, to avoid always polarising spins in one direction
-                Bfields = Bfields_positive if np.random.rand() < 0.5 else Bfields_negative
+                # # Define both options
+                # Bfields_positive = np.arange(0, 0.3, 0.1)
+                # Bfields_negative = np.arange(0, -0.3, -0.1)
 
                 for i, HzB in enumerate(Bfields):
                     # tqdm.write(f'Hz: {Hz:.3f}', concentration)
@@ -304,13 +306,6 @@ def plot_loop(gamma):
 
 
             if i in last_indices: #Only calculate chi if it's last iteration of each unique Ht
-
-                # Define both options
-                Bfields_positive = np.arange(0, 0.3, 0.1)
-                Bfields_negative = np.arange(0, -0.3, -0.1)
-
-                # Randomly choose one, to avoid always polarising spins in one direction
-                Bfields = Bfields_positive if np.random.rand() < 0.5 else Bfields_negative
 
                 for i, HzB in enumerate(Bfields):
                     # tqdm.write(f'Hz: {Hz:.3f}', concentration)
@@ -384,7 +379,7 @@ if __name__ == '__main__':
 
     n_cycles = 240
     # H_relax = 1.2
-    H_relax = 1.8
+    H_relax = 2.3
     # H_relax_steps = 400
     H_relax_steps = 200
     dim = 10

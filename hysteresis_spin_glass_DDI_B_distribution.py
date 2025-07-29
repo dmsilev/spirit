@@ -8,10 +8,13 @@ import plotly.express as px
 import pandas as pd
 from tqdm import tqdm
 
-dim = 4
-concentration = 20
-gamma = 0.000001
+
 def plot_loop(H_relax):
+    dim = 10
+    concentration = 20
+    gamma = 0.0002
+    H_high = 2.3
+    H_low = 1.0
 
     iterations_per_step = 1  # Take this many Metropolis iterationss per lattice site between each check for convergence
 
@@ -20,7 +23,7 @@ def plot_loop(H_relax):
     prefix = "DDI_exp_14_G0p00005_Ht10p0"
 
     mu = 7
-    H_relax_steps = 2 if abs(0.1 - H_relax) < 1e-6 else 200
+    H_relax_steps = 2 if abs(H_low - H_relax) < 1e-6 else 200 #In negative field cycle comparing fully relaxed with not fully relaxed state (?)
 
     with state.State(f"input/LHF_DDI_glass_14_{concentration}_tunnel_{dim}.cfg", quiet=True) as p_state:
         types = geometry.get_atom_types(p_state)
@@ -138,8 +141,13 @@ def plot_loop(H_relax):
 if __name__ == '__main__':
 
     # Assuming fields_hyst and mz are already defined
-    n_cycles = 720
-    H_relaxes = [0.1, 1.0]
+    n_cycles = 160
+    dim = 10
+    H_high = 2.3
+    H_low = 1.0
+    gamma = 0.0002
+
+    H_relaxes = [H_low, H_high]
     H_relaxes = H_relaxes * n_cycles
     H_relax_steps = 5
 

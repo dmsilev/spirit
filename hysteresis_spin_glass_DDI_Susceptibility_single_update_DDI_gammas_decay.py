@@ -18,7 +18,7 @@ def plot_loop(gamma):
     fn = "dipolar_arr"
     prefix = "DDI_exp_14_G0p00005_Ht10p0"
 
-    H_relax = 1.8
+    H_relax = 2.3
     mu = 7
     dim = 10
     concentration = 20
@@ -181,7 +181,7 @@ if __name__ == '__main__':
 
     n_cycles = 88*2
     # H_relax = 1.2
-    H_relax = 1.8
+    H_relax = 2.3
     # H_relax_steps = 200
     H_relax_steps = 100
     dim = 10
@@ -193,7 +193,7 @@ if __name__ == '__main__':
         results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=len(gammas), desc="Running simulations"))
 
     df_all = pd.concat(results, ignore_index=True)
-    df_all.to_csv(f"MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_Ht{H_relax}.csv", index = False)
+    df_all.to_csv(f"MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_Ht{H_relax}_1.csv", index = False)
 
     grouped = df_all.groupby(['gamma', 'i']).agg(
         chi_mean=('chi', 'mean'),
@@ -230,7 +230,7 @@ if __name__ == '__main__':
         height=600
     )
 
-    fig.write_html(f"MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_Ht{H_relax}.html")
+    fig.write_html(f"MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_Ht{H_relax}_1.html")
 
     fig_ln = go.Figure()
 
@@ -262,7 +262,7 @@ if __name__ == '__main__':
         height=600
     )
 
-    fig_ln.write_html(f"ln_MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_Ht{H_relax}.html")
+    fig_ln.write_html(f"ln_MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_Ht{H_relax}_1.html")
 
     fig_lnln = go.Figure()
 
@@ -303,7 +303,7 @@ if __name__ == '__main__':
         height=600
     )
 
-    fig_lnln.write_html(f"lnln_MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_Ht{H_relax}.html")
+    fig_lnln.write_html(f"lnln_MCS_decay_gammas_dim_{dim}_with_SEM_errorbars_Ht{H_relax}_1.html")
 
     #| 40/176 [58:14<1:04:11, 28.32s/it]
 
