@@ -35,7 +35,7 @@ def plot_loop(gamma):
 
     H_relax = 0.8
     mu = 7
-    dim = 4
+    dim = 10
     concentration = 20
     relax_steps = 2
     relax_steps_0 = 10
@@ -276,8 +276,9 @@ if __name__ == '__main__':
 
     mp.set_start_method("spawn", force=True)
 
-    n_cycles = 240*20
-    dim = 4
+    # n_cycles = 240*20
+    n_cycles = 120
+    dim = 10
     concentration = 20
     gamma = 0.000001
     gammas = [gamma]

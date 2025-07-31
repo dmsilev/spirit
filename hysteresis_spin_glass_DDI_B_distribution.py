@@ -117,8 +117,8 @@ def plot_loop(H_relax):
         spins[:, 1][vacancies_idx] = 0  # For LHF, we only care about Sz, but zero out the moments for vacancy site
         spins[:, 0][vacancies_idx] = 0  # For LHF, we only care about Sz, but zero out the moments for vacancy site
 
-        # DDI_field_x_from_z = np.matmul(DDI_interaction_x, spins[:, 2]) * 7 / 1e4
-        # DDI_field_y_from_z = np.matmul(DDI_interaction_y, spins[:, 2]) * 7 / 1e4
+        DDI_field_x_from_z = np.matmul(DDI_interaction_x, spins[:, 2]) * 7 / 1e4
+        DDI_field_y_from_z = np.matmul(DDI_interaction_y, spins[:, 2]) * 7 / 1e4
         DDI_field_z_from_z = np.matmul(DDI_interaction_z, spins[:, 2]) * 7 / 1e4
 
         DDI_field_z_from_y = np.matmul(DDI_interaction_y.T, spins[:, 1]) * 7 / 1e4  # V_zy
