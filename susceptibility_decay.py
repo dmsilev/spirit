@@ -380,6 +380,6 @@ if __name__ == '__main__':
 
     fig_lnln.write_html(f"lnln_MCS_decay_gamma_{gamma}_dim_{dim}_with_SEM_errorbars_Ht{H_relax}_1.html")
 
-    #| 40/176 [58:14<1:04:11, 28.32s/it]
+
 
 

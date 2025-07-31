@@ -40,7 +40,8 @@ def plot_loop(gamma):
     prefix = "DDI_exp_14_G0p00005_Ht10p0"
 
     # H_relax = 2.3 #around 0.5*H_max
-    H_relax = 1.8 #around 0.4*H_max
+    # H_relax = 1.8 #around 0.4*H_max
+    H_relax = 1.0
 
     mu = 7
     dim = 4
@@ -382,7 +383,7 @@ if __name__ == '__main__':
     n_cycles = 7200
     # n_cycles = 240
     # H_relax = 1.2
-    H_relax = 1.8
+    H_relax = 1.0
     # H_relax_steps = 400
     H_relax_steps = 200
     dim = 4
@@ -409,7 +410,7 @@ if __name__ == '__main__':
 
     # Save raw data
     df_all.to_csv(
-        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_{-5}_relax_0.8_gamma_{gamma}_relaxed_2.csv',
+        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_2.csv',
         index=False)
 
     # Average over cycles, std divided by sqrt(n_cycles)
