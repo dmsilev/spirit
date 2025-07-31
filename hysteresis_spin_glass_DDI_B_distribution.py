@@ -10,9 +10,9 @@ from tqdm import tqdm
 
 
 def plot_loop(H_relax):
-    dim = 10
+    dim = 4
     concentration = 20
-    gamma = 0.0002
+    gamma = 0.0001
     H_high = 2.3
     H_low = 1.0
 
@@ -126,7 +126,7 @@ def plot_loop(H_relax):
 
         DDI_field_z_total = DDI_field_z_from_z + DDI_field_z_from_y + DDI_field_z_from_x
 
-        # DDI_field_trans = np.sqrt(DDI_field_x_from_z ** 2 + DDI_field_y_from_z ** 2)
+        DDI_field_trans = np.sqrt(DDI_field_x_from_z ** 2 + DDI_field_y_from_z ** 2)
 
         # Remove vacant site data from output arrays
         valid_idx = np.setdiff1d(np.arange(spins.shape[0]), vacancies_idx)
@@ -134,15 +134,15 @@ def plot_loop(H_relax):
         return pd.DataFrame({
             'Ht': H_relax * np.ones(len(valid_idx)),
             'DDI_field_z': DDI_field_z_total[valid_idx],
-            # 'DDI_field_trans': DDI_field_trans[valid_idx]
+            'DDI_field_trans': DDI_field_trans[valid_idx]
         })
 
 
 if __name__ == '__main__':
 
     # Assuming fields_hyst and mz are already defined
-    n_cycles = 160
-    dim = 10
+    n_cycles = 160*2
+    dim = 4
     H_high = 2.3
     H_low = 1.0
     gamma = 0.0002
@@ -155,7 +155,7 @@ if __name__ == '__main__':
         results = list(tqdm(pool.imap(plot_loop, H_relaxes), total=len(H_relaxes)))
 
     df_all = pd.concat(results, ignore_index=True)
-    df_all.to_csv(f'B_z_distribution_{dim}_H_relax_steps_{H_relax_steps}_ncycles_{n_cycles}_gamma_{gamma}.csv', index=False)
+    df_all.to_csv(f'B_distribution_{dim}_H_relax_steps_{H_relax_steps}_ncycles_{n_cycles}_gamma_{gamma}.csv', index=False)
 
     hist_data = {}
 
@@ -183,3 +183,32 @@ if __name__ == '__main__':
     )
 
     fig.write_html(f'B_z_distribution_{dim}_H_relax_steps_{H_relax_steps}_ncycles_{n_cycles}_gamma_{gamma}.html')
+
+    ###########################Transverse field distribution
+
+    hist_data = {}
+
+    for Ht in df_all["Ht"].unique():
+        data = df_all[df_all["Ht"] == Ht]["DDI_field_trans"]
+        counts, bin_edges = np.histogram(data, bins=80, density=True)
+        bin_centers = 0.5 * (bin_edges[:-1] + bin_edges[1:])
+        hist_data[Ht] = (bin_centers, counts)
+
+    fig = go.Figure()
+
+    for Ht, (x, y) in hist_data.items():
+        fig.add_trace(go.Scatter(
+            x=x,
+            y=y,
+            mode="markers+lines",
+            name=f"Ht={Ht}",
+            marker=dict(size=6)
+        ))
+
+    fig.update_layout(
+        title="DDI_field_transverse Distribution for different Ht",
+        xaxis_title="DDI_field_transverse (T)",
+        yaxis_title="Density",
+    )
+
+    fig.write_html(f'B_trans_distribution_{dim}_H_relax_steps_{H_relax_steps}_ncycles_{n_cycles}_gamma_{gamma}.html')

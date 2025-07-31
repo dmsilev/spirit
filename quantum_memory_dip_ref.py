@@ -35,10 +35,12 @@ def plot_loop(gamma):
 
     H_relax = 0.8
     mu = 7
-    dim = 10
+    dim = 4
     concentration = 20
     relax_steps = 2
-    relax_steps_0 = 50
+    relax_steps_0 = 10
+
+    Hmax = 4.5
 
     # path_arr_x = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/",
     #                           fn + "_x.npy")  # fn = dipolar_arr
@@ -80,7 +82,7 @@ def plot_loop(gamma):
         locs[:,1][vacancies_idx] = 0
         locs[:,2][vacancies_idx] = 0
 
-        Hts_randomise = [0]*relax_steps_0
+        Hts_randomise = [Hmax]*relax_steps_0
         #configuration.random give spins pointing anywhere on a sphere, want to align it more along anisotropic field by evolving with Ht = 0
         for i,Ht in enumerate(Hts_randomise):
 
@@ -118,7 +120,7 @@ def plot_loop(gamma):
 
 
 
-        Hmax = 4.5
+
         H_step = 0.1
         # Sweep down to just above H_relax (exclusive)
         Hts = np.arange(Hmax, -H_step, -H_step)
@@ -274,10 +276,10 @@ if __name__ == '__main__':
 
     mp.set_start_method("spawn", force=True)
 
-    n_cycles = 240
-    dim = 10
+    n_cycles = 240*20
+    dim = 4
     concentration = 20
-    gamma = 0.0002
+    gamma = 0.000001
     gammas = [gamma]
     relax_steps_0 = 50
 
@@ -287,7 +289,7 @@ if __name__ == '__main__':
 
         # with mp.Pool(processes=mp.cpu_count()) as pool:
         #     results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=n_cycles))
-        with mp.Pool(processes=6, initializer=init_worker, initargs=(dim,)) as pool:
+        with mp.Pool(processes=mp.cpu_count(), initializer=init_worker, initargs=(dim,)) as pool:
             results = list(tqdm(pool.imap_unordered(plot_loop, gammas, chunksize = 2), total=n_cycles))
 
     flat = []

@@ -43,10 +43,12 @@ def plot_loop(gamma):
     # H_relax = 1.8 #around 0.4*H_max
 
     mu = 7
-    dim = 10
+    dim = 4
     concentration = 20
     H_relax_steps = 200
-    relax_steps_0 = 50
+    relax_steps_0 = 10
+
+    Hmax = 4.5
 
     # path_arr_x = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/",
     #                           fn + "_x.npy")  # fn = dipolar_arr
@@ -88,7 +90,7 @@ def plot_loop(gamma):
         locs[:,1][vacancies_idx] = 0
         locs[:,2][vacancies_idx] = 0
 
-        Hts_randomise = [0] * relax_steps_0
+        Hts_randomise = [Hmax] * relax_steps_0
         # configuration.random give spins pointing anywhere on a sphere, want to align it more along anisotropic field by evolving with Ht = 0
         for i, Ht in enumerate(Hts_randomise):
             Hmag = Ht
@@ -127,7 +129,7 @@ def plot_loop(gamma):
                              single_shot=False)  # solver_type=simulation.MC_ALGORITHM_METROPOLIS
             simulation.stop(p_state)
 
-        Hmax = 4.5
+
         H_step = 0.1
         # Sweep down to just above H_relax (exclusive)
         Hts_above = np.arange(Hmax, H_relax - 1e-8, -H_step)
@@ -377,14 +379,14 @@ if __name__ == '__main__':
     start_time = time.time()  # Start timer
     mp.set_start_method("spawn", force=True)
 
-    n_cycles = 240
+    n_cycles = 240*10*2
     # H_relax = 1.2
     H_relax = 2.3
     # H_relax_steps = 400
     H_relax_steps = 200
-    dim = 10
+    dim = 4
     concentration = 20
-    gamma = 0.0002
+    gamma = 0.000001
     gammas = [gamma]
 
     all_results = []
@@ -435,7 +437,7 @@ if __name__ == '__main__':
     )
 
     fig.write_html(
-        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_1.html')
+        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_2.html')
 
     chi_Hrelax_before_list = [
         {
@@ -450,7 +452,7 @@ if __name__ == '__main__':
     df_chi_before = pd.DataFrame(chi_Hrelax_before_list)
 
     # Save to CSV
-    df_chi_before.to_csv(f"chi_before_relax_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_1.csv", index=False)
+    df_chi_before.to_csv(f"chi_before_relax_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_2.csv", index=False)
 
     # Timer
     end_time = time.time()
