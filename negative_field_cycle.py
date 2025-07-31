@@ -28,7 +28,7 @@ def plot_loop(gamma):
     H_steps_3 = 10
 
     H_high = 3.0
-    H_low = 1.5
+    H_low = 3.0
 
     relax_steps_0 = 10
 
@@ -239,7 +239,7 @@ if __name__ == '__main__':
     n_cycles = 240*5
 
     H_high = 3.0
-    H_low = 1.5
+    H_low = 3.0
 
     dim = 4
     concentration = 20

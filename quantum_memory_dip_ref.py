@@ -291,7 +291,7 @@ if __name__ == '__main__':
         # with mp.Pool(processes=mp.cpu_count()) as pool:
         #     results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=n_cycles))
         with mp.Pool(processes=mp.cpu_count(), initializer=init_worker, initargs=(dim,)) as pool:
-            results = list(tqdm(pool.imap_unordered(plot_loop, gammas, chunksize = 2), total=n_cycles))
+            results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=n_cycles))
 
     flat = []
 
