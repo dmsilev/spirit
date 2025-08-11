@@ -39,18 +39,18 @@ def plot_loop(gamma):
     fn = "dipolar_arr"
     prefix = "DDI_exp_14_G0p00005_Ht10p0"
 
-    H_relax = 2.3 #around 0.5*H_max
+    # H_relax = 2.3 #around 0.5*H_max
     # H_relax = 1.8 #around 0.4*H_max
-    # H_relax = 4.0
+    H_relax = 1.0
 
     mu = 7
-    dim = 8
+    dim = 4
     concentration = 20
     H_relax_steps = 200
     relax_steps_0 = 10
 
     Hmax = 4.5
-    # Hmax = 8
+
     # path_arr_x = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/",
     #                           fn + "_x.npy")  # fn = dipolar_arr
     # path_arr_y = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn + "_y.npy")
@@ -132,19 +132,19 @@ def plot_loop(gamma):
 
 
         H_step = 0.1
+
+        H_relaxes = [2.3, 1.8, 1.0]
+
         # Sweep down to just above H_relax (exclusive)
-        Hts_above = np.arange(Hmax, H_relax - 1e-8, -H_step)
-        Hts_above = np.repeat(Hts_above, 2)  # repeat each value twice
+        Hts = np.arange(Hmax, -H_step, -H_step)
+        Hts = np.repeat(Hts, 2)  # repeat each value twice
 
-        # Insert H_relax multiple times
-        H_relax_insert = np.full(H_relax_steps, H_relax)
+        for H_relax in H_relaxes:
+            # Insert H_relax multiple times
+            H_relax_insert = np.full(H_relax_steps-2, H_relax)
 
-        # Sweep just below H_relax down to just above 0 (inclusive)
-        Hts_below = np.arange(H_relax - H_step, -H_step, -H_step)
-        Hts_below = np.repeat(Hts_below, 2)  # repeat each value twice
-
-        # Combine all
-        Hts = np.concatenate((Hts_above, H_relax_insert, Hts_below))
+            # Combine all
+            Hts = np.concatenate((Hts, H_relax_insert))
 
         # Sort in descending order
         Hts = np.sort(Hts)[::-1]
@@ -380,15 +380,15 @@ if __name__ == '__main__':
     start_time = time.time()  # Start timer
     mp.set_start_method("spawn", force=True)
 
-    n_cycles = 240
-    # n_cycles = 240
+    # n_cycles = 7200
+    n_cycles = 240*30
     # H_relax = 1.2
-    H_relax = 2.3
+    H_relax = 1.0
     # H_relax_steps = 400
     H_relax_steps = 200
-    dim = 8
+    dim = 4
     concentration = 20
-    gamma = 1e-11
+    gamma = 0.000001
     gammas = [gamma]
 
     all_results = []
@@ -410,7 +410,7 @@ if __name__ == '__main__':
 
     # Save raw data
     df_all.to_csv(
-        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_2.csv',
+        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_tgt.csv',
         index=False)
 
     # Average over cycles, std divided by sqrt(n_cycles)
@@ -435,11 +435,11 @@ if __name__ == '__main__':
             "chi_mean": "Susceptibility χ",
             "gamma": "Gamma",
         },
-        title="Susceptibility χ vs Ht for different Γ (gamma)"
+        title="Susceptibility χ vs Ht"
     )
 
     fig.write_html(
-        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_2.html')
+        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_tgt.html')
 
     chi_Hrelax_before_list = [
         {
@@ -454,7 +454,7 @@ if __name__ == '__main__':
     df_chi_before = pd.DataFrame(chi_Hrelax_before_list)
 
     # Save to CSV
-    df_chi_before.to_csv(f"chi_before_relax_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_2.csv", index=False)
+    df_chi_before.to_csv(f"chi_before_relax_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_tgt.csv", index=False)
 
     # Timer
     end_time = time.time()
@@ -463,5 +463,4 @@ if __name__ == '__main__':
 
     #240/240 [11:14:04<00:00, 168.52s/it]
     #240/240 [14:13:15<00:00, 213.32s/it] Hmax = 4.5, 8 cores, H_relax_steps = 400
-    # 240/240 [9:27:13<00:00, 141.81s/it] Hmax = 4.5, 8 cores, H_relax_steps = 200, 10x10x10
-    #8x8x8 240 ~ 3hrs
+    # 240/240 [9:27:13<00:00, 141.81s/it] Hmax = 4.5, 8 cores, H_relax_steps = 200

@@ -33,7 +33,7 @@ def plot_loop(gamma):
     fn = "dipolar_arr"
     prefix = "DDI_exp_14_G0p00005_Ht10p0"
 
-    H_relax = 0.8
+    H_relax = 2.3
     mu = 7
     dim = 10
     concentration = 20
@@ -41,6 +41,7 @@ def plot_loop(gamma):
     relax_steps_0 = 10
 
     Hmax = 4.5
+    # Hmax = 10
 
     # path_arr_x = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/",
     #                           fn + "_x.npy")  # fn = dipolar_arr
@@ -276,13 +277,14 @@ if __name__ == '__main__':
 
     mp.set_start_method("spawn", force=True)
 
-    # n_cycles = 240*20
+    # n_cycles = 240
     n_cycles = 120
     dim = 10
     concentration = 20
-    gamma = 0.000001
+    gamma = 1e-9
     gammas = [gamma]
-    relax_steps_0 = 50
+    relax_steps_0 = 10
+    anisotropy = 0.7
 
     # Loop over different gamma values
     for gamma in gammas:
@@ -304,7 +306,7 @@ if __name__ == '__main__':
 
     # Save raw data
     df_all.to_csv(
-        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_gamma_{gamma}_ref_4.csv',
+        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_gamma_{gamma}_ref_3.csv',
         index=False)
 
     df_avg = (
@@ -332,6 +334,6 @@ if __name__ == '__main__':
     )
 
     fig.write_html(
-        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_gamma_{gamma}_relaxstepzero_{relax_steps_0}ref_4.html')
+        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_{anisotropy}_gamma_{gamma}_relaxstepzero_{relax_steps_0}ref_3.html')
 
     #120 / 120 [3:53:40 < 00: 00, 116.84s / it] for each relax step 2, up + down, 10x10x10, Hmax = 4.5

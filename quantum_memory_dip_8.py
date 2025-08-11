@@ -388,7 +388,7 @@ if __name__ == '__main__':
     H_relax_steps = 200
     dim = 8
     concentration = 20
-    gamma = 1e-11
+    gamma = 1e-12
     gammas = [gamma]
 
     all_results = []

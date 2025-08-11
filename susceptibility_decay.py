@@ -34,11 +34,11 @@ def plot_loop(gamma):
     fn = "dipolar_arr"
     prefix = "DDI_exp_14_G0p00005_Ht10p0"
 
-    H_relax = 2.3
-    Hmax = 4.5
+    H_relax = 4.0
+    Hmax = 8.0
     relax_steps_0 = 10
     mu = 7
-    dim = 4
+    dim = 10
     concentration = 20
     H_relax_steps = 400
     path_arr_x = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/",
@@ -254,21 +254,21 @@ if __name__ == '__main__':
     start_time = time.time()  # Start timer
     mp.set_start_method("spawn", force=True)
 
-    n_cycles = 1800*3
+    n_cycles = 240
     # H_relax = 1.2
-    H_relax = 2.3
+    H_relax = 4.0
     # H_relax_steps = 200
     H_relax_steps = 400
-    dim = 4
+    dim = 10
     concentration = 20
-    gamma = 1e-6
+    gamma = 1e-7
     gammas = [gamma]*n_cycles
 
     with mp.Pool(processes=mp.cpu_count()) as pool:
         results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=len(gammas), desc="Running simulations"))
 
     df_all = pd.concat(results, ignore_index=True)
-    df_all.to_csv(f"MCS_decay_gamma_{gamma}_dim_{dim}_with_SEM_errorbars_Ht{H_relax}_1.csv", index = False)
+    df_all.to_csv(f"MCS_decay_gamma_{gamma}_dim_{dim}_with_SEM_errorbars_anisotropy1.5_Ht{H_relax}_20.csv", index = False)
 
     grouped = df_all.groupby(['gamma', 'i']).agg(
         chi_mean=('chi', 'mean'),
@@ -305,7 +305,7 @@ if __name__ == '__main__':
         height=600
     )
 
-    fig.write_html(f"MCS_decay_gamma_{gamma}_dim_{dim}_with_SEM_errorbars_Ht{H_relax}_1.html")
+    fig.write_html(f"MCS_decay_gamma_{gamma}_dim_{dim}_with_SEM_errorbars_anisotropy1.5_Ht{H_relax}_20.html")
 
     fig_ln = go.Figure()
 
@@ -337,7 +337,7 @@ if __name__ == '__main__':
         height=600
     )
 
-    fig_ln.write_html(f"ln_MCS_decay_gamma_{gamma}_dim_{dim}_with_SEM_errorbars_Ht{H_relax}_1.html")
+    fig_ln.write_html(f"ln_MCS_decay_gamma_{gamma}_dim_{dim}_with_SEM_errorbars_anisotropy1.5_Ht{H_relax}_20.html")
 
     fig_lnln = go.Figure()
 
@@ -378,7 +378,7 @@ if __name__ == '__main__':
         height=600
     )
 
-    fig_lnln.write_html(f"lnln_MCS_decay_gamma_{gamma}_dim_{dim}_with_SEM_errorbars_Ht{H_relax}_1.html")
+    fig_lnln.write_html(f"lnln_MCS_decay_gamma_{gamma}_dim_{dim}_with_SEM_errorbars_anisotropy1.5_Ht{H_relax}_20.html")
 
 
 
