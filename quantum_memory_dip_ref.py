@@ -10,6 +10,7 @@ import pandas as pd
 from scipy.stats import linregress
 from tqdm import tqdm
 import time
+import re
 from datetime import timedelta
 from collections import defaultdict
 
@@ -17,6 +18,35 @@ from collections import defaultdict
 DDI_interaction_x = None
 DDI_interaction_y = None
 DDI_interaction_z = None
+
+def get_unique_filename(filepath):
+    """
+    If `filepath` does not exist, return it unchanged.
+    If it exists and the filename (without extension) ends with digits,
+    increment that trailing integer until a non-existing filename is found,
+    and return the new filepath. Raises ValueError if no trailing digits.
+    """
+    if not os.path.exists(filepath):
+        return filepath
+
+    dirpath, fname = os.path.split(filepath)
+    name, ext = os.path.splitext(fname)
+
+    # find trailing integer (one or more digits) at end of name
+    m = re.search(r'(\d+)$', name)
+    if not m:
+        raise ValueError("Filename must end with a digit to be incremented")
+
+    prefix = name[:m.start(1)]
+    num = int(m.group(1))
+
+    # increment until we find a filename that doesn't exist
+    while True:
+        num += 1
+        new_fname = f"{prefix}{num}{ext}"
+        new_path = os.path.join(dirpath, new_fname)
+        if not os.path.exists(new_path):
+            return new_path
 
 def init_worker(dim):
     #To initialize DDI matrix just once and avoid loading npy in each loop
@@ -35,7 +65,7 @@ def plot_loop(gamma):
 
     H_relax = 2.3
     mu = 7
-    dim = 10
+    dim = 4
     concentration = 20
     relax_steps = 2
     relax_steps_0 = 10
@@ -277,14 +307,15 @@ if __name__ == '__main__':
 
     mp.set_start_method("spawn", force=True)
 
-    # n_cycles = 240
-    n_cycles = 120
-    dim = 10
+    n_cycles = 240
+    # n_cycles = 120
+    dim = 4
     concentration = 20
-    gamma = 1e-9
+    # gamma = 1e-9
+    gamma = 0.0001
     gammas = [gamma]
     relax_steps_0 = 10
-    anisotropy = 0.7
+    anisotropy = 1.5
 
     # Loop over different gamma values
     for gamma in gammas:
@@ -306,7 +337,7 @@ if __name__ == '__main__':
 
     # Save raw data
     df_all.to_csv(
-        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_gamma_{gamma}_ref_3.csv',
+        get_unique_filename(f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_{anisotropy}_gamma_{gamma}_ref_3.csv'),
         index=False)
 
     df_avg = (
@@ -334,6 +365,6 @@ if __name__ == '__main__':
     )
 
     fig.write_html(
-        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_{anisotropy}_gamma_{gamma}_relaxstepzero_{relax_steps_0}ref_3.html')
+        get_unique_filename(f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_{anisotropy}_gamma_{gamma}_relaxstepzero_{relax_steps_0}ref_3.html'))
 
     #120 / 120 [3:53:40 < 00: 00, 116.84s / it] for each relax step 2, up + down, 10x10x10, Hmax = 4.5

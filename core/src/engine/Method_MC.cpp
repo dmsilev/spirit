@@ -203,7 +203,6 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
                 this->Bx = this->systems[0]->ddi_field_external[ispin][0];
                 this->By = this->systems[0]->ddi_field_external[ispin][1];
                 gamma_E = (((normal[0]*B_mag + this->Bx) * (normal[0]*B_mag + this->Bx) + (normal[1]*B_mag + this->By) * (normal[1]*B_mag + this->By)) *this->parameters_mc->tunneling_gamma) / (Constants::mu_B*Constants::mu_B);
-
                // The Bohr Magneton [meV/T] mu_B = 0.057883817555; tunneling_gamma = 2.7e-1
            }
 
@@ -346,9 +345,14 @@ void Method_MC::Message_Step()
     {
        block.emplace_back( fmt::format(
             "   Tunneling spin flips: {:>6.3f}", this->gammaE_avg) );
+       block.emplace_back( fmt::format(
+            "   n_rejected: {:>6.3f}", this->n_rejected) );
     }
 
     block.emplace_back( fmt::format( "    Total energy:             {:20.10f}", this->systems[0]->E ) );
+    block.emplace_back(fmt::format( "   B_x {:>6.3f}", this->Bx ) );
+    block.emplace_back(fmt::format( "   B_y {:>6.3f}", this->By ) );
+    block.emplace_back(fmt::format( "mu_B {:>6.3f}", Constants::mu_B));
     Log.SendBlock( Log_Level::All, this->SenderName, block, this->idx_image, this->idx_chain );
 
     // Update time of last step
@@ -405,6 +409,9 @@ void Method_MC::Message_End()
     }
 
     block.emplace_back( fmt::format( "    Total energy:     {:20.10f}", this->systems[0]->E ) );
+    block.emplace_back(fmt::format( "   B_x {:>6.3f}", this->Bx ) );
+    block.emplace_back(fmt::format( "   B_y {:>6.3f}", this->By ) );
+    block.emplace_back(fmt::format( "mu_B {:>6.3f}", Constants::mu_B));
     block.emplace_back( "-----------------------------------------------------" );
     Log.SendBlock( Log_Level::All, this->SenderName, block, this->idx_image, this->idx_chain );
 }

@@ -11,11 +11,41 @@ from tqdm import tqdm
 import time
 from datetime import timedelta
 from collections import defaultdict
+import re
 
 # Global variable to hold DDI matrices
 DDI_interaction_x = None
 DDI_interaction_y = None
 DDI_interaction_z = None
+
+def get_unique_filename(filepath):
+    """
+    If `filepath` does not exist, return it unchanged.
+    If it exists and the filename (without extension) ends with digits,
+    increment that trailing integer until a non-existing filename is found,
+    and return the new filepath. Raises ValueError if no trailing digits.
+    """
+    if not os.path.exists(filepath):
+        return filepath
+
+    dirpath, fname = os.path.split(filepath)
+    name, ext = os.path.splitext(fname)
+
+    # find trailing integer (one or more digits) at end of name
+    m = re.search(r'(\d+)$', name)
+    if not m:
+        raise ValueError("Filename must end with a digit to be incremented")
+
+    prefix = name[:m.start(1)]
+    num = int(m.group(1))
+
+    # increment until we find a filename that doesn't exist
+    while True:
+        num += 1
+        new_fname = f"{prefix}{num}{ext}"
+        new_path = os.path.join(dirpath, new_fname)
+        if not os.path.exists(new_path):
+            return new_path
 
 def init_worker(dim):
     #To initialize DDI matrix just once and avoid loading npy in each loop
@@ -390,6 +420,7 @@ if __name__ == '__main__':
     concentration = 20
     gamma = 1e-11
     gammas = [gamma]
+    anisotropy = 1.5
 
     all_results = []
 
@@ -410,7 +441,7 @@ if __name__ == '__main__':
 
     # Save raw data
     df_all.to_csv(
-        f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_2.csv',
+        get_unique_filename(f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_{anisotropy}_relax_step_{H_relax_steps}_gammas_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_1.csv'),
         index=False)
 
     # Average over cycles, std divided by sqrt(n_cycles)
@@ -439,7 +470,7 @@ if __name__ == '__main__':
     )
 
     fig.write_html(
-        f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_2.html')
+        get_unique_filename(f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_{anisotropy}_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_1.html'))
 
     chi_Hrelax_before_list = [
         {
@@ -454,7 +485,7 @@ if __name__ == '__main__':
     df_chi_before = pd.DataFrame(chi_Hrelax_before_list)
 
     # Save to CSV
-    df_chi_before.to_csv(f"chi_before_relax_{dim}_{n_cycles}_{concentration}_anisotropy_0.7_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_2.csv", index=False)
+    df_chi_before.to_csv(get_unique_filename(f"chi_before_relax_{dim}_{n_cycles}_{concentration}_anisotropy_{anisotropy}_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_1.csv"), index=False)
 
     # Timer
     end_time = time.time()

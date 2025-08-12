@@ -21,10 +21,10 @@ def plot_loop(gamma):
     prefix = "DDI_exp_14_G0p00005_Ht10p0"
 
     mu = 7
-    dim = 4
+    dim = 10
     concentration = 20
-    H_steps_1 = 40
-    H_steps_3 = 40
+    H_steps_1 = 10
+    H_steps_3 = 10
 
     H_high = 3.0
     H_low = 1.0
@@ -254,15 +254,15 @@ if __name__ == '__main__':
     start_time = time.time()  # Start timer
     mp.set_start_method("spawn", force=True)
 
-    n_cycles = 240*5
+    n_cycles = 240
 
     H_high = 3.0
     H_low = 1.0
 
-    dim = 4
+    dim = 10
     concentration = 20
     # gamma = 0.000001
-    gamma = 1e-6
+    gamma = 1e-9
     gammas = [gamma]*n_cycles
     anisotropy = 0.7
 

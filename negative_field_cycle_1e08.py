@@ -245,7 +245,7 @@ if __name__ == '__main__':
     concentration = 20
     # gamma = 0.000001
     # gamma = 1e-15
-    gamma = 1e-7
+    gamma = 1e-8
     gammas = [gamma]*n_cycles
     anisotropy = 1.5
 
