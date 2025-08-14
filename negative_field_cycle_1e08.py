@@ -22,7 +22,7 @@ def plot_loop(gamma):
 
     H_relax = 1.8
     mu = 7
-    dim = 8
+    dim = 10
     concentration = 20
     H_steps_1 = 10
     H_steps_3 = 10
@@ -241,11 +241,11 @@ if __name__ == '__main__':
     H_high = 6.0
     H_low = 3.0
 
-    dim = 8
+    dim = 10
     concentration = 20
     # gamma = 0.000001
     # gamma = 1e-15
-    gamma = 1e-8
+    gamma = 1e-9
     gammas = [gamma]*n_cycles
     anisotropy = 1.5
 

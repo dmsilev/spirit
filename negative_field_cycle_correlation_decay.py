@@ -26,8 +26,8 @@ def plot_loop(gamma):
     H_steps_1 = 10
     H_steps_3 = 10
 
-    H_high = 3.0
-    H_low = 1.0
+    H_high = 6.0
+    H_low = 3.0
 
     relax_steps_0 = 10
 
@@ -66,7 +66,9 @@ def plot_loop(gamma):
 
 
     #Filter out any vacant sites
-        vacancies_idx = np.where(types == -1)
+        vacancies_idx_tuple = np.where(types == -1)
+        vacancies_idx = vacancies_idx_tuple[0]
+
         locs[:,0][vacancies_idx] = 0
         locs[:,1][vacancies_idx] = 0
         locs[:,2][vacancies_idx] = 0
@@ -174,8 +176,8 @@ def plot_loop(gamma):
                 corr = np.corrcoef(spin_z_before, spin_z_after)[0, 1]
 
             # Define both options
-            Bfields_positive = np.arange(0, 0.3, 0.1)
-            Bfields_negative = np.arange(0, -0.3, -0.1)
+            Bfields_positive = np.arange(0, 0.4, 0.1)
+            Bfields_negative = np.arange(0, -0.4, -0.1)
 
             # Randomly choose one, to avoid always polarising spins in one direction
             Bfields = Bfields_positive if np.random.rand() < 0.5 else Bfields_negative
@@ -242,7 +244,15 @@ def plot_loop(gamma):
                     valid_idx = np.setdiff1d(np.arange(spins.shape[0]), vacancies_idx)
                     spin_z_after = spin_z_after[valid_idx]
 
-                    corr += np.corrcoef(spin_z_before, spin_z_after)[0, 1]
+                    # Keep only pairs where both |before| <= 1 and |after| <= 1
+                    mask = (np.abs(spin_z_before) <= 1) & (np.abs(spin_z_after) <= 1)
+                    filtered_before = spin_z_before[mask]
+                    filtered_after = spin_z_after[mask]
+
+                    if filtered_before.size > 1 and filtered_after.size > 1:
+                        corr += np.corrcoef(filtered_before, filtered_after)[0, 1]
+                    else:
+                        corr += np.nan  # or 0.0, depending on how you want to handle it
 
             if k >= H_steps_1:
                 correlations.append((k, corr/(len(Bfields)+1))) #take corr measurement everytime
@@ -254,17 +264,17 @@ if __name__ == '__main__':
     start_time = time.time()  # Start timer
     mp.set_start_method("spawn", force=True)
 
-    n_cycles = 240
+    n_cycles = 120
 
-    H_high = 3.0
-    H_low = 1.0
+    H_high = 6.0
+    H_low = 3.0
 
     dim = 10
     concentration = 20
     # gamma = 0.000001
-    gamma = 1e-9
+    gamma = 1e-7
     gammas = [gamma]*n_cycles
-    anisotropy = 0.7
+    anisotropy = 1.5
 
     with mp.Pool(processes=mp.cpu_count()) as pool:
         results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=len(gammas), desc="Running simulations"))
@@ -276,6 +286,9 @@ if __name__ == '__main__':
     df = pd.DataFrame(flat_results, columns=['k', 'corr'])
 
     df.to_csv(f"40_decay_correlations_negative_field_cycle_dim{dim}_anisotropy{anisotropy}_ncycles{n_cycles}_gamma{gamma}_H_high{H_high}_H_low{H_low}.csv", index=False)
+
+    # Remove NaN correlations before saving/averaging
+    df = df.dropna(subset=['corr'])
 
     # Group by k and compute stats
     grouped = df.groupby('k')['corr'].agg(['mean', 'std']).reset_index()
@@ -292,7 +305,7 @@ if __name__ == '__main__':
         y='corr_avg',
         error_y='sem',
         markers=True,
-        title="Average Correlation vs. k",
+        title=f"Average Correlation vs. k, H_high = {H_high}, H_low = {H_low}",
         labels={'k': 'k', 'corr_avg': 'Average Correlation'}
     )
 

@@ -69,18 +69,18 @@ def plot_loop(gamma):
     fn = "dipolar_arr"
     prefix = "DDI_exp_14_G0p00005_Ht10p0"
 
-    H_relax = 2.3 #around 0.5*H_max
+    # H_relax = 2.3 #around 0.5*H_max
     # H_relax = 1.8 #around 0.4*H_max
-    # H_relax = 4.0
+    H_relax = 4.0
 
     mu = 7
-    dim = 8
+    dim = 6
     concentration = 20
-    H_relax_steps = 200
+    H_relax_steps = 400
     relax_steps_0 = 10
 
-    Hmax = 4.5
-    # Hmax = 8
+    # Hmax = 4.5
+    Hmax = 8
     # path_arr_x = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/",
     #                           fn + "_x.npy")  # fn = dipolar_arr
     # path_arr_y = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/", fn + "_y.npy")
@@ -161,7 +161,7 @@ def plot_loop(gamma):
             simulation.stop(p_state)
 
 
-        H_step = 0.1
+        H_step = 0.2
         # Sweep down to just above H_relax (exclusive)
         Hts_above = np.arange(Hmax, H_relax - 1e-8, -H_step)
         Hts_above = np.repeat(Hts_above, 2)  # repeat each value twice
@@ -259,8 +259,8 @@ def plot_loop(gamma):
             #         io.image_write(p_state,filename=name)
 
             # Define both options
-            Bfields_positive = np.arange(0, 0.3, 0.1)
-            Bfields_negative = np.arange(0, -0.3, -0.1)
+            Bfields_positive = np.arange(0, 0.4, 0.1)
+            Bfields_negative = np.arange(0, -0.4, -0.1)
 
             # Randomly choose one, to avoid always polarising spins in one direction
             Bfields = Bfields_positive if np.random.rand() < 0.5 else Bfields_negative
@@ -410,15 +410,15 @@ if __name__ == '__main__':
     start_time = time.time()  # Start timer
     mp.set_start_method("spawn", force=True)
 
+    # n_cycles = 120
     n_cycles = 240
-    # n_cycles = 240
     # H_relax = 1.2
-    H_relax = 2.3
+    H_relax = 4.0
     # H_relax_steps = 400
-    H_relax_steps = 200
-    dim = 8
+    H_relax_steps = 400
+    dim = 6
     concentration = 20
-    gamma = 1e-11
+    gamma = 1e-7
     gammas = [gamma]
     anisotropy = 1.5
 
@@ -441,7 +441,7 @@ if __name__ == '__main__':
 
     # Save raw data
     df_all.to_csv(
-        get_unique_filename(f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_{anisotropy}_relax_step_{H_relax_steps}_gammas_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_1.csv'),
+        get_unique_filename(f'Susceptibility_v2_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_{anisotropy}_relax_step_{H_relax_steps}_gammas_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_1.csv'),
         index=False)
 
     # Average over cycles, std divided by sqrt(n_cycles)
@@ -470,22 +470,22 @@ if __name__ == '__main__':
     )
 
     fig.write_html(
-        get_unique_filename(f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_{anisotropy}_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_1.html'))
+        get_unique_filename(f'Susceptibility_v2_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_{anisotropy}_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_1.html'))
 
-    chi_Hrelax_before_list = [
-        {
-            "gamma": gamma,
-            "Ht": H_relax,
-            "chi_Hrelax_before_relax": chi_before
-        }
-        for _, chi_before in results
-    ]
+    # chi_Hrelax_before_list = [
+    #     {
+    #         "gamma": gamma,
+    #         "Ht": H_relax,
+    #         "chi_Hrelax_before_relax": chi_before
+    #     }
+    #     for _, chi_before in results
+    # ]
 
-    # Create DataFrame
-    df_chi_before = pd.DataFrame(chi_Hrelax_before_list)
+    # # Create DataFrame
+    # df_chi_before = pd.DataFrame(chi_Hrelax_before_list)
 
-    # Save to CSV
-    df_chi_before.to_csv(get_unique_filename(f"chi_before_relax_{dim}_{n_cycles}_{concentration}_anisotropy_{anisotropy}_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_1.csv"), index=False)
+    # # Save to CSV
+    # df_chi_before.to_csv(get_unique_filename(f"chi_before_relax_{dim}_{n_cycles}_{concentration}_anisotropy_{anisotropy}_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_1.csv"), index=False)
 
     # Timer
     end_time = time.time()

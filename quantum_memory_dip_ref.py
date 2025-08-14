@@ -65,12 +65,12 @@ def plot_loop(gamma):
 
     H_relax = 2.3
     mu = 7
-    dim = 4
+    dim = 6
     concentration = 20
     relax_steps = 2
     relax_steps_0 = 10
 
-    Hmax = 4.5
+    Hmax = 8
     # Hmax = 10
 
     # path_arr_x = os.path.join(f"dipolar_interaction_matrices_reordered/{dim}_{dim}_{dim}/",
@@ -148,11 +148,7 @@ def plot_loop(gamma):
             simulation.start(p_state, simulation.METHOD_MC, single_shot=False) #solver_type=simulation.MC_ALGORITHM_METROPOLIS
             simulation.stop(p_state)
 
-
-
-
-
-        H_step = 0.1
+        H_step = 0.2
         # Sweep down to just above H_relax (exclusive)
         Hts = np.arange(Hmax, -H_step, -H_step)
         Hts = np.repeat(Hts, relax_steps)  # repeat each value twice
@@ -227,8 +223,8 @@ def plot_loop(gamma):
             if i % relax_steps == 1: #Only calculate chi if it's last iteration of each unique Ht
 
                 # Define both options
-                Bfields_positive = np.arange(0, 0.3, 0.1)
-                Bfields_negative = np.arange(0, -0.3, -0.1)
+                Bfields_positive = np.arange(0, 0.4, 0.1)
+                Bfields_negative = np.arange(0, -0.4, -0.1)
 
                 # Randomly choose one, to avoid always polarising spins in one direction
                 Bfields = Bfields_positive if np.random.rand() < 0.5 else Bfields_negative
@@ -309,10 +305,10 @@ if __name__ == '__main__':
 
     n_cycles = 240
     # n_cycles = 120
-    dim = 4
+    dim = 6
     concentration = 20
     # gamma = 1e-9
-    gamma = 0.0001
+    gamma = 1e-7
     gammas = [gamma]
     relax_steps_0 = 10
     anisotropy = 1.5
@@ -337,7 +333,7 @@ if __name__ == '__main__':
 
     # Save raw data
     df_all.to_csv(
-        get_unique_filename(f'Susceptibility_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_{anisotropy}_gamma_{gamma}_ref_3.csv'),
+        get_unique_filename(f'Susceptibility_v2_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_{anisotropy}_gamma_{gamma}_ref_1.csv'),
         index=False)
 
     df_avg = (
@@ -365,6 +361,6 @@ if __name__ == '__main__':
     )
 
     fig.write_html(
-        get_unique_filename(f'Susceptibility_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_{anisotropy}_gamma_{gamma}_relaxstepzero_{relax_steps_0}ref_3.html'))
+        get_unique_filename(f'Susceptibility_v2_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_{anisotropy}_gamma_{gamma}_relaxstepzero_{relax_steps_0}ref_1.html'))
 
     #120 / 120 [3:53:40 < 00: 00, 116.84s / it] for each relax step 2, up + down, 10x10x10, Hmax = 4.5
