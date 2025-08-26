@@ -211,14 +211,6 @@ def plot_loop(gamma):
             simulation.start(p_state, simulation.METHOD_MC, single_shot=False) #solver_type=simulation.MC_ALGORITHM_METROPOLIS
             simulation.stop(p_state)
 
-
-            # if output_interval>0: #Output the spin configuration.
-            #     #TODO: Use system.get_spin_directions to pull the configuration array into Python, and then save out as an npy or similar
-            #     if (i % output_interval == 0):
-            #         tag = prefix+f'N{i:d}_H{Ht:.3f}'
-            #         name = "output/" + tag + "_Image-00_Spins_0.ovf" #To match the internally-generated naming format
-            #         io.image_write(p_state,filename=name)
-
             # Hts 2 of every Ht, so check susceptibility every 2nd Ht point
             if i % relax_steps == 1: #Only calculate chi if it's last iteration of each unique Ht
 
