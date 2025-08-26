@@ -315,10 +315,8 @@ if __name__ == '__main__':
 
     # Loop over different gamma values
     for gamma in gammas:
-        gammas = [gamma] * n_cycles  # gamma list for each cycle
+        gammas = [gamma] * n_cycles
 
-        # with mp.Pool(processes=mp.cpu_count()) as pool:
-        #     results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=n_cycles))
         with mp.Pool(processes=mp.cpu_count(), initializer=init_worker, initargs=(dim,)) as pool:
             results = list(tqdm(pool.imap_unordered(plot_loop, gammas), total=n_cycles))
 

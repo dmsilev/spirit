@@ -176,8 +176,8 @@ def plot_loop(gamma):
                 corr = np.corrcoef(spin_z_before, spin_z_after)[0, 1]
 
             # Define both options
-            Bfields_positive = np.arange(0, 0.4, 0.1)
-            Bfields_negative = np.arange(0, -0.4, -0.1)
+            Bfields_positive = np.arange(0, 0.2, 0.05)
+            Bfields_negative = np.arange(0, -0.2, -0.05)
 
             # Randomly choose one, to avoid always polarising spins in one direction
             Bfields = Bfields_positive if np.random.rand() < 0.5 else Bfields_negative
@@ -285,7 +285,7 @@ if __name__ == '__main__':
     # Create DataFrame
     df = pd.DataFrame(flat_results, columns=['k', 'corr'])
 
-    df.to_csv(f"40_decay_correlations_negative_field_cycle_dim{dim}_anisotropy{anisotropy}_ncycles{n_cycles}_gamma{gamma}_H_high{H_high}_H_low{H_low}.csv", index=False)
+    df.to_csv(f"decay_correlations_negative_field_cycle_v3_dim{dim}_anisotropy{anisotropy}_ncycles{n_cycles}_gamma{gamma}_H_high{H_high}_H_low{H_low}.csv", index=False)
 
     # Remove NaN correlations before saving/averaging
     df = df.dropna(subset=['corr'])
@@ -309,6 +309,6 @@ if __name__ == '__main__':
         labels={'k': 'k', 'corr_avg': 'Average Correlation'}
     )
 
-    fig.write_html(f"40_decay_correlations_negative_field_cycle_dim{dim}_anisotropy{anisotropy}_ncycles{n_cycles}_gamma{gamma}_H_high{H_high}_H_low{H_low}.html")
+    fig.write_html(f"decay_correlations_negative_field_cycle_v3_dim{dim}_anisotropy{anisotropy}_ncycles{n_cycles}_gamma{gamma}_H_high{H_high}_H_low{H_low}.html")
 
 

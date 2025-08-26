@@ -74,9 +74,9 @@ def plot_loop(gamma):
     H_relax = 4.0
 
     mu = 7
-    dim = 6
+    dim = 4
     concentration = 20
-    H_relax_steps = 400
+    H_relax_steps = 200
     relax_steps_0 = 10
 
     # Hmax = 4.5
@@ -259,8 +259,8 @@ def plot_loop(gamma):
             #         io.image_write(p_state,filename=name)
 
             # Define both options
-            Bfields_positive = np.arange(0, 0.4, 0.1)
-            Bfields_negative = np.arange(0, -0.4, -0.1)
+            Bfields_positive = np.arange(0, 0.2, 0.05)
+            Bfields_negative = np.arange(0, -0.2, -0.05)
 
             # Randomly choose one, to avoid always polarising spins in one direction
             Bfields = Bfields_positive if np.random.rand() < 0.5 else Bfields_negative
@@ -415,8 +415,8 @@ if __name__ == '__main__':
     # H_relax = 1.2
     H_relax = 4.0
     # H_relax_steps = 400
-    H_relax_steps = 400
-    dim = 6
+    H_relax_steps = 200
+    dim = 4
     concentration = 20
     gamma = 1e-7
     gammas = [gamma]
@@ -441,7 +441,7 @@ if __name__ == '__main__':
 
     # Save raw data
     df_all.to_csv(
-        get_unique_filename(f'Susceptibility_v2_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_{anisotropy}_relax_step_{H_relax_steps}_gammas_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_1.csv'),
+        get_unique_filename(f'Susceptibility_v3_multi_gammas_{dim}_{n_cycles}_per_gamma_{concentration}_anisotropy_{anisotropy}_relax_step_{H_relax_steps}_gammas_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_1.csv'),
         index=False)
 
     # Average over cycles, std divided by sqrt(n_cycles)
@@ -470,7 +470,7 @@ if __name__ == '__main__':
     )
 
     fig.write_html(
-        get_unique_filename(f'Susceptibility_v2_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_{anisotropy}_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_1.html'))
+        get_unique_filename(f'Susceptibility_v3_multi_gamma_{dim}_{n_cycles}_{concentration}_anisotropy_{anisotropy}_relax_step_{H_relax_steps}_gammas_DDI_{-5}_relax_{H_relax}_gamma_{gamma}_relaxed_1.html'))
 
     # chi_Hrelax_before_list = [
     #     {

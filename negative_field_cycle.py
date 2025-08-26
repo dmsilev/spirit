@@ -28,7 +28,7 @@ def plot_loop(gamma):
     H_steps_3 = 10
 
     H_high = 6.0
-    H_low = 3.0
+    H_low = 2.0
 
     relax_steps_0 = 10
 
@@ -162,8 +162,8 @@ def plot_loop(gamma):
             #         io.image_write(p_state,filename=name)
 
             # Define both options
-            Bfields_positive = np.arange(0, 0.4, 0.1)
-            Bfields_negative = np.arange(0, -0.4, -0.1)
+            Bfields_positive = np.arange(0, 0.2, 0.05)
+            Bfields_negative = np.arange(0, -0.2, -0.05)
 
             # Randomly choose one, to avoid always polarising spins in one direction
             Bfields = Bfields_positive if np.random.rand() < 0.5 else Bfields_negative
@@ -236,10 +236,10 @@ if __name__ == '__main__':
     start_time = time.time()  # Start timer
     mp.set_start_method("spawn", force=True)
 
-    n_cycles = 60
+    n_cycles = 240
 
     H_high = 6.0
-    H_low = 3.0
+    H_low = 2.0
 
     dim = 10
     concentration = 20
@@ -254,7 +254,7 @@ if __name__ == '__main__':
 
     ####################### Get negative cycle dataframe
     df_all = pd.concat(results, ignore_index=True)
-    df_all.to_csv(f"negative_field_cycle_dim{dim}_anisotropy{anisotropy}_ncycles{n_cycles}_gamma{gamma}_H_high{H_high}_H_low{H_low}.csv", index = False)
+    df_all.to_csv(f"negative_field_cycle_v3_dim{dim}_anisotropy{anisotropy}_ncycles{n_cycles}_gamma{gamma}_H_high{H_high}_H_low{H_low}.csv", index = False)
 
     grouped = df_all.groupby(['i', 'Ht']).agg(
         chi_mean=('chi', 'mean'),
@@ -316,7 +316,7 @@ if __name__ == '__main__':
         template="plotly_white"
     )
 
-    fig.write_html(f"negative_field_cycle_dim{dim}_anisotropy{anisotropy}_ncycles{n_cycles}_gamma{gamma}_H_high{H_high}_H_low{H_low}.html")
+    fig.write_html(f"negative_field_cycle_v3_dim{dim}_anisotropy{anisotropy}_ncycles{n_cycles}_gamma{gamma}_H_high{H_high}_H_low{H_low}.html")
 
     #240/240 [1:38:33<00:00, 24.64s/it] 10x10x10, steps 10+10+10
 
