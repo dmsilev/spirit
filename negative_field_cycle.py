@@ -1,18 +1,15 @@
 from spirit import simulation, state,quantities, hamiltonian,parameters,geometry,configuration,system,io
 import numpy as np
 import os
-import matplotlib.pyplot as plt
 import multiprocessing as mp
 import plotly.graph_objects as go
-import plotly.express as px
+
 import pandas as pd
 from scipy.stats import linregress
 from tqdm import tqdm
-import plotly.colors as pc
+
 import time
-import glob
-from datetime import timedelta
-from collections import defaultdict
+
 
 def plot_loop(gamma):
     iterations_per_step = 1  #Spin glass, Take this many Metropolis iterations per lattice site between each check for convergence
@@ -263,35 +260,6 @@ if __name__ == '__main__':
 
     grouped['chi_sem'] = grouped['chi_std'] / (n_cycles ** 0.5)
 
-    # fig = go.Figure()
-
-    # fig = px.scatter(
-    #     grouped,
-    #     x="i",
-    #     y="chi_mean",
-    #     error_y="chi_sem",  # or error_y="chi_sem" if using SEM
-    #     color="Ht",
-    #     labels={
-    #         "i": "Index (i)",
-    #         "chi_mean": "Mean Chi",
-    #         "Ht": "Ht"
-    #     },
-    #
-    # )
-    #
-    # fig.update_layout(
-    #     title=f"Mean Chi vs i, H1 = {H_high}, H2 = {H_low}",
-    #     xaxis_title="MCS (step index i)",
-    #     yaxis_title="χ (chi)",
-    #     legend_title="Ht",
-    #     template="plotly_white",
-    #     width=900,
-    #     height=600
-    # )
-
-
-    ###############################Plot
-    # Grouped must already contain: 'i', 'chi_mean', 'chi_sem'
     fig = go.Figure()
 
     fig.add_trace(go.Scatter(
