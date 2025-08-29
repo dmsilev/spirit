@@ -1,5 +1,21 @@
 SPIN GLASS SIMULATIONS
 =============================
+**Changed files**<br />
+- ./core/src/engine/Method_MC.cpp: Changed Metropolis algorithm logic to replace kT with gamma*B^2.
+<img width="941" height="705" alt="Screenshot 2025-08-28 at 10 06 05 PM" src="https://github.com/user-attachments/assets/9fcc890e-a8cc-442b-9f0a-6a7cdbc6e7e0" />
+<img width="944" height="703" alt="Screenshot 2025-08-28 at 10 06 22 PM" src="https://github.com/user-attachments/assets/4ff98e36-03bf-460a-b7e4-928bc6647a22" />
+
+Need to re-compile cpp using cmake to use the changes. For me these worked:
+
+```
+cd build
+cmake ..
+make
+make install
+cd ../
+cp build/install/bin/libSpirit.dylib /Users/jiakai/Desktop/SURF/code/venv/lib/python3.13/site-packages/spirit/
+```
+
 **New files**<br />
 - ***quantum_memory_dip.py*** : To simulate spin glass in a decreasing transverse field, with long relaxation at some intermediate field H_relax. Script will generate csv file of susceptibility against Ht, and a corresponding html plot. Example of html generated:
   <img width="1440" height="688" alt="Screenshot 2025-08-26 at 10 19 20 PM" src="https://github.com/user-attachments/assets/1b527290-38ad-4b71-929b-9b8bc26d48fb" />
