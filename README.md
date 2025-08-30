@@ -27,6 +27,6 @@ cp build/install/bin/libSpirit.dylib /Users/jiakai/Desktop/SURF/code/venv/lib/py
 <img width="1440" height="690" alt="Screenshot 2025-08-26 at 10 20 19 PM" src="https://github.com/user-attachments/assets/3959b495-924e-4821-9af7-996bd9133535" />
 
 - **utils/** : Some usefull Jupyter notebooks. Mainly to combine data from different runs to reduce noise
-- **input/***: Config cfg files used
+- **input/**: Config cfg files used
 - **data/**: Examples of html/csv data generated from simulation, for 4x4x4 and 10x10x10 lattices
 
