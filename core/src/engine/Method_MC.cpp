@@ -206,12 +206,28 @@ void Method_MC::Metropolis( const vectorfield & spins_old, vectorfield & spins_n
                         ++this->gammaE_avg;
                         tunnel_flag = true;
                     }
-                    else //reject the move
+                    if( this->parameters_mc->temperature < 1e-12 && !tunnel_flag ) //At zero T, any moves which don't tunnel get rejected
                     {
                         // Restore the spin
                         spins_new[ispin] = spins_old[ispin];
                         // Counter for the number of rejections
                         ++this->n_rejected;
+                    }
+                    else if (!tunnel_flag)  //At finite temperature, test against thermal activation (standard Metropolis criterion)
+                    {
+                        // Exponential factor
+                        scalar exp_ediff = std::exp( -Ediff / kB_T );
+                        // Metropolis random number
+                        scalar x_metropolis = distribution( this->parameters_mc->prng );
+
+                        // Only reject if random number is larger than exponential
+                        if( exp_ediff < x_metropolis )
+                        {
+                            // Restore the spin
+                            spins_new[ispin] = spins_old[ispin];
+                            // Counter for the number of rejections
+                            ++this->n_rejected;
+                        }
                     }
                 }
 
