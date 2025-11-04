@@ -1,0 +1,16 @@
+package:
+  name: spirit
+  version: "2.2.0"
+  
+source:
+  path: .
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - numpy
+
+  run:
+    - python
+    - numpy
